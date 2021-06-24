@@ -36,7 +36,8 @@ module.exports = {
     editLinkText: "",
     lastUpdated: true,
 
-    logo: "logo.jpg",
+    logo: "/logo.jpg",
+    searchPlaceholder: 'Search topic',
     nav: [
       {
         text: "Quick Start",
