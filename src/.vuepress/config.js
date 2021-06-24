@@ -38,6 +38,7 @@ module.exports = {
 
     logo: "/logo.jpg",
     searchPlaceholder: 'Search topic',
+    base: "suphple-docs",
     nav: [
       {
         text: "Quick Start",

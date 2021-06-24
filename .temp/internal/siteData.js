@@ -39,10 +39,10 @@ export const siteData = {
     },
     {
       "frontmatter": {},
-      "regularPath": "/docs/v1/authorization/",
-      "relativePath": "docs/v1/authorization/index.md",
-      "key": "v-43ecff5c",
-      "path": "/docs/v1/authorization/",
+      "regularPath": "/docs/v1/adapters/",
+      "relativePath": "docs/v1/adapters/index.md",
+      "key": "v-02801218",
+      "path": "/docs/v1/adapters/",
       "lastUpdated": "6/24/2021, 3:20:22 PM"
     },
     {
@@ -56,18 +56,10 @@ export const siteData = {
     },
     {
       "frontmatter": {},
-      "regularPath": "/docs/v1/adapters/",
-      "relativePath": "docs/v1/adapters/index.md",
-      "key": "v-02801218",
-      "path": "/docs/v1/adapters/",
-      "lastUpdated": "6/24/2021, 3:20:22 PM"
-    },
-    {
-      "frontmatter": {},
-      "regularPath": "/docs/v1/config/",
-      "relativePath": "docs/v1/config/index.md",
-      "key": "v-07fc9510",
-      "path": "/docs/v1/config/",
+      "regularPath": "/docs/v1/authorization/",
+      "relativePath": "docs/v1/authorization/index.md",
+      "key": "v-43ecff5c",
+      "path": "/docs/v1/authorization/",
       "lastUpdated": "6/24/2021, 3:20:22 PM"
     },
     {
@@ -76,6 +68,14 @@ export const siteData = {
       "relativePath": "docs/v1/container/index.md",
       "key": "v-5073c5dc",
       "path": "/docs/v1/container/",
+      "lastUpdated": "6/24/2021, 3:20:22 PM"
+    },
+    {
+      "frontmatter": {},
+      "regularPath": "/docs/v1/config/",
+      "relativePath": "docs/v1/config/index.md",
+      "key": "v-07fc9510",
+      "path": "/docs/v1/config/",
       "lastUpdated": "6/24/2021, 3:20:22 PM"
     },
     {
@@ -95,10 +95,10 @@ export const siteData = {
     },
     {
       "frontmatter": {},
-      "regularPath": "/docs/v1/credits/",
-      "relativePath": "docs/v1/credits/index.md",
-      "key": "v-7fcb167c",
-      "path": "/docs/v1/credits/",
+      "regularPath": "/docs/v1/events/",
+      "relativePath": "docs/v1/events/index.md",
+      "key": "v-3f34248a",
+      "path": "/docs/v1/events/",
       "lastUpdated": "6/24/2021, 3:20:22 PM"
     },
     {
@@ -111,10 +111,10 @@ export const siteData = {
     },
     {
       "frontmatter": {},
-      "regularPath": "/docs/v1/database/",
-      "relativePath": "docs/v1/database/index.md",
-      "key": "v-9ada42f4",
-      "path": "/docs/v1/database/",
+      "regularPath": "/docs/v1/credits/",
+      "relativePath": "docs/v1/credits/index.md",
+      "key": "v-7fcb167c",
+      "path": "/docs/v1/credits/",
       "lastUpdated": "6/24/2021, 3:20:22 PM"
     },
     {
@@ -127,10 +127,10 @@ export const siteData = {
     },
     {
       "frontmatter": {},
-      "regularPath": "/docs/v1/events/",
-      "relativePath": "docs/v1/events/index.md",
-      "key": "v-3f34248a",
-      "path": "/docs/v1/events/",
+      "regularPath": "/docs/v1/database/",
+      "relativePath": "docs/v1/database/index.md",
+      "key": "v-9ada42f4",
+      "path": "/docs/v1/database/",
       "lastUpdated": "6/24/2021, 3:20:22 PM"
     },
     {
@@ -139,6 +139,22 @@ export const siteData = {
       "relativePath": "docs/v1/laravel-interop/index.md",
       "key": "v-0a2fbec8",
       "path": "/docs/v1/laravel-interop/",
+      "lastUpdated": "6/24/2021, 3:20:22 PM"
+    },
+    {
+      "frontmatter": {},
+      "regularPath": "/docs/v1/middleware/",
+      "relativePath": "docs/v1/middleware/index.md",
+      "key": "v-029208d8",
+      "path": "/docs/v1/middleware/",
+      "lastUpdated": "6/24/2021, 3:20:22 PM"
+    },
+    {
+      "frontmatter": {},
+      "regularPath": "/docs/v1/modules/",
+      "relativePath": "docs/v1/modules/index.md",
+      "key": "v-d1891448",
+      "path": "/docs/v1/modules/",
       "lastUpdated": "6/24/2021, 3:20:22 PM"
     },
     {
@@ -154,22 +170,6 @@ export const siteData = {
           "slug": "-4"
         }
       ],
-      "lastUpdated": "6/24/2021, 3:20:22 PM"
-    },
-    {
-      "frontmatter": {},
-      "regularPath": "/docs/v1/modules/",
-      "relativePath": "docs/v1/modules/index.md",
-      "key": "v-d1891448",
-      "path": "/docs/v1/modules/",
-      "lastUpdated": "6/24/2021, 3:20:22 PM"
-    },
-    {
-      "frontmatter": {},
-      "regularPath": "/docs/v1/middleware/",
-      "relativePath": "docs/v1/middleware/index.md",
-      "key": "v-029208d8",
-      "path": "/docs/v1/middleware/",
       "lastUpdated": "6/24/2021, 3:20:22 PM"
     },
     {
@@ -190,6 +190,14 @@ export const siteData = {
     },
     {
       "frontmatter": {},
+      "regularPath": "/docs/v1/quick-start/",
+      "relativePath": "docs/v1/quick-start/index.md",
+      "key": "v-1b00b37c",
+      "path": "/docs/v1/quick-start/",
+      "lastUpdated": "6/24/2021, 3:20:22 PM"
+    },
+    {
+      "frontmatter": {},
       "regularPath": "/docs/v1/queues/",
       "relativePath": "docs/v1/queues/index.md",
       "key": "v-26fe0e10",
@@ -206,34 +214,10 @@ export const siteData = {
     },
     {
       "frontmatter": {},
-      "regularPath": "/docs/v1/quick-start/",
-      "relativePath": "docs/v1/quick-start/index.md",
-      "key": "v-1b00b37c",
-      "path": "/docs/v1/quick-start/",
-      "lastUpdated": "6/24/2021, 3:20:22 PM"
-    },
-    {
-      "frontmatter": {},
-      "regularPath": "/docs/v1/routing/",
-      "relativePath": "docs/v1/routing/index.md",
-      "key": "v-419f0608",
-      "path": "/docs/v1/routing/",
-      "lastUpdated": "6/24/2021, 3:20:22 PM"
-    },
-    {
-      "frontmatter": {},
       "regularPath": "/docs/v1/templating/",
       "relativePath": "docs/v1/templating/index.md",
       "key": "v-1f172d64",
       "path": "/docs/v1/templating/",
-      "lastUpdated": "6/24/2021, 3:20:22 PM"
-    },
-    {
-      "frontmatter": {},
-      "regularPath": "/docs/v1/service-providers/",
-      "relativePath": "docs/v1/service-providers/index.md",
-      "key": "v-0a380b7c",
-      "path": "/docs/v1/service-providers/",
       "lastUpdated": "6/24/2021, 3:20:22 PM"
     },
     {
@@ -259,6 +243,22 @@ export const siteData = {
       "key": "v-5a55ed49",
       "path": "/",
       "lastUpdated": "6/24/2021, 3:20:22 PM"
+    },
+    {
+      "frontmatter": {},
+      "regularPath": "/docs/v1/service-providers/",
+      "relativePath": "docs/v1/service-providers/index.md",
+      "key": "v-0a380b7c",
+      "path": "/docs/v1/service-providers/",
+      "lastUpdated": "6/24/2021, 3:20:22 PM"
+    },
+    {
+      "frontmatter": {},
+      "regularPath": "/docs/v1/routing/",
+      "relativePath": "docs/v1/routing/index.md",
+      "key": "v-419f0608",
+      "path": "/docs/v1/routing/",
+      "lastUpdated": "6/24/2021, 3:20:22 PM"
     }
   ],
   "themeConfig": {
@@ -270,6 +270,7 @@ export const siteData = {
     "lastUpdated": true,
     "logo": "/logo.jpg",
     "searchPlaceholder": "Search topic",
+    "base": "suphple-docs",
     "nav": [
       {
         "text": "Quick Start",
