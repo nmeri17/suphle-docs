@@ -18,9 +18,9 @@ git commit -m 'deploy'
 
 # if you are deploying to https://<USERNAME>.github.io
 # git push -f git@github.com:<USERNAME>/<USERNAME>.github.io.git master
-git push https://github.com/nmeri17/suphple-docs.git master
 
 # if you are deploying to https://<USERNAME>.github.io/<REPO>
 # git push -f git@github.com:<USERNAME>/<REPO>.git master:gh-pages
+git push https://github.com/nmeri17/suphple-docs.git master:gh-pages
 
 cd -
