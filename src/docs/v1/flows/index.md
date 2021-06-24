@@ -26,8 +26,7 @@ validated
 
 ##
 
-Flow request uses a pub sub pattern ie. Publishing to all flows containing 
-outgoing route (same way we pick event external handlers). Furthermore, 
-each write to the redis data store by a queried database result set 
-subscribes to that topic. Each write to the database looks up subscriptions 
+Flow request uses a pub sub pattern ie. Publishing to all flows containing outgoing route (same way we pick event external handlers). Furthermore, each write to the redis data store by a queried database result set subscribes to that topic. Each write to the database looks up subscriptions 
 matching the criteria
+
+random update
