@@ -1,4 +1,4 @@
-##SERVICE PROVIDERS
+## SERVICE PROVIDERS
 Service providers are classes used by the framework to bind concrete 
 instances to its interface. If that sounds familiar, that is because it was 
 mentioned in the entity binding section of the module descriptor page. 

@@ -3,44 +3,41 @@ home: true
 heroImage: /logo.jpg
 tagline: Opinionated PHP framework for building performant, extensible, and testable web applications
 actionText: Quick Start →
-actionLink: /quick-start/
-# features:
-# - title: 
+actionLink: /docs/v1/quick-start/
+features:
+- title: Built for the architecturally inclined
+  details: Domain Driven Design? Modular-monoliths? Decoupled components? SOLID principles? Slim controllers? Service oriented architectures? If those terms appeal to you, you are at the right place!
+- title: Intuitive Design
+  details: Given a penchant for OOP, objects are preferred over strings in all cases (labelling, payloads/DTOs, routing), for instant recognition of its purpose and location. No includes, no folder scanning, no questionable instantiation (during booting or whenever) is done without your consent
+- title: Infinite flexibility
+  details: Every step of the core experience is both replaceable and configurable in order to maximize your comfort. No conventional assumptions are made regarding project's requirements
 footer: Made by Nmeri Alphonsus with ❤️
 ---
 
-Domain Driven Design? Modular-monoliths, decoupled components, SOLID principles, slim controllers, and service oriented architectures. If those terms appeal to you, you are at the right place!
 
-#introduction
-Suphple (derived from the English word, "supple") is a php framework that by default, ships with an mvvm paradigm 
-for creating stateful web applications. It builds upon some of the industry's most trusted components, but can equally get out of the way for you to insert libraries that make you feel more at home. Its recommended stack is STT (Suphple-Transphporm-Turbo)
+---
+# Introduction
+
+Suphple (derived from the English word, "supple") is a php framework that by default, ships with an MVVM paradigm 
+for creating stateful web applications. It builds upon some of the [industry's most trusted](/docs/v1/database) components, but can equally get out of the way for you to insert libraries that make you feel more at home. Its recommended stack is STT (Suphple-Transphporm-Turbo)
 
 
-While building your projects with it, expect to often trigger custom 
-events, extend your classes -- which could be anything from routes to 
-controllers or services; in short, you'll be performing practices for 
-frequently changing, dynamic, and testable web applications.
+While building your projects with it, expect to often trigger custom [events](/docs/v1/events), extend your classes -- which could be anything from [routes](/docs/v1/routing) to [controllers](/docs/v1/controllers) or services; in short, you'll be performing practices for frequently changing, dynamic, and testable web applications.
 
-It equally expects such programs to be patronized by large traffic, and retain the performance of a typical hello world introductory tutorial. Going forward, integration with asynchronous frameworks is slated [link to roadmap] to commence any time in the near future, both in order to curb the concurrency concern and deliver responses at unbeatable speeds
+It equally expects such programs to be patronized by large traffic, and [retain the performance](/docs/v1/flows) of a typical hello world introductory tutorial. Going forward, integration with asynchronous frameworks is [slated](/docs/v1/roadmap) to commence when it garners sufficient traction, both in order to curb the concurrency concern and deliver responses at unbeatable speeds
 
-#how does it compare against others?
-Present performance benchmarks
+<!-- #how does it compare against others?
+Present performance benchmarks -->
 
-#sustainability
-Given the fact that Suphple is the framework of choice to power a number of 
-long term projects currently in the works, there is no doubt that it'll be 
-the subject of constant updates improving it both in the near and distant 
-future
+### Sustainability
 
-#Closing remarks
-If you are yet to relate with any of these use cases and would like to have 
-it looked into, do not hesitate to contact me to discuss what your 
-requirements look like. But if you are curious to learn more concerning the 
-details of this overview, well, welcome aboard!
+Being the framework of choice to power a number of long term projects currently in the works, there is no doubt it'll be the subject of constant updates improving it both in the near and distant future
 
-I hope you enjoy the ride🚤
+### Closing remarks
+If the features described above are yet to resonate with your use cases and you'd like to have them looked into, do not hesitate to [contact the author](mailto:vainglories@gmail.com) to discuss them. 
 
-#quote
-The love you have for what you build naturally reflects in the artsy 
-attention paid to it. What if everything could be built that way without 
-the costly expense of tedium?
+However, if you are curious to learn more concerning the details of this overview, I hope you enjoy the ride aboard this ship!🚤
+
+::: tip
+The love you have for what you build naturally reflects in the artsy attention paid to it. What if every thing could be built that way without the costly expense of tedium?
+:::

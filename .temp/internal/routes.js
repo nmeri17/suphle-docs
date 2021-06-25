@@ -21,30 +21,6 @@ export const routes = [
     redirect: "/docs/v1/adapters/"
   },
   {
-    name: "v-6c8d448c",
-    path: "/docs/v1/authentication/",
-    component: GlobalLayout,
-    beforeEnter: (to, from, next) => {
-      ensureAsyncComponentsLoaded("Layout", "v-6c8d448c").then(next)
-    },
-  },
-  {
-    path: "/docs/v1/authentication/index.html",
-    redirect: "/docs/v1/authentication/"
-  },
-  {
-    name: "v-43ecff5c",
-    path: "/docs/v1/authorization/",
-    component: GlobalLayout,
-    beforeEnter: (to, from, next) => {
-      ensureAsyncComponentsLoaded("Layout", "v-43ecff5c").then(next)
-    },
-  },
-  {
-    path: "/docs/v1/authorization/index.html",
-    redirect: "/docs/v1/authorization/"
-  },
-  {
     name: "v-07fc9510",
     path: "/docs/v1/config/",
     component: GlobalLayout,
@@ -55,30 +31,6 @@ export const routes = [
   {
     path: "/docs/v1/config/index.html",
     redirect: "/docs/v1/config/"
-  },
-  {
-    name: "v-dcf7e948",
-    path: "/docs/v1/controllers/",
-    component: GlobalLayout,
-    beforeEnter: (to, from, next) => {
-      ensureAsyncComponentsLoaded("Layout", "v-dcf7e948").then(next)
-    },
-  },
-  {
-    path: "/docs/v1/controllers/index.html",
-    redirect: "/docs/v1/controllers/"
-  },
-  {
-    name: "v-5073c5dc",
-    path: "/docs/v1/container/",
-    component: GlobalLayout,
-    beforeEnter: (to, from, next) => {
-      ensureAsyncComponentsLoaded("Layout", "v-5073c5dc").then(next)
-    },
-  },
-  {
-    path: "/docs/v1/container/index.html",
-    redirect: "/docs/v1/container/"
   },
   {
     name: "v-1f1d7c9c",
@@ -93,18 +45,6 @@ export const routes = [
     redirect: "/docs/v1/basics/"
   },
   {
-    name: "v-08d6a228",
-    path: "/docs/v1/contributing/",
-    component: GlobalLayout,
-    beforeEnter: (to, from, next) => {
-      ensureAsyncComponentsLoaded("Layout", "v-08d6a228").then(next)
-    },
-  },
-  {
-    path: "/docs/v1/contributing/index.html",
-    redirect: "/docs/v1/contributing/"
-  },
-  {
     name: "v-7fcb167c",
     path: "/docs/v1/credits/",
     component: GlobalLayout,
@@ -117,28 +57,52 @@ export const routes = [
     redirect: "/docs/v1/credits/"
   },
   {
-    name: "v-3f34248a",
-    path: "/docs/v1/events/",
+    name: "v-6c8d448c",
+    path: "/docs/v1/authentication/",
     component: GlobalLayout,
     beforeEnter: (to, from, next) => {
-      ensureAsyncComponentsLoaded("Layout", "v-3f34248a").then(next)
+      ensureAsyncComponentsLoaded("Layout", "v-6c8d448c").then(next)
     },
   },
   {
-    path: "/docs/v1/events/index.html",
-    redirect: "/docs/v1/events/"
+    path: "/docs/v1/authentication/index.html",
+    redirect: "/docs/v1/authentication/"
   },
   {
-    name: "v-7b74bfe8",
-    path: "/docs/v1/error-handling/",
+    name: "v-5073c5dc",
+    path: "/docs/v1/container/",
     component: GlobalLayout,
     beforeEnter: (to, from, next) => {
-      ensureAsyncComponentsLoaded("Layout", "v-7b74bfe8").then(next)
+      ensureAsyncComponentsLoaded("Layout", "v-5073c5dc").then(next)
     },
   },
   {
-    path: "/docs/v1/error-handling/index.html",
-    redirect: "/docs/v1/error-handling/"
+    path: "/docs/v1/container/index.html",
+    redirect: "/docs/v1/container/"
+  },
+  {
+    name: "v-dcf7e948",
+    path: "/docs/v1/controllers/",
+    component: GlobalLayout,
+    beforeEnter: (to, from, next) => {
+      ensureAsyncComponentsLoaded("Layout", "v-dcf7e948").then(next)
+    },
+  },
+  {
+    path: "/docs/v1/controllers/index.html",
+    redirect: "/docs/v1/controllers/"
+  },
+  {
+    name: "v-43ecff5c",
+    path: "/docs/v1/authorization/",
+    component: GlobalLayout,
+    beforeEnter: (to, from, next) => {
+      ensureAsyncComponentsLoaded("Layout", "v-43ecff5c").then(next)
+    },
+  },
+  {
+    path: "/docs/v1/authorization/index.html",
+    redirect: "/docs/v1/authorization/"
   },
   {
     name: "v-9ada42f4",
@@ -153,28 +117,40 @@ export const routes = [
     redirect: "/docs/v1/database/"
   },
   {
-    name: "v-0a2fbec8",
-    path: "/docs/v1/laravel-interop/",
+    name: "v-7b74bfe8",
+    path: "/docs/v1/error-handling/",
     component: GlobalLayout,
     beforeEnter: (to, from, next) => {
-      ensureAsyncComponentsLoaded("Layout", "v-0a2fbec8").then(next)
+      ensureAsyncComponentsLoaded("Layout", "v-7b74bfe8").then(next)
     },
   },
   {
-    path: "/docs/v1/laravel-interop/index.html",
-    redirect: "/docs/v1/laravel-interop/"
+    path: "/docs/v1/error-handling/index.html",
+    redirect: "/docs/v1/error-handling/"
   },
   {
-    name: "v-1d41a048",
-    path: "/docs/v1/flows/",
+    name: "v-08d6a228",
+    path: "/docs/v1/contributing/",
     component: GlobalLayout,
     beforeEnter: (to, from, next) => {
-      ensureAsyncComponentsLoaded("Layout", "v-1d41a048").then(next)
+      ensureAsyncComponentsLoaded("Layout", "v-08d6a228").then(next)
     },
   },
   {
-    path: "/docs/v1/flows/index.html",
-    redirect: "/docs/v1/flows/"
+    path: "/docs/v1/contributing/index.html",
+    redirect: "/docs/v1/contributing/"
+  },
+  {
+    name: "v-3f34248a",
+    path: "/docs/v1/events/",
+    component: GlobalLayout,
+    beforeEnter: (to, from, next) => {
+      ensureAsyncComponentsLoaded("Layout", "v-3f34248a").then(next)
+    },
+  },
+  {
+    path: "/docs/v1/events/index.html",
+    redirect: "/docs/v1/events/"
   },
   {
     name: "v-d1891448",
@@ -189,6 +165,18 @@ export const routes = [
     redirect: "/docs/v1/modules/"
   },
   {
+    name: "v-0a2fbec8",
+    path: "/docs/v1/laravel-interop/",
+    component: GlobalLayout,
+    beforeEnter: (to, from, next) => {
+      ensureAsyncComponentsLoaded("Layout", "v-0a2fbec8").then(next)
+    },
+  },
+  {
+    path: "/docs/v1/laravel-interop/index.html",
+    redirect: "/docs/v1/laravel-interop/"
+  },
+  {
     name: "v-78efa5d0",
     path: "/docs/v1/motivation/",
     component: GlobalLayout,
@@ -201,6 +189,18 @@ export const routes = [
     redirect: "/docs/v1/motivation/"
   },
   {
+    name: "v-1d41a048",
+    path: "/docs/v1/flows/",
+    component: GlobalLayout,
+    beforeEnter: (to, from, next) => {
+      ensureAsyncComponentsLoaded("Layout", "v-1d41a048").then(next)
+    },
+  },
+  {
+    path: "/docs/v1/flows/index.html",
+    redirect: "/docs/v1/flows/"
+  },
+  {
     name: "v-029208d8",
     path: "/docs/v1/middleware/",
     component: GlobalLayout,
@@ -211,6 +211,18 @@ export const routes = [
   {
     path: "/docs/v1/middleware/index.html",
     redirect: "/docs/v1/middleware/"
+  },
+  {
+    name: "v-1b00b37c",
+    path: "/docs/v1/quick-start/",
+    component: GlobalLayout,
+    beforeEnter: (to, from, next) => {
+      ensureAsyncComponentsLoaded("Layout", "v-1b00b37c").then(next)
+    },
+  },
+  {
+    path: "/docs/v1/quick-start/index.html",
+    redirect: "/docs/v1/quick-start/"
   },
   {
     name: "v-fa67c888",
@@ -249,30 +261,6 @@ export const routes = [
     redirect: "/docs/v1/requests/"
   },
   {
-    name: "v-1b00b37c",
-    path: "/docs/v1/quick-start/",
-    component: GlobalLayout,
-    beforeEnter: (to, from, next) => {
-      ensureAsyncComponentsLoaded("Layout", "v-1b00b37c").then(next)
-    },
-  },
-  {
-    path: "/docs/v1/quick-start/index.html",
-    redirect: "/docs/v1/quick-start/"
-  },
-  {
-    name: "v-1f172d64",
-    path: "/docs/v1/templating/",
-    component: GlobalLayout,
-    beforeEnter: (to, from, next) => {
-      ensureAsyncComponentsLoaded("Layout", "v-1f172d64").then(next)
-    },
-  },
-  {
-    path: "/docs/v1/templating/index.html",
-    redirect: "/docs/v1/templating/"
-  },
-  {
     name: "v-0a380b7c",
     path: "/docs/v1/service-providers/",
     component: GlobalLayout,
@@ -285,16 +273,28 @@ export const routes = [
     redirect: "/docs/v1/service-providers/"
   },
   {
-    name: "v-1a863dbc",
-    path: "/docs/v1/testing/",
+    name: "v-7db1243c",
+    path: "/docs/v1/roadmap/",
     component: GlobalLayout,
     beforeEnter: (to, from, next) => {
-      ensureAsyncComponentsLoaded("Layout", "v-1a863dbc").then(next)
+      ensureAsyncComponentsLoaded("Layout", "v-7db1243c").then(next)
     },
   },
   {
-    path: "/docs/v1/testing/index.html",
-    redirect: "/docs/v1/testing/"
+    path: "/docs/v1/roadmap/index.html",
+    redirect: "/docs/v1/roadmap/"
+  },
+  {
+    name: "v-1f172d64",
+    path: "/docs/v1/templating/",
+    component: GlobalLayout,
+    beforeEnter: (to, from, next) => {
+      ensureAsyncComponentsLoaded("Layout", "v-1f172d64").then(next)
+    },
+  },
+  {
+    path: "/docs/v1/templating/index.html",
+    redirect: "/docs/v1/templating/"
   },
   {
     name: "v-5a55ed49",
@@ -319,6 +319,18 @@ export const routes = [
   {
     path: "/docs/v1/routing/index.html",
     redirect: "/docs/v1/routing/"
+  },
+  {
+    name: "v-1a863dbc",
+    path: "/docs/v1/testing/",
+    component: GlobalLayout,
+    beforeEnter: (to, from, next) => {
+      ensureAsyncComponentsLoaded("Layout", "v-1a863dbc").then(next)
+    },
+  },
+  {
+    path: "/docs/v1/testing/index.html",
+    redirect: "/docs/v1/testing/"
   },
   {
     path: '*',

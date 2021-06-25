@@ -1,39 +1,19 @@
-#
-Basics...Anatomy of a tilwa app
+## Anatomy of a Suphple module
 
-1) Adapters (ORM, Auth), libraries, configs, tests (integration, feature)
-2) Adapter concretes, middleware, error handlers
-3) Framework (routing, container, managers)
-4) Controllers, events, requests
-5) Services, repo (consume libraries, adapter concretes)
-6) Tests (assert the two above)
+The entire illustration is a bird's eyeview of each module's ultimate structure. The segments which a user's request cuts through are the ones you are ~~likely~~ expected to change frequently -- otherwise called "moving parts". They are the ones we want to get right in a way that allows them remain elegant both during and after modification.
 
-Each level points inward to the one(s) below it
+::: tip
+We want their APIs to grow with interfaces so they can maintain their integrity while being swapped out/tampered with.
+:::
 
-The typical module only interferes slightly at 2), then from 4) till the end
+While the figure above may be theoretically true, the eventful journey of a request isn't quite the same in practice.
 
-App enters at 3) and combines everything below it in order to produce a response
+## Request lifecycle
 
-#
-Then request lifecycle. Suphple requests embark on quite the eventful 
-journey......
+Though not compulsory, it's strongly recommended to compartmentalize your app into [modules](/docs/v1/modules). Modules exist independently, which means tend to contain their own routes and exist in a state where they can be deployed without knowledge of its sibling modules' internals i.e. their routes.
 
-There are 3 different kind of requests, which are in turn, subdivided into 
-their subcategories. We have login requests, flow requests, and regular 
-requests
+For every request received by your app, it's apportioned to its appropriate handler before being passed onto a module where applicable.
 
-For regular requests, base objects (router, event manager etc.) 
-instantiated after module initialization point is crossed take on a new dimension — one with 
-context and purpose within its module. Mere autoload is no longer enough to 
-fully grasp the classes intended objective without scope
+There are 3 different kinds of request, which are in turn, subdivided into their subcategories. Suphple has [login requests](/docs/v1/authentication), [flow requests](/docs/v1/flows), and [regular requests](/docs/v1/controllers)
 
-#
-Start out the common concepts simple, without assumption that dev knows 
-what they are ie. Controllers are where the behaviour behind each endpoint 
-is decided. Request objects are the way to intercept path placeholder and 
-payload bodies. Route definitions are controller adapters; which means that 
-for all the power controllers are known to wield, they are answerable to 
-what 
-is being dictated from route definitions. As will soon be seen with route 
-collections, one can plug in various coexisting controller implementations 
-as the need may be
+For regular requests, core classes (router, event manager etc.) instantiated after module initialization point is crossed take on a new dimension — one with context and purpose within its module. Mere autoload is no longer enough to fully grasp the classes intended objective without scope

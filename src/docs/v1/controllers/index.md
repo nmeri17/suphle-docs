@@ -1,4 +1,6 @@
-##SERVICES AND CONTROLLERS
+## Services and controllers
+Controllers are where the behaviour behind each endpoint 
+is decided.
 While decisive steps are put in place on controllers to drive the point of 
 micro services home, the onus of writing atomic services lies in the 
 developer's 

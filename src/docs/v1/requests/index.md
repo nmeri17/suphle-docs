@@ -1,5 +1,6 @@
-##REQUESTS
-
+## Requests
+Request objects are the way to intercept path placeholder and 
+payload bodies
 Set payload should only work with predefined properties
 
 While it may seem daunting to create custom request objects, recall that 

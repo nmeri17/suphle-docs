@@ -1,5 +1,10 @@
-##ROUTING
-
+## Routing
+Route definitions are controller adapters; which means that 
+for all the power controllers are known to wield, they are answerable to 
+what 
+is being dictated from route definitions. As will soon be seen with route 
+collections, one can plug in various coexisting controller implementations 
+as the need may be
 Route methods PATH_id_EDIT_id2. Double underscore with all uppercase = 1 
 underscore. One underscore = hyphen. Underscore before all uppercase = 
 slash. Underscore before all lower case = placeholder
@@ -40,8 +45,8 @@ You don't have to Extend api route collections. we're not reading its
 parents automatically from a numerically indexed array of versions cuz it 
 won't be immediately understood by a human reader
 
-##CANARIES AND FEATURE TOGGLING
-*jump to content/ interlude
+## CANARIES AND FEATURE TOGGLING
+*jump to content/ interlude*
 
 An often encountered scenario is that of short-lived features implemented 
 within our app, or perhaps, we're opening up a feature to a group of users. 

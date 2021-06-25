@@ -39,14 +39,16 @@ module.exports = {
     logo: "/logo.jpg",
     searchPlaceholder: 'Search topic',
     base: "/suphple-docs/",
+
+    sidebarDepth: 2,
     nav: [
       {
         text: "Quick Start",
         link: "/docs/v1/quick-start/",
       },
       {
-        text: "Basics",
-        link: "/docs/v1/basics/"
+        text: "Motivation",
+        link: "/docs/v1/motivation/"
       },
       /*{
         text: "Suphple on Github",
@@ -61,7 +63,7 @@ module.exports = {
       }*/
     ],
     sidebar: [
-      ["/docs/v1/quick-start/", "Quick Start"], ["/docs/v1/basics/", "Basics"], ["/docs/v1/motivation/", "Motivation"],
+      ["/docs/v1/quick-start/", "Quick Start"], ["/docs/v1/basics/", "Basics"],
 
       ["/docs/v1/modules/", "Modules"], ["/docs/v1/container/", "Container"], ["/docs/v1/service-providers/", "Service Providers"],
 
@@ -78,7 +80,7 @@ module.exports = {
 
       ["/docs/v1/flows/", "Flows"], ["/docs/v1/laravel-interop/", "Laravel Inter-op"],
 
-      ["/docs/v1/plugins/", "Plugins"], ["/docs/v1/contributing/", "Contributing"], ["/docs/v1/credits/", "Credits"]
+      ["/docs/v1/plugins/", "Plugins"], ["/docs/v1/contributing/", "Contributing"], ["/docs/v1/credits/", "Credits"], ["/docs/v1/roadmap/", "Roadmap"],
     ]
   },
 
