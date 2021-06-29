@@ -31,18 +31,26 @@ export const siteData = {
   "pages": [
     {
       "frontmatter": {},
-      "regularPath": "/docs/v1/adapters/",
-      "relativePath": "docs/v1/adapters/index.md",
-      "key": "v-02801218",
-      "path": "/docs/v1/adapters/",
+      "regularPath": "/docs/v1/authentication/",
+      "relativePath": "docs/v1/authentication/index.md",
+      "key": "v-6c8d448c",
+      "path": "/docs/v1/authentication/",
       "lastUpdated": "6/24/2021, 3:20:22 PM"
     },
     {
       "frontmatter": {},
-      "regularPath": "/docs/v1/config/",
-      "relativePath": "docs/v1/config/index.md",
-      "key": "v-07fc9510",
-      "path": "/docs/v1/config/",
+      "regularPath": "/docs/v1/authorization/",
+      "relativePath": "docs/v1/authorization/index.md",
+      "key": "v-43ecff5c",
+      "path": "/docs/v1/authorization/",
+      "lastUpdated": "6/24/2021, 3:20:22 PM"
+    },
+    {
+      "frontmatter": {},
+      "regularPath": "/docs/v1/adapters/",
+      "relativePath": "docs/v1/adapters/index.md",
+      "key": "v-02801218",
+      "path": "/docs/v1/adapters/",
       "lastUpdated": "6/24/2021, 3:20:22 PM"
     },
     {
@@ -64,26 +72,18 @@ export const siteData = {
           "slug": "request-lifecycle"
         }
       ],
-      "lastUpdated": "6/24/2021, 3:20:22 PM"
-    },
-    {
-      "title": "Credits",
-      "frontmatter": {},
-      "regularPath": "/docs/v1/credits/",
-      "relativePath": "docs/v1/credits/index.md",
-      "key": "v-7fcb167c",
-      "path": "/docs/v1/credits/",
-      "lastUpdated": "6/24/2021, 3:20:22 PM"
+      "lastUpdated": "6/25/2021, 4:12:36 PM"
     },
     {
       "frontmatter": {},
-      "regularPath": "/docs/v1/authentication/",
-      "relativePath": "docs/v1/authentication/index.md",
-      "key": "v-6c8d448c",
-      "path": "/docs/v1/authentication/",
+      "regularPath": "/docs/v1/config/",
+      "relativePath": "docs/v1/config/index.md",
+      "key": "v-07fc9510",
+      "path": "/docs/v1/config/",
       "lastUpdated": "6/24/2021, 3:20:22 PM"
     },
     {
+      "title": "CONTAINERS",
       "frontmatter": {},
       "regularPath": "/docs/v1/container/",
       "relativePath": "docs/v1/container/index.md",
@@ -105,15 +105,31 @@ export const siteData = {
           "slug": "services-and-controllers"
         }
       ],
-      "lastUpdated": "6/24/2021, 3:20:22 PM"
+      "lastUpdated": "6/25/2021, 4:12:36 PM"
     },
     {
       "frontmatter": {},
-      "regularPath": "/docs/v1/authorization/",
-      "relativePath": "docs/v1/authorization/index.md",
-      "key": "v-43ecff5c",
-      "path": "/docs/v1/authorization/",
+      "regularPath": "/docs/v1/contributing/",
+      "relativePath": "docs/v1/contributing/index.md",
+      "key": "v-08d6a228",
+      "path": "/docs/v1/contributing/",
+      "headers": [
+        {
+          "level": 2,
+          "title": "",
+          "slug": "-11"
+        }
+      ],
       "lastUpdated": "6/24/2021, 3:20:22 PM"
+    },
+    {
+      "title": "Credits",
+      "frontmatter": {},
+      "regularPath": "/docs/v1/credits/",
+      "relativePath": "docs/v1/credits/index.md",
+      "key": "v-7fcb167c",
+      "path": "/docs/v1/credits/",
+      "lastUpdated": "6/25/2021, 4:12:36 PM"
     },
     {
       "frontmatter": {},
@@ -133,25 +149,55 @@ export const siteData = {
     },
     {
       "frontmatter": {},
-      "regularPath": "/docs/v1/contributing/",
-      "relativePath": "docs/v1/contributing/index.md",
-      "key": "v-08d6a228",
-      "path": "/docs/v1/contributing/",
-      "headers": [
-        {
-          "level": 2,
-          "title": "",
-          "slug": "-11"
-        }
-      ],
-      "lastUpdated": "6/24/2021, 3:20:22 PM"
-    },
-    {
-      "frontmatter": {},
       "regularPath": "/docs/v1/events/",
       "relativePath": "docs/v1/events/index.md",
       "key": "v-3f34248a",
       "path": "/docs/v1/events/",
+      "lastUpdated": "6/24/2021, 3:20:22 PM"
+    },
+    {
+      "frontmatter": {},
+      "regularPath": "/docs/v1/flows/",
+      "relativePath": "docs/v1/flows/index.md",
+      "key": "v-1d41a048",
+      "path": "/docs/v1/flows/",
+      "headers": [
+        {
+          "level": 2,
+          "title": "",
+          "slug": "-4"
+        }
+      ],
+      "lastUpdated": "6/24/2021, 7:24:35 PM"
+    },
+    {
+      "title": "Laravel inter-operability",
+      "frontmatter": {},
+      "regularPath": "/docs/v1/laravel-interop/",
+      "relativePath": "docs/v1/laravel-interop/index.md",
+      "key": "v-0a2fbec8",
+      "path": "/docs/v1/laravel-interop/",
+      "headers": [
+        {
+          "level": 2,
+          "title": "The cheering news!",
+          "slug": "the-cheering-news"
+        },
+        {
+          "level": 2,
+          "title": "The downer!",
+          "slug": "the-downer"
+        }
+      ],
+      "lastUpdated": "6/25/2021, 4:12:36 PM"
+    },
+    {
+      "title": "MIDDLEWARE",
+      "frontmatter": {},
+      "regularPath": "/docs/v1/middleware/",
+      "relativePath": "docs/v1/middleware/index.md",
+      "key": "v-029208d8",
+      "path": "/docs/v1/middleware/",
       "lastUpdated": "6/24/2021, 3:20:22 PM"
     },
     {
@@ -173,28 +219,7 @@ export const siteData = {
           "slug": "when-to-create-a-new-module"
         }
       ],
-      "lastUpdated": "6/24/2021, 3:20:22 PM"
-    },
-    {
-      "title": "Laravel inter-operability",
-      "frontmatter": {},
-      "regularPath": "/docs/v1/laravel-interop/",
-      "relativePath": "docs/v1/laravel-interop/index.md",
-      "key": "v-0a2fbec8",
-      "path": "/docs/v1/laravel-interop/",
-      "headers": [
-        {
-          "level": 2,
-          "title": "The cheering news!",
-          "slug": "the-cheering-news"
-        },
-        {
-          "level": 2,
-          "title": "The downer!",
-          "slug": "the-downer"
-        }
-      ],
-      "lastUpdated": "6/24/2021, 3:20:22 PM"
+      "lastUpdated": "6/25/2021, 4:12:36 PM"
     },
     {
       "title": "Motivation",
@@ -210,56 +235,7 @@ export const siteData = {
           "slug": "motivation"
         }
       ],
-      "lastUpdated": "6/24/2021, 3:20:22 PM"
-    },
-    {
-      "frontmatter": {},
-      "regularPath": "/docs/v1/flows/",
-      "relativePath": "docs/v1/flows/index.md",
-      "key": "v-1d41a048",
-      "path": "/docs/v1/flows/",
-      "headers": [
-        {
-          "level": 2,
-          "title": "",
-          "slug": "-4"
-        }
-      ],
-      "lastUpdated": "6/24/2021, 7:24:35 PM"
-    },
-    {
-      "frontmatter": {},
-      "regularPath": "/docs/v1/middleware/",
-      "relativePath": "docs/v1/middleware/index.md",
-      "key": "v-029208d8",
-      "path": "/docs/v1/middleware/",
-      "lastUpdated": "6/24/2021, 3:20:22 PM"
-    },
-    {
-      "title": "Requirements",
-      "frontmatter": {},
-      "regularPath": "/docs/v1/quick-start/",
-      "relativePath": "docs/v1/quick-start/index.md",
-      "key": "v-1b00b37c",
-      "path": "/docs/v1/quick-start/",
-      "headers": [
-        {
-          "level": 2,
-          "title": "Requirements",
-          "slug": "requirements"
-        },
-        {
-          "level": 2,
-          "title": "Installation",
-          "slug": "installation"
-        },
-        {
-          "level": 2,
-          "title": "Your first request",
-          "slug": "your-first-request"
-        }
-      ],
-      "lastUpdated": "6/24/2021, 3:20:22 PM"
+      "lastUpdated": "6/25/2021, 4:12:36 PM"
     },
     {
       "frontmatter": {},
@@ -291,23 +267,33 @@ export const siteData = {
           "slug": "requests"
         }
       ],
-      "lastUpdated": "6/24/2021, 3:20:22 PM"
+      "lastUpdated": "6/25/2021, 4:12:36 PM"
     },
     {
-      "title": "SERVICE PROVIDERS",
+      "title": "Requirements",
       "frontmatter": {},
-      "regularPath": "/docs/v1/service-providers/",
-      "relativePath": "docs/v1/service-providers/index.md",
-      "key": "v-0a380b7c",
-      "path": "/docs/v1/service-providers/",
+      "regularPath": "/docs/v1/quick-start/",
+      "relativePath": "docs/v1/quick-start/index.md",
+      "key": "v-1b00b37c",
+      "path": "/docs/v1/quick-start/",
       "headers": [
         {
           "level": 2,
-          "title": "SERVICE PROVIDERS",
-          "slug": "service-providers"
+          "title": "Requirements",
+          "slug": "requirements"
+        },
+        {
+          "level": 2,
+          "title": "Installation",
+          "slug": "installation"
+        },
+        {
+          "level": 2,
+          "title": "Your first request",
+          "slug": "your-first-request"
         }
       ],
-      "lastUpdated": "6/24/2021, 3:20:22 PM"
+      "lastUpdated": "6/25/2021, 4:12:36 PM"
     },
     {
       "title": "Graphql clone",
@@ -339,11 +325,6 @@ export const siteData = {
         },
         {
           "level": 2,
-          "title": "Security",
-          "slug": "security"
-        },
-        {
-          "level": 2,
           "title": "File Upload",
           "slug": "file-upload"
         },
@@ -362,7 +343,103 @@ export const siteData = {
           "title": "Routing",
           "slug": "routing"
         }
-      ]
+      ],
+      "lastUpdated": "6/25/2021, 4:12:36 PM"
+    },
+    {
+      "title": "SERVICE PROVIDERS",
+      "frontmatter": {},
+      "regularPath": "/docs/v1/service-providers/",
+      "relativePath": "docs/v1/service-providers/index.md",
+      "key": "v-0a380b7c",
+      "path": "/docs/v1/service-providers/",
+      "headers": [
+        {
+          "level": 2,
+          "title": "SERVICE PROVIDERS",
+          "slug": "service-providers"
+        }
+      ],
+      "lastUpdated": "6/25/2021, 4:12:36 PM"
+    },
+    {
+      "title": "Routing",
+      "frontmatter": {},
+      "regularPath": "/docs/v1/routing/",
+      "relativePath": "docs/v1/routing/index.md",
+      "key": "v-419f0608",
+      "path": "/docs/v1/routing/",
+      "headers": [
+        {
+          "level": 2,
+          "title": "Introduction",
+          "slug": "introduction"
+        },
+        {
+          "level": 2,
+          "title": "Route collections",
+          "slug": "route-collections"
+        },
+        {
+          "level": 2,
+          "title": "Defining paths",
+          "slug": "defining-paths"
+        },
+        {
+          "level": 2,
+          "title": "Dynamic routes",
+          "slug": "dynamic-routes"
+        },
+        {
+          "level": 2,
+          "title": "Hyphenated segments",
+          "slug": "hyphenated-segments"
+        },
+        {
+          "level": 2,
+          "title": "Optional placeholders",
+          "slug": "optional-placeholders"
+        },
+        {
+          "level": 2,
+          "title": "Request methods",
+          "slug": "request-methods"
+        },
+        {
+          "level": 2,
+          "title": "Route prefixing",
+          "slug": "route-prefixing"
+        },
+        {
+          "level": 2,
+          "title": "Route matching: a brief history",
+          "slug": "route-matching-a-brief-history"
+        },
+        {
+          "level": 2,
+          "title": "Revisiting prefixes",
+          "slug": "revisiting-prefixes"
+        },
+        {
+          "level": 2,
+          "title": "Canaries",
+          "slug": "canaries"
+        },
+        {
+          "level": 2,
+          "title": "CANARIES AND FEATURE TOGGLING",
+          "slug": "canaries-and-feature-toggling"
+        }
+      ],
+      "lastUpdated": "6/25/2021, 4:12:36 PM"
+    },
+    {
+      "frontmatter": {},
+      "regularPath": "/docs/v1/testing/",
+      "relativePath": "docs/v1/testing/index.md",
+      "key": "v-1a863dbc",
+      "path": "/docs/v1/testing/",
+      "lastUpdated": "6/24/2021, 3:20:22 PM"
     },
     {
       "frontmatter": {},
@@ -412,36 +489,7 @@ export const siteData = {
           "slug": "closing-remarks"
         }
       ],
-      "lastUpdated": "6/24/2021, 3:20:22 PM"
-    },
-    {
-      "title": "Routing",
-      "frontmatter": {},
-      "regularPath": "/docs/v1/routing/",
-      "relativePath": "docs/v1/routing/index.md",
-      "key": "v-419f0608",
-      "path": "/docs/v1/routing/",
-      "headers": [
-        {
-          "level": 2,
-          "title": "Routing",
-          "slug": "routing"
-        },
-        {
-          "level": 2,
-          "title": "CANARIES AND FEATURE TOGGLING",
-          "slug": "canaries-and-feature-toggling"
-        }
-      ],
-      "lastUpdated": "6/24/2021, 3:20:22 PM"
-    },
-    {
-      "frontmatter": {},
-      "regularPath": "/docs/v1/testing/",
-      "relativePath": "docs/v1/testing/index.md",
-      "key": "v-1a863dbc",
-      "path": "/docs/v1/testing/",
-      "lastUpdated": "6/24/2021, 3:20:22 PM"
+      "lastUpdated": "6/25/2021, 4:12:36 PM"
     }
   ],
   "themeConfig": {

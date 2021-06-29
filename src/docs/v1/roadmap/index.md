@@ -14,15 +14,12 @@ For schemas/models, check if it's an instance of the active driver model
 ## Integration
 Look into integrating asynchronous and concurrent frameworks
 
-## Security
-Csrf prevents another site from sending a valid request on behalf of a user signed in on your platform. They'll take advantage of user's authentication status. But if there's a token tied to current session and request, that expires in a few seconds, we can validate each post request, looking for 
-the presence of the variable
-
 ## File Upload
 Image upload add a `withThumbnail` method for creating thumbnails
 
 ## Authentication
 Passwordless authentication module. Won't include password reset routes
+Implement auth services (email verification, password recovery) dev can inject in their controllers
 
 ## Service and controllers
 Is it possible to have repositories like mongo repositories that work like mongo repositories? i.e. hiding service level functionality behind non-existent methods, dynamic, defined on an interface we will get to implement
