@@ -39,18 +39,18 @@ export const siteData = {
     },
     {
       "frontmatter": {},
-      "regularPath": "/docs/v1/authorization/",
-      "relativePath": "docs/v1/authorization/index.md",
-      "key": "v-43ecff5c",
-      "path": "/docs/v1/authorization/",
-      "lastUpdated": "6/24/2021, 3:20:22 PM"
-    },
-    {
-      "frontmatter": {},
       "regularPath": "/docs/v1/adapters/",
       "relativePath": "docs/v1/adapters/index.md",
       "key": "v-02801218",
       "path": "/docs/v1/adapters/",
+      "lastUpdated": "6/24/2021, 3:20:22 PM"
+    },
+    {
+      "frontmatter": {},
+      "regularPath": "/docs/v1/authorization/",
+      "relativePath": "docs/v1/authorization/index.md",
+      "key": "v-43ecff5c",
+      "path": "/docs/v1/authorization/",
       "lastUpdated": "6/24/2021, 3:20:22 PM"
     },
     {
@@ -72,24 +72,7 @@ export const siteData = {
           "slug": "request-lifecycle"
         }
       ],
-      "lastUpdated": "6/29/2021, 11:00:06 AM"
-    },
-    {
-      "frontmatter": {},
-      "regularPath": "/docs/v1/config/",
-      "relativePath": "docs/v1/config/index.md",
-      "key": "v-07fc9510",
-      "path": "/docs/v1/config/",
-      "lastUpdated": "6/24/2021, 3:20:22 PM"
-    },
-    {
-      "title": "Credits",
-      "frontmatter": {},
-      "regularPath": "/docs/v1/credits/",
-      "relativePath": "docs/v1/credits/index.md",
-      "key": "v-7fcb167c",
-      "path": "/docs/v1/credits/",
-      "lastUpdated": "6/25/2021, 4:12:36 PM"
+      "lastUpdated": "7/2/2021, 4:25:32 PM"
     },
     {
       "title": "Containers",
@@ -120,7 +103,30 @@ export const siteData = {
           "slug": "circular-dependencies"
         }
       ],
-      "lastUpdated": "6/29/2021, 11:00:06 AM"
+      "lastUpdated": "7/2/2021, 4:25:32 PM"
+    },
+    {
+      "frontmatter": {},
+      "regularPath": "/docs/v1/config/",
+      "relativePath": "docs/v1/config/index.md",
+      "key": "v-07fc9510",
+      "path": "/docs/v1/config/",
+      "lastUpdated": "6/24/2021, 3:20:22 PM"
+    },
+    {
+      "frontmatter": {},
+      "regularPath": "/docs/v1/contributing/",
+      "relativePath": "docs/v1/contributing/index.md",
+      "key": "v-08d6a228",
+      "path": "/docs/v1/contributing/",
+      "headers": [
+        {
+          "level": 2,
+          "title": "",
+          "slug": "-11"
+        }
+      ],
+      "lastUpdated": "6/24/2021, 3:20:22 PM"
     },
     {
       "title": "Services and controllers",
@@ -139,19 +145,13 @@ export const siteData = {
       "lastUpdated": "6/25/2021, 4:12:36 PM"
     },
     {
+      "title": "Credits",
       "frontmatter": {},
-      "regularPath": "/docs/v1/contributing/",
-      "relativePath": "docs/v1/contributing/index.md",
-      "key": "v-08d6a228",
-      "path": "/docs/v1/contributing/",
-      "headers": [
-        {
-          "level": 2,
-          "title": "",
-          "slug": "-11"
-        }
-      ],
-      "lastUpdated": "6/24/2021, 3:20:22 PM"
+      "regularPath": "/docs/v1/credits/",
+      "relativePath": "docs/v1/credits/index.md",
+      "key": "v-7fcb167c",
+      "path": "/docs/v1/credits/",
+      "lastUpdated": "7/2/2021, 4:25:32 PM"
     },
     {
       "frontmatter": {},
@@ -168,27 +168,6 @@ export const siteData = {
       "key": "v-9ada42f4",
       "path": "/docs/v1/database/",
       "lastUpdated": "6/24/2021, 3:20:22 PM"
-    },
-    {
-      "title": "Laravel inter-operability",
-      "frontmatter": {},
-      "regularPath": "/docs/v1/laravel-interop/",
-      "relativePath": "docs/v1/laravel-interop/index.md",
-      "key": "v-0a2fbec8",
-      "path": "/docs/v1/laravel-interop/",
-      "headers": [
-        {
-          "level": 2,
-          "title": "The cheering news!",
-          "slug": "the-cheering-news"
-        },
-        {
-          "level": 2,
-          "title": "The downer!",
-          "slug": "the-downer"
-        }
-      ],
-      "lastUpdated": "6/29/2021, 11:00:06 AM"
     },
     {
       "frontmatter": {},
@@ -214,21 +193,41 @@ export const siteData = {
       "lastUpdated": "6/24/2021, 7:24:35 PM"
     },
     {
-      "title": "MIDDLEWARE",
+      "title": "Laravel inter-operability",
       "frontmatter": {},
-      "regularPath": "/docs/v1/middleware/",
-      "relativePath": "docs/v1/middleware/index.md",
-      "key": "v-029208d8",
-      "path": "/docs/v1/middleware/",
+      "regularPath": "/docs/v1/laravel-interop/",
+      "relativePath": "docs/v1/laravel-interop/index.md",
+      "key": "v-0a2fbec8",
+      "path": "/docs/v1/laravel-interop/",
+      "headers": [
+        {
+          "level": 2,
+          "title": "The cheering news!",
+          "slug": "the-cheering-news"
+        },
+        {
+          "level": 2,
+          "title": "The downer!",
+          "slug": "the-downer"
+        }
+      ],
       "lastUpdated": "6/29/2021, 11:00:06 AM"
     },
     {
+      "title": "Motivation",
       "frontmatter": {},
-      "regularPath": "/docs/v1/plugins/",
-      "relativePath": "docs/v1/plugins/index.md",
-      "key": "v-fa67c888",
-      "path": "/docs/v1/plugins/",
-      "lastUpdated": "6/24/2021, 3:20:22 PM"
+      "regularPath": "/docs/v1/motivation/",
+      "relativePath": "docs/v1/motivation/index.md",
+      "key": "v-78efa5d0",
+      "path": "/docs/v1/motivation/",
+      "headers": [
+        {
+          "level": 2,
+          "title": "Motivation",
+          "slug": "motivation"
+        }
+      ],
+      "lastUpdated": "6/25/2021, 4:12:36 PM"
     },
     {
       "title": "Modules",
@@ -259,23 +258,24 @@ export const siteData = {
           "slug": "modular-binding"
         }
       ],
+      "lastUpdated": "7/2/2021, 4:25:32 PM"
+    },
+    {
+      "title": "MIDDLEWARE",
+      "frontmatter": {},
+      "regularPath": "/docs/v1/middleware/",
+      "relativePath": "docs/v1/middleware/index.md",
+      "key": "v-029208d8",
+      "path": "/docs/v1/middleware/",
       "lastUpdated": "6/29/2021, 11:00:06 AM"
     },
     {
-      "title": "Motivation",
       "frontmatter": {},
-      "regularPath": "/docs/v1/motivation/",
-      "relativePath": "docs/v1/motivation/index.md",
-      "key": "v-78efa5d0",
-      "path": "/docs/v1/motivation/",
-      "headers": [
-        {
-          "level": 2,
-          "title": "Motivation",
-          "slug": "motivation"
-        }
-      ],
-      "lastUpdated": "6/25/2021, 4:12:36 PM"
+      "regularPath": "/docs/v1/plugins/",
+      "relativePath": "docs/v1/plugins/index.md",
+      "key": "v-fa67c888",
+      "path": "/docs/v1/plugins/",
+      "lastUpdated": "6/24/2021, 3:20:22 PM"
     },
     {
       "frontmatter": {},
@@ -284,22 +284,6 @@ export const siteData = {
       "key": "v-26fe0e10",
       "path": "/docs/v1/queues/",
       "lastUpdated": "6/24/2021, 3:20:22 PM"
-    },
-    {
-      "title": "Requests",
-      "frontmatter": {},
-      "regularPath": "/docs/v1/requests/",
-      "relativePath": "docs/v1/requests/index.md",
-      "key": "v-4faa6574",
-      "path": "/docs/v1/requests/",
-      "headers": [
-        {
-          "level": 2,
-          "title": "Requests",
-          "slug": "requests"
-        }
-      ],
-      "lastUpdated": "6/25/2021, 4:12:36 PM"
     },
     {
       "title": "Requirements",
@@ -325,28 +309,7 @@ export const siteData = {
           "slug": "your-first-request"
         }
       ],
-      "lastUpdated": "6/25/2021, 4:12:36 PM"
-    },
-    {
-      "title": "Service Providers",
-      "frontmatter": {},
-      "regularPath": "/docs/v1/service-providers/",
-      "relativePath": "docs/v1/service-providers/index.md",
-      "key": "v-0a380b7c",
-      "path": "/docs/v1/service-providers/",
-      "headers": [
-        {
-          "level": 2,
-          "title": "What are they?",
-          "slug": "what-are-they"
-        },
-        {
-          "level": 2,
-          "title": "Service Integration",
-          "slug": "service-integration"
-        }
-      ],
-      "lastUpdated": "6/25/2021, 4:12:36 PM"
+      "lastUpdated": "7/2/2021, 4:25:32 PM"
     },
     {
       "title": "Graphql clone",
@@ -471,6 +434,35 @@ export const siteData = {
       "lastUpdated": "6/29/2021, 11:00:06 AM"
     },
     {
+      "title": "Service Providers",
+      "frontmatter": {},
+      "regularPath": "/docs/v1/service-providers/",
+      "relativePath": "docs/v1/service-providers/index.md",
+      "key": "v-0a380b7c",
+      "path": "/docs/v1/service-providers/",
+      "headers": [
+        {
+          "level": 2,
+          "title": "What are they?",
+          "slug": "what-are-they"
+        },
+        {
+          "level": 2,
+          "title": "Service Integration",
+          "slug": "service-integration"
+        }
+      ],
+      "lastUpdated": "7/2/2021, 4:25:32 PM"
+    },
+    {
+      "frontmatter": {},
+      "regularPath": "/docs/v1/testing/",
+      "relativePath": "docs/v1/testing/index.md",
+      "key": "v-1a863dbc",
+      "path": "/docs/v1/testing/",
+      "lastUpdated": "6/24/2021, 3:20:22 PM"
+    },
+    {
       "frontmatter": {},
       "regularPath": "/docs/v1/templating/",
       "relativePath": "docs/v1/templating/index.md",
@@ -493,7 +485,7 @@ export const siteData = {
           },
           {
             "title": "Intuitive Design",
-            "details": "Given a penchant for OOP, objects are preferred over strings in all cases (labelling, payloads/DTOs, routing), for instant recognition of its purpose and location. No includes, no folder scanning, no questionable instantiation (during booting or whenever) is done without your consent"
+            "details": "Given a penchant for OOP, class names are preferred over aliases in all cases (labelling, payloads/DTOs, routing), both for instant recognition of its purpose and location, and for auto-wiring them. No includes, no folder scanning, no questionable instantiation (during booting or whenever) is done without your consent"
           },
           {
             "title": "Infinite flexibility",
@@ -521,12 +513,20 @@ export const siteData = {
       "lastUpdated": "6/25/2021, 4:12:36 PM"
     },
     {
+      "title": "Requests",
       "frontmatter": {},
-      "regularPath": "/docs/v1/testing/",
-      "relativePath": "docs/v1/testing/index.md",
-      "key": "v-1a863dbc",
-      "path": "/docs/v1/testing/",
-      "lastUpdated": "6/24/2021, 3:20:22 PM"
+      "regularPath": "/docs/v1/requests/",
+      "relativePath": "docs/v1/requests/index.md",
+      "key": "v-4faa6574",
+      "path": "/docs/v1/requests/",
+      "headers": [
+        {
+          "level": 2,
+          "title": "Requests",
+          "slug": "requests"
+        }
+      ],
+      "lastUpdated": "6/25/2021, 4:12:36 PM"
     }
   ],
   "themeConfig": {
