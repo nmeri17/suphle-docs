@@ -34,8 +34,11 @@ This creates the following folder structure in the current working directory
 |	|	|	|	HelloWorld.php
 |	|	|___Templates
 |	|	|	|	RepeatSpoken.php
+|	|	|___Tests
+|	|	|	|___Unit
 |___Interactions
 |	|	MainModuleInterface.php
+|___Models
 |
 ```
 Don't fret about what the purpose of the files you aren't familiar with is. Soon enough, we will get to understand them in depth.

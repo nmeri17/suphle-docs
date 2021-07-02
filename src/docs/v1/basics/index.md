@@ -1,3 +1,5 @@
+# Suphple Basics
+
 ## Anatomy of a Suphple module
 
 ![suphple-module](/suphple-module.jpeg)

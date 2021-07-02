@@ -54,7 +54,7 @@ export const siteData = {
       "lastUpdated": "6/24/2021, 3:20:22 PM"
     },
     {
-      "title": "Anatomy of a Suphple module",
+      "title": "Suphple Basics",
       "frontmatter": {},
       "regularPath": "/docs/v1/basics/",
       "relativePath": "docs/v1/basics/index.md",
@@ -72,7 +72,7 @@ export const siteData = {
           "slug": "request-lifecycle"
         }
       ],
-      "lastUpdated": "6/25/2021, 4:12:36 PM"
+      "lastUpdated": "6/29/2021, 11:00:06 AM"
     },
     {
       "frontmatter": {},
@@ -83,13 +83,44 @@ export const siteData = {
       "lastUpdated": "6/24/2021, 3:20:22 PM"
     },
     {
-      "title": "CONTAINERS",
+      "title": "Credits",
+      "frontmatter": {},
+      "regularPath": "/docs/v1/credits/",
+      "relativePath": "docs/v1/credits/index.md",
+      "key": "v-7fcb167c",
+      "path": "/docs/v1/credits/",
+      "lastUpdated": "6/25/2021, 4:12:36 PM"
+    },
+    {
+      "title": "Containers",
       "frontmatter": {},
       "regularPath": "/docs/v1/container/",
       "relativePath": "docs/v1/container/index.md",
       "key": "v-5073c5dc",
       "path": "/docs/v1/container/",
-      "lastUpdated": "6/24/2021, 3:20:22 PM"
+      "headers": [
+        {
+          "level": 2,
+          "title": "Introduction",
+          "slug": "introduction"
+        },
+        {
+          "level": 2,
+          "title": "Auto-wiring and dependency injection",
+          "slug": "auto-wiring-and-dependency-injection"
+        },
+        {
+          "level": 2,
+          "title": "Contextual Binding",
+          "slug": "contextual-binding"
+        },
+        {
+          "level": 2,
+          "title": "Circular dependencies",
+          "slug": "circular-dependencies"
+        }
+      ],
+      "lastUpdated": "6/29/2021, 11:00:06 AM"
     },
     {
       "title": "Services and controllers",
@@ -123,31 +154,6 @@ export const siteData = {
       "lastUpdated": "6/24/2021, 3:20:22 PM"
     },
     {
-      "title": "Credits",
-      "frontmatter": {},
-      "regularPath": "/docs/v1/credits/",
-      "relativePath": "docs/v1/credits/index.md",
-      "key": "v-7fcb167c",
-      "path": "/docs/v1/credits/",
-      "lastUpdated": "6/25/2021, 4:12:36 PM"
-    },
-    {
-      "frontmatter": {},
-      "regularPath": "/docs/v1/database/",
-      "relativePath": "docs/v1/database/index.md",
-      "key": "v-9ada42f4",
-      "path": "/docs/v1/database/",
-      "lastUpdated": "6/24/2021, 3:20:22 PM"
-    },
-    {
-      "frontmatter": {},
-      "regularPath": "/docs/v1/error-handling/",
-      "relativePath": "docs/v1/error-handling/index.md",
-      "key": "v-7b74bfe8",
-      "path": "/docs/v1/error-handling/",
-      "lastUpdated": "6/24/2021, 3:20:22 PM"
-    },
-    {
       "frontmatter": {},
       "regularPath": "/docs/v1/events/",
       "relativePath": "docs/v1/events/index.md",
@@ -157,18 +163,11 @@ export const siteData = {
     },
     {
       "frontmatter": {},
-      "regularPath": "/docs/v1/flows/",
-      "relativePath": "docs/v1/flows/index.md",
-      "key": "v-1d41a048",
-      "path": "/docs/v1/flows/",
-      "headers": [
-        {
-          "level": 2,
-          "title": "",
-          "slug": "-4"
-        }
-      ],
-      "lastUpdated": "6/24/2021, 7:24:35 PM"
+      "regularPath": "/docs/v1/database/",
+      "relativePath": "docs/v1/database/index.md",
+      "key": "v-9ada42f4",
+      "path": "/docs/v1/database/",
+      "lastUpdated": "6/24/2021, 3:20:22 PM"
     },
     {
       "title": "Laravel inter-operability",
@@ -189,7 +188,30 @@ export const siteData = {
           "slug": "the-downer"
         }
       ],
-      "lastUpdated": "6/25/2021, 4:12:36 PM"
+      "lastUpdated": "6/29/2021, 11:00:06 AM"
+    },
+    {
+      "frontmatter": {},
+      "regularPath": "/docs/v1/error-handling/",
+      "relativePath": "docs/v1/error-handling/index.md",
+      "key": "v-7b74bfe8",
+      "path": "/docs/v1/error-handling/",
+      "lastUpdated": "6/24/2021, 3:20:22 PM"
+    },
+    {
+      "frontmatter": {},
+      "regularPath": "/docs/v1/flows/",
+      "relativePath": "docs/v1/flows/index.md",
+      "key": "v-1d41a048",
+      "path": "/docs/v1/flows/",
+      "headers": [
+        {
+          "level": 2,
+          "title": "",
+          "slug": "-4"
+        }
+      ],
+      "lastUpdated": "6/24/2021, 7:24:35 PM"
     },
     {
       "title": "MIDDLEWARE",
@@ -198,6 +220,14 @@ export const siteData = {
       "relativePath": "docs/v1/middleware/index.md",
       "key": "v-029208d8",
       "path": "/docs/v1/middleware/",
+      "lastUpdated": "6/29/2021, 11:00:06 AM"
+    },
+    {
+      "frontmatter": {},
+      "regularPath": "/docs/v1/plugins/",
+      "relativePath": "docs/v1/plugins/index.md",
+      "key": "v-fa67c888",
+      "path": "/docs/v1/plugins/",
       "lastUpdated": "6/24/2021, 3:20:22 PM"
     },
     {
@@ -217,9 +247,19 @@ export const siteData = {
           "level": 2,
           "title": "When to create a new module",
           "slug": "when-to-create-a-new-module"
+        },
+        {
+          "level": 2,
+          "title": "External Configuration",
+          "slug": "external-configuration"
+        },
+        {
+          "level": 2,
+          "title": "Modular binding",
+          "slug": "modular-binding"
         }
       ],
-      "lastUpdated": "6/25/2021, 4:12:36 PM"
+      "lastUpdated": "6/29/2021, 11:00:06 AM"
     },
     {
       "title": "Motivation",
@@ -236,14 +276,6 @@ export const siteData = {
         }
       ],
       "lastUpdated": "6/25/2021, 4:12:36 PM"
-    },
-    {
-      "frontmatter": {},
-      "regularPath": "/docs/v1/plugins/",
-      "relativePath": "docs/v1/plugins/index.md",
-      "key": "v-fa67c888",
-      "path": "/docs/v1/plugins/",
-      "lastUpdated": "6/24/2021, 3:20:22 PM"
     },
     {
       "frontmatter": {},
@@ -291,6 +323,27 @@ export const siteData = {
           "level": 2,
           "title": "Your first request",
           "slug": "your-first-request"
+        }
+      ],
+      "lastUpdated": "6/25/2021, 4:12:36 PM"
+    },
+    {
+      "title": "Service Providers",
+      "frontmatter": {},
+      "regularPath": "/docs/v1/service-providers/",
+      "relativePath": "docs/v1/service-providers/index.md",
+      "key": "v-0a380b7c",
+      "path": "/docs/v1/service-providers/",
+      "headers": [
+        {
+          "level": 2,
+          "title": "What are they?",
+          "slug": "what-are-they"
+        },
+        {
+          "level": 2,
+          "title": "Service Integration",
+          "slug": "service-integration"
         }
       ],
       "lastUpdated": "6/25/2021, 4:12:36 PM"
@@ -344,23 +397,7 @@ export const siteData = {
           "slug": "routing"
         }
       ],
-      "lastUpdated": "6/25/2021, 4:12:36 PM"
-    },
-    {
-      "title": "SERVICE PROVIDERS",
-      "frontmatter": {},
-      "regularPath": "/docs/v1/service-providers/",
-      "relativePath": "docs/v1/service-providers/index.md",
-      "key": "v-0a380b7c",
-      "path": "/docs/v1/service-providers/",
-      "headers": [
-        {
-          "level": 2,
-          "title": "SERVICE PROVIDERS",
-          "slug": "service-providers"
-        }
-      ],
-      "lastUpdated": "6/25/2021, 4:12:36 PM"
+      "lastUpdated": "6/29/2021, 11:00:06 AM"
     },
     {
       "title": "Routing",
@@ -431,15 +468,7 @@ export const siteData = {
           "slug": "canaries-and-feature-toggling"
         }
       ],
-      "lastUpdated": "6/25/2021, 4:12:36 PM"
-    },
-    {
-      "frontmatter": {},
-      "regularPath": "/docs/v1/testing/",
-      "relativePath": "docs/v1/testing/index.md",
-      "key": "v-1a863dbc",
-      "path": "/docs/v1/testing/",
-      "lastUpdated": "6/24/2021, 3:20:22 PM"
+      "lastUpdated": "6/29/2021, 11:00:06 AM"
     },
     {
       "frontmatter": {},
@@ -490,6 +519,14 @@ export const siteData = {
         }
       ],
       "lastUpdated": "6/25/2021, 4:12:36 PM"
+    },
+    {
+      "frontmatter": {},
+      "regularPath": "/docs/v1/testing/",
+      "relativePath": "docs/v1/testing/index.md",
+      "key": "v-1a863dbc",
+      "path": "/docs/v1/testing/",
+      "lastUpdated": "6/24/2021, 3:20:22 PM"
     }
   ],
   "themeConfig": {
