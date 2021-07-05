@@ -10,10 +10,10 @@ Hurry to your CLI and run
 composer require nmeri17/suphple
 ```
 
-Afterwards, scaffold your main module with
+Afterwards, initialize your project with
 
 ```bash
-php suphple init --m Main
+php suphple create-project --m Main
 ```
 
 This creates the following folder structure in the current working directory
@@ -26,6 +26,9 @@ This creates the following folder structure in the current working directory
 |	|___Main
 |	|	|	MainDescriptor.php
 |	|	|	MainExports.php
+|	|	|___Config
+|	|	|	|	FileConfig.php
+|	|	|	|	RouterConfig.php
 |	|	|___Controllers
 |	|	|	|	MainController.php
 |	|	|___Routes
@@ -35,13 +38,14 @@ This creates the following folder structure in the current working directory
 |	|	|___Templates
 |	|	|	|	RepeatSpoken.php
 |	|	|___Tests
+|	|	|	|	phpunit.xml
 |	|	|	|___Unit
 |___Interactions
-|	|	MainModuleInterface.php
+|	|	IMainModule.php
 |___Models
-|
+|___Tests
 ```
-Don't fret about what the purpose of the files you aren't familiar with is. Soon enough, we will get to understand them in depth.
+Don't fret about what the purpose of the files you aren't familiar with is. Soon enough, you will get to understand them in depth, enough to restructure it to more exquisite tastes.
 
 ## Your first request
 From this point on, if we have a web server running, we can visit [http://localhost:8080/main](http://localhost/main), and see a response.

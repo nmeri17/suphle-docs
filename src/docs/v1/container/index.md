@@ -36,6 +36,10 @@ In both scenarios, the desired outcome can be different. As earlier mentioned, S
 
 This is the genesis of all contextual binding. The type being provided is supplied, and a fluent interface is returned for definition of the dependencies.
 
+Bear in mind that while hydrating arguments for a provisioned type, if those any of the arguments were equally provisioned, their provided context will take precedence over that of the calling type
+
+/// Example
+
 - `whenTypeAny()`
 
 Equally functions as `whenType`, however, it enables this definition to apply to every other class that wasn't provided
