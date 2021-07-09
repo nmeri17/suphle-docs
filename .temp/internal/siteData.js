@@ -39,6 +39,14 @@ export const siteData = {
     },
     {
       "frontmatter": {},
+      "regularPath": "/docs/v1/config/",
+      "relativePath": "docs/v1/config/index.md",
+      "key": "v-07fc9510",
+      "path": "/docs/v1/config/",
+      "lastUpdated": "6/24/2021, 3:20:22 PM"
+    },
+    {
+      "frontmatter": {},
       "regularPath": "/docs/v1/adapters/",
       "relativePath": "docs/v1/adapters/index.md",
       "key": "v-02801218",
@@ -75,6 +83,24 @@ export const siteData = {
       "lastUpdated": "7/2/2021, 4:25:32 PM"
     },
     {
+      "title": "Credits",
+      "frontmatter": {},
+      "regularPath": "/docs/v1/credits/",
+      "relativePath": "docs/v1/credits/index.md",
+      "key": "v-7fcb167c",
+      "path": "/docs/v1/credits/",
+      "lastUpdated": "7/5/2021, 5:24:17 PM"
+    },
+    {
+      "title": "Contributing",
+      "frontmatter": {},
+      "regularPath": "/docs/v1/contributing/",
+      "relativePath": "docs/v1/contributing/index.md",
+      "key": "v-08d6a228",
+      "path": "/docs/v1/contributing/",
+      "lastUpdated": "7/5/2021, 5:24:17 PM"
+    },
+    {
       "title": "Containers",
       "frontmatter": {},
       "regularPath": "/docs/v1/container/",
@@ -94,8 +120,18 @@ export const siteData = {
         },
         {
           "level": 2,
+          "title": "Sub-provisions and super types",
+          "slug": "sub-provisions-and-super-types"
+        },
+        {
+          "level": 2,
           "title": "Contextual Binding",
           "slug": "contextual-binding"
+        },
+        {
+          "level": 2,
+          "title": "Namespace rewriting",
+          "slug": "namespace-rewriting"
         },
         {
           "level": 2,
@@ -103,33 +139,10 @@ export const siteData = {
           "slug": "circular-dependencies"
         }
       ],
-      "lastUpdated": "7/2/2021, 4:25:32 PM"
+      "lastUpdated": "7/5/2021, 5:24:17 PM"
     },
     {
-      "frontmatter": {},
-      "regularPath": "/docs/v1/config/",
-      "relativePath": "docs/v1/config/index.md",
-      "key": "v-07fc9510",
-      "path": "/docs/v1/config/",
-      "lastUpdated": "6/24/2021, 3:20:22 PM"
-    },
-    {
-      "frontmatter": {},
-      "regularPath": "/docs/v1/contributing/",
-      "relativePath": "docs/v1/contributing/index.md",
-      "key": "v-08d6a228",
-      "path": "/docs/v1/contributing/",
-      "headers": [
-        {
-          "level": 2,
-          "title": "",
-          "slug": "-11"
-        }
-      ],
-      "lastUpdated": "6/24/2021, 3:20:22 PM"
-    },
-    {
-      "title": "Services and controllers",
+      "title": "Controllers",
       "frontmatter": {},
       "regularPath": "/docs/v1/controllers/",
       "relativePath": "docs/v1/controllers/index.md",
@@ -138,28 +151,78 @@ export const siteData = {
       "headers": [
         {
           "level": 2,
-          "title": "Services and controllers",
-          "slug": "services-and-controllers"
+          "title": "Introduction",
+          "slug": "introduction"
+        },
+        {
+          "level": 2,
+          "title": "Model hydration",
+          "slug": "model-hydration"
+        },
+        {
+          "level": 2,
+          "title": "Permitted services",
+          "slug": "permitted-services"
+        },
+        {
+          "level": 2,
+          "title": "Config",
+          "slug": "config"
+        },
+        {
+          "level": 2,
+          "title": "Atomic services",
+          "slug": "atomic-services"
+        },
+        {
+          "level": 2,
+          "title": "Logic Factories",
+          "slug": "logic-factories"
         }
       ],
       "lastUpdated": "6/25/2021, 4:12:36 PM"
     },
     {
-      "title": "Credits",
+      "title": "Flows",
       "frontmatter": {},
-      "regularPath": "/docs/v1/credits/",
-      "relativePath": "docs/v1/credits/index.md",
-      "key": "v-7fcb167c",
-      "path": "/docs/v1/credits/",
-      "lastUpdated": "7/2/2021, 4:25:32 PM"
+      "regularPath": "/docs/v1/flows/",
+      "relativePath": "docs/v1/flows/index.md",
+      "key": "v-1d41a048",
+      "path": "/docs/v1/flows/",
+      "headers": [
+        {
+          "level": 2,
+          "title": "Introduction",
+          "slug": "introduction"
+        },
+        {
+          "level": 2,
+          "title": "",
+          "slug": "-4"
+        }
+      ],
+      "lastUpdated": "7/5/2021, 5:24:17 PM"
     },
     {
+      "title": "Events",
       "frontmatter": {},
       "regularPath": "/docs/v1/events/",
       "relativePath": "docs/v1/events/index.md",
       "key": "v-3f34248a",
       "path": "/docs/v1/events/",
-      "lastUpdated": "6/24/2021, 3:20:22 PM"
+      "headers": [
+        {
+          "level": 2,
+          "title": "Introduction",
+          "slug": "introduction"
+        },
+        {
+          "level": 2,
+          "title": "Listeners",
+          "slug": "listeners"
+        }
+      ],
+      "lastUpdated": "7/2/2021, 4:45:14 PM"
     },
     {
       "frontmatter": {},
@@ -176,21 +239,6 @@ export const siteData = {
       "key": "v-7b74bfe8",
       "path": "/docs/v1/error-handling/",
       "lastUpdated": "6/24/2021, 3:20:22 PM"
-    },
-    {
-      "frontmatter": {},
-      "regularPath": "/docs/v1/flows/",
-      "relativePath": "docs/v1/flows/index.md",
-      "key": "v-1d41a048",
-      "path": "/docs/v1/flows/",
-      "headers": [
-        {
-          "level": 2,
-          "title": "",
-          "slug": "-4"
-        }
-      ],
-      "lastUpdated": "6/24/2021, 7:24:35 PM"
     },
     {
       "title": "Laravel inter-operability",
@@ -223,11 +271,44 @@ export const siteData = {
       "headers": [
         {
           "level": 2,
-          "title": "Motivation",
-          "slug": "motivation"
+          "title": "Goal",
+          "slug": "goal"
         }
       ],
       "lastUpdated": "6/25/2021, 4:12:36 PM"
+    },
+    {
+      "title": "MIDDLEWARE",
+      "frontmatter": {},
+      "regularPath": "/docs/v1/middleware/",
+      "relativePath": "docs/v1/middleware/index.md",
+      "key": "v-029208d8",
+      "path": "/docs/v1/middleware/",
+      "lastUpdated": "6/29/2021, 11:00:06 AM"
+    },
+    {
+      "frontmatter": {},
+      "regularPath": "/docs/v1/plugins/",
+      "relativePath": "docs/v1/plugins/index.md",
+      "key": "v-fa67c888",
+      "path": "/docs/v1/plugins/",
+      "lastUpdated": "6/24/2021, 3:20:22 PM"
+    },
+    {
+      "title": "Queues",
+      "frontmatter": {},
+      "regularPath": "/docs/v1/queues/",
+      "relativePath": "docs/v1/queues/index.md",
+      "key": "v-26fe0e10",
+      "path": "/docs/v1/queues/",
+      "headers": [
+        {
+          "level": 2,
+          "title": "Introduction",
+          "slug": "introduction"
+        }
+      ],
+      "lastUpdated": "6/24/2021, 3:20:22 PM"
     },
     {
       "title": "Modules",
@@ -261,31 +342,6 @@ export const siteData = {
       "lastUpdated": "7/2/2021, 4:25:32 PM"
     },
     {
-      "title": "MIDDLEWARE",
-      "frontmatter": {},
-      "regularPath": "/docs/v1/middleware/",
-      "relativePath": "docs/v1/middleware/index.md",
-      "key": "v-029208d8",
-      "path": "/docs/v1/middleware/",
-      "lastUpdated": "6/29/2021, 11:00:06 AM"
-    },
-    {
-      "frontmatter": {},
-      "regularPath": "/docs/v1/plugins/",
-      "relativePath": "docs/v1/plugins/index.md",
-      "key": "v-fa67c888",
-      "path": "/docs/v1/plugins/",
-      "lastUpdated": "6/24/2021, 3:20:22 PM"
-    },
-    {
-      "frontmatter": {},
-      "regularPath": "/docs/v1/queues/",
-      "relativePath": "docs/v1/queues/index.md",
-      "key": "v-26fe0e10",
-      "path": "/docs/v1/queues/",
-      "lastUpdated": "6/24/2021, 3:20:22 PM"
-    },
-    {
       "title": "Requirements",
       "frontmatter": {},
       "regularPath": "/docs/v1/quick-start/",
@@ -309,7 +365,44 @@ export const siteData = {
           "slug": "your-first-request"
         }
       ],
+      "lastUpdated": "7/5/2021, 5:24:17 PM"
+    },
+    {
+      "title": "Service Providers",
+      "frontmatter": {},
+      "regularPath": "/docs/v1/service-providers/",
+      "relativePath": "docs/v1/service-providers/index.md",
+      "key": "v-0a380b7c",
+      "path": "/docs/v1/service-providers/",
+      "headers": [
+        {
+          "level": 2,
+          "title": "What are they?",
+          "slug": "what-are-they"
+        },
+        {
+          "level": 2,
+          "title": "Service Integration",
+          "slug": "service-integration"
+        }
+      ],
       "lastUpdated": "7/2/2021, 4:25:32 PM"
+    },
+    {
+      "title": "Requests",
+      "frontmatter": {},
+      "regularPath": "/docs/v1/requests/",
+      "relativePath": "docs/v1/requests/index.md",
+      "key": "v-4faa6574",
+      "path": "/docs/v1/requests/",
+      "headers": [
+        {
+          "level": 2,
+          "title": "Requests",
+          "slug": "requests"
+        }
+      ],
+      "lastUpdated": "6/25/2021, 4:12:36 PM"
     },
     {
       "title": "Graphql clone",
@@ -434,40 +527,44 @@ export const siteData = {
       "lastUpdated": "6/29/2021, 11:00:06 AM"
     },
     {
-      "title": "Service Providers",
-      "frontmatter": {},
-      "regularPath": "/docs/v1/service-providers/",
-      "relativePath": "docs/v1/service-providers/index.md",
-      "key": "v-0a380b7c",
-      "path": "/docs/v1/service-providers/",
-      "headers": [
-        {
-          "level": 2,
-          "title": "What are they?",
-          "slug": "what-are-they"
-        },
-        {
-          "level": 2,
-          "title": "Service Integration",
-          "slug": "service-integration"
-        }
-      ],
-      "lastUpdated": "7/2/2021, 4:25:32 PM"
-    },
-    {
+      "title": "Testing",
       "frontmatter": {},
       "regularPath": "/docs/v1/testing/",
       "relativePath": "docs/v1/testing/index.md",
       "key": "v-1a863dbc",
       "path": "/docs/v1/testing/",
-      "lastUpdated": "6/24/2021, 3:20:22 PM"
-    },
-    {
-      "frontmatter": {},
-      "regularPath": "/docs/v1/templating/",
-      "relativePath": "docs/v1/templating/index.md",
-      "key": "v-1f172d64",
-      "path": "/docs/v1/templating/",
+      "headers": [
+        {
+          "level": 2,
+          "title": "Introduction",
+          "slug": "introduction"
+        },
+        {
+          "level": 2,
+          "title": "Tests generation",
+          "slug": "tests-generation"
+        },
+        {
+          "level": 2,
+          "title": "Acceptance tests",
+          "slug": "acceptance-tests"
+        },
+        {
+          "level": 2,
+          "title": "Feature tests",
+          "slug": "feature-tests"
+        },
+        {
+          "level": 3,
+          "title": "Flows",
+          "slug": "flows"
+        },
+        {
+          "level": 2,
+          "title": "Integration tests",
+          "slug": "integration-tests"
+        }
+      ],
       "lastUpdated": "6/24/2021, 3:20:22 PM"
     },
     {
@@ -510,23 +607,15 @@ export const siteData = {
           "slug": "closing-remarks"
         }
       ],
-      "lastUpdated": "6/25/2021, 4:12:36 PM"
+      "lastUpdated": "7/2/2021, 4:45:14 PM"
     },
     {
-      "title": "Requests",
       "frontmatter": {},
-      "regularPath": "/docs/v1/requests/",
-      "relativePath": "docs/v1/requests/index.md",
-      "key": "v-4faa6574",
-      "path": "/docs/v1/requests/",
-      "headers": [
-        {
-          "level": 2,
-          "title": "Requests",
-          "slug": "requests"
-        }
-      ],
-      "lastUpdated": "6/25/2021, 4:12:36 PM"
+      "regularPath": "/docs/v1/templating/",
+      "relativePath": "docs/v1/templating/index.md",
+      "key": "v-1f172d64",
+      "path": "/docs/v1/templating/",
+      "lastUpdated": "6/24/2021, 3:20:22 PM"
     }
   ],
   "themeConfig": {

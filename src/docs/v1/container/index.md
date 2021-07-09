@@ -5,8 +5,7 @@ Container pages are not the kind typically visited while perusing documentation.
 ## Introduction
 At the most basic level, they are object caches — you store object instances in them so you don't instantiate multiple versions of the same class and have them running all over the place. As applications grow more complex, we look onto them to fulfill needs beyond just object caching.
 
-Containers are the missing feature of every back end language. They are associated with making concretes out of interfaces but take care of other details such as hydrating and wiring arguments. One characteristic of a 
-good back end framework is that its container is both versatile and powerful enough for the developer to never pull objects out of it directly.
+Containers are the missing feature of every back end language. They are associated with making concretes out of interfaces but take care of other details such as hydrating and wiring arguments. One characteristic of a good back end framework is that its container is both versatile and powerful enough for the developer to never pull objects out of it directly.
 
 For the dynamism and OOP flexibility Suphple programs are expected to have, developers should not shy away from actively interacting with the container. The framework itself heavily relies on it to achieve the modular architecture.
 
@@ -22,7 +21,18 @@ Suphple internally uses this method to hydrate entity instances. Those entities 
 
 Describe the fresh instance steps
 
-Pulling classes doesn't compare against types of provided entities. It simply won't work given the way objects are being stored for fast retrieval i.e. direct lookup, which is what type-hinting uses. In cases where this behavior is desirable, you will be better served by using the `sub` parameter
+## Sub-provisions and super types
+Super classes aren't returned when consumers try to pull their sub classes because there's simply no way for the container to know a sub exists, given the way objects are being stored for fast retrieval i.e. direct lookup. However, providing base classes can be served to a known type of consumers. 
+To illustrate, consider (convert this to code) X is a sub-class of Y, B is the sub of A
+
+1) A pulls X --> only works if A provided X
+2) B pulls Y --> works if A provided Y
+
+In order to achieve first scenario, convert Y to an interface and provide X as an implementation
+///
+
+The second scenario is useful when a variable group of classes with a base type need to provide an immutable or unchanging instance. In cases where this behavior is desirable, you will be better served by using the `sub` parameter
+///
 
 ## Contextual Binding
 If you are transitioning from front-end development, think of this as the back-end's version of state management. As earlier discussed, the Container is a repository of objects floating around in memory. Each of those objects can exist in states differing from what they were when instantiated. Contextual binding enables us assign objects in these desired states to diverse callers. This means that when hydrating those callers, or when they explicitly request these objects, predefined instances will be handed over to them. This *pre-definition* is known as object/service **provisioning**. There are a few ways to provision objects, either depending on how you intend the caller receives the object, or [when object should be hydrated](/docs/v1/service-providers).
@@ -30,13 +40,13 @@ If you are transitioning from front-end development, think of this as the back-e
 Callers can either consume dependencies from their constructors or by directly invoking [`getClass`](#auto-wiring-and-dependency-injection)
 
 // example
-In both scenarios, the desired outcome can be different. As earlier mentioned, Suphple internally makes heavy use of calls to `getClass`, so you don't have to unless you are a [plugin developer](/docs/v1/plugins). Think of it as an avenue to replace the regular hydration of those classes.
+In both scenarios, the desired outcome can be different. As earlier mentioned, Suphple internally makes heavy use of calls to `getClass`, so you don't have to unless you are a [plugin developer](/docs/v1/plugins). It's mostly an avenue to replace the regular hydration of those classes.
 
 - `whenType(string ConsumerClass)`
 
 This is the genesis of all contextual binding. The type being provided is supplied, and a fluent interface is returned for definition of the dependencies.
 
-Bear in mind that while hydrating arguments for a provisioned type, if those any of the arguments were equally provisioned, their provided context will take precedence over that of the calling type
+[[Review]] Bear in mind that while hydrating arguments for a provisioned type, if those any of the arguments were equally provisioned, their provided context will take precedence over that of the calling type
 
 /// Example
 
@@ -52,9 +62,10 @@ Example
 
 Notice it works with `whenType`. Calls to any of the `needs` methods without first defining what type is being provided will result in an exception.
 
-Container->spaceNeedsFrom: Doesn't make services implementing interfaces 
-strictly required. Useful while maybe refactoring from one service 
-implementation to another, on a scale spanning multiple controllers
+The above invocation may be familiar to those who have heard of the term Service-Location. 
+
+## Namespace rewriting
+spaceNeedsFrom: Doesn't make services implementing interfaces strictly required. Useful while maybe refactoring from one service implementation to another, on a scale spanning multiple controllers
 
 Modules\CartModule\Controllers\CarController
 Modules\CartModule\Contracts\ICarService // or CarService
