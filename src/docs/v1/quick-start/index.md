@@ -35,7 +35,7 @@ This creates the following folder structure in the current working directory
 |	|	|	|	MainBrowserRoutes.php
 |	|	|___Requests
 |	|	|	|	HelloWorld.php
-|	|	|___Templates
+|	|	|___Markup
 |	|	|	|	RepeatSpoken.php
 |	|	|___Tests
 |	|	|	|	phpunit.xml

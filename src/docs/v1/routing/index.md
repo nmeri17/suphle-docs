@@ -72,15 +72,15 @@ class EmployeeRoutes extends BaseCollection {
 		return $this->_get(new Markup("agentsHandler", "show-agents"));
 	}
 	
-	public function OTHER_STAFFh_id() {
+	public function OTHER__STAFFu_id() {
 		
 		return $this->_get(new Markup("staffHandler", "show-staff"));
 	}
 }
 ```
-The first method, `FIELD__AGENTSh_id()` corresponds to the following path [http://example.com/field-agents/15](http://example.com/field-agents/15), while the `OTHER_STAFFh_id()` responds to [http://example.com/other_staff/32](http://example.com/other_staff/32). With some vigilance, you may observe the introduction of the letter **h** just after each static segment.
+The first method, `FIELD__AGENTSh_id()` corresponds to the following path [http://example.com/field-agents/15](http://example.com/field-agents/15), while the `OTHER__STAFFu_id()` responds to [http://example.com/other_staff/32](http://example.com/other_staff/32). With some vigilance, you may observe the introduction of the letters **h** and **u** just after each static segment.
 
-To recap, static segments ending with a **h** will have all their underscores replaced by a delimiter. When multiple upper-cased words are separated by double underscores, that delimiter is a hyphen. One underscore translates to a real-life underscore.
+To recap, static segments ending with a **h** will have all their underscores replaced by a hyphen, while those ending with a **u** will be replaced with underscores.
 
 Remarkable, isn't it?! We've managed to replace all the incompatible URL tokens with string equivalents to fit our every purpose. One last thing, though.
 
