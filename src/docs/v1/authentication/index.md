@@ -1,22 +1,15 @@
-##AUTH
-*Login request
-        - matches config login route? pick config login service and attempt 
-login
-        - set this service as the renderer controllers
-        - depending on a)'s result, one of b)'s renderers are executed
-        - executioner expects to receive an AuthStorage that determines 
-whether it's session or jwt request is getting back
+## Authentication
 
+Suphple will not hold you to ransom on what payload field names or database columns to authenticate your users against. This means you are at liberty to use as many fields as you deem fit, in any comparison requirement demanded by the business. Keep in mind that Suphple ships with default comparison for the generic app, which we will soon look at.
 
-#Review this
-Request for auth route comes in:
-        - depending on the authentication type (jwt/session/custom ), user 
-id is retrieved
-        - this id is forwarded to a reliable person accessible to 
-controllers/request/container who are interested in retrieving auth user
-        - in the background, he receives a concrete orm from any container 
-available and can hydrate a user out of the id he was given
-        - he is also overwritable in case dev wants a custom way of user 
-hydration
-        - he's the one responseManager interfaces with and decides a user 
-is unauthenticated when his id is missing
+As previously discussed, login requests are prioritized by the router. The login flow begins from the paths set for authentication in the config. Requests matching these paths are then forwarded to services attached to it for authentication to be attempted and a response derived.
+
+## Completing the login flow
+In order to integrate the default login system to our app, we will need to connect it to our user model/entity
+
+## Customization
+The entry point set on the config to customize login requests is `BrowserAuthRepo`.
+/// show config. are those paths hard compared or can contain query parameters?
+
+You can extend then switch with a repo containing desired comparers
+

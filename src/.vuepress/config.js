@@ -69,7 +69,7 @@ module.exports = {
 
       ["/docs/v1/testing/", "Testing"], // interlude
 
-      ["/docs/v1/routing/", "Routing"], ["/docs/v1/requests/", "Requests"], ["/docs/v1/controllers/", "Controllers"],
+      ["/docs/v1/routing/", "Routing"], ["/docs/v1/controllers/", "Controllers"],
 
       ["/docs/v1/events/", "Events"], ["/docs/v1/queues/", "Queues"], ["/docs/v1/config/", "Config"],
 

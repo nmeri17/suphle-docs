@@ -11,7 +11,7 @@ features:
   details: Given a penchant for OOP, class names are preferred over aliases in all cases (labelling, payloads/DTOs, routing), both for instant recognition of its purpose and location, and for auto-wiring them. No includes, no folder scanning, no questionable instantiation (during booting or whenever) is done without your consent
 - title: Infinite flexibility
   details: Every step of the core experience is both replaceable and configurable in order to maximize your comfort. No conventional assumptions are made regarding project's requirements
-footer: Made by Nmeri Alphonsus with ❤️
+footer: Made with ❤️ by Nmeri Alphonsus
 ---
 
 
