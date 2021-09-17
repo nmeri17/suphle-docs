@@ -4,7 +4,7 @@
 
 ![suphple-module](/suphple-module.jpeg)
 
-The illustration above is a bird's eye-view of each module's ultimate structure. The request gets to the framework first, which then utilizes the layers above and around it to produce a response. The two circles at the bottom represent the outskirts of the module, which can be imagined as a link to other modules with similar structure. They ultimately converge at your app's [entry point](/docs/v1/modules#entry-point), where you will have mechanisms that act as glue to hold them all together.
+The illustration above is a bird's eye-view of each module's ultimate structure. The request gets to the framework first, which then utilizes the layers above and around it to produce a response. The two circles at the bottom represent the outskirts of the module, which can be imagined as a link to other modules with similar structure. They ultimately converge at your [app's entry point](/docs/v1/modules#app-entry-point), where you will have mechanisms that act as glue to hold them all together.
 
 The segments which a user's request cuts through are the ones you are ~~likely~~ expected to change frequently -- otherwise called "moving parts". They are the ones we want to get right in a way that allows them remain elegant both during and after modification.
 

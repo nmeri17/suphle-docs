@@ -42,7 +42,7 @@ Here, the services do not care about presentation format (which is the controlle
 
 # Services
 
-
+Explain what ReboundsEvents, CommandService do (assumes the underlying method is laden with db calls to numerous tables)
 
 ## Logic Factories
 
