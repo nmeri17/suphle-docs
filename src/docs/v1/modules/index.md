@@ -5,9 +5,11 @@ One of the great dividends of building opinionated structures is that it solves 
 ---
 
 ## The what and why
-In lower-level terms, modules come in handy when we intend to compose systems with detachable parts. That characteristic means they can be developed and tested independently, integrated without risk of crumbling the existing project. These conditions hold true as long as the incoming module and existing project are not interwoven. When they are, it becomes imperative that their **integration** is thoroughly tested.
+In lower-level terms, modules come in handy when we intend to compose systems with detachable parts. That characteristic means they can be developed and tested independently, integrated without risk of crumbling the existing project. These conditions hold true as long as the incoming module and the existing project are not interwoven. When they are, it becomes imperative that their **integration** is thoroughly tested.
 
-Another indicator of autonomy is them having the same route prefix. It's usually safer for unrelated concepts to start out as separate modules dependent on each other, and only get merged into one when the interactions between them becomes more than trivial. If module A's controller is dominated by calls to different services borrowed from module B that it depends on, it could mean they belong together.
+Note that modules shouldn't be shoe-horned into every project simply because they exist or are considered a cool fad. They are better suited for rapid development environments, AGILE settings where features will be likely short-lived, activated and deactivated.
+
+It's usually safer for concepts to start out as separate modules dependent on each other, and only get merged into one when the interactions between them becomes more than trivial. If module A's controller is dominated by calls to different services borrowed from module B that it depends on, it could mean they belong together.
 
 Modules comprise of whatever arrangement of classes we intend on introducing to our application as a whole. In order to achieve this, we will need to define a sub-class of `Suphple\App\ModuleDescriptor` which will be included in our application's list of modules.
 
@@ -42,7 +44,7 @@ This class allows us expose desired functionality to its module's consumers. In 
 ### Decoupling Siblings
 - `exportsImplements():string`
 
-Decoupling and detachment go hand in hand i.e. if modules are expected be detached at will, consumers shouldn't rely on specific implementations. This method informs sibling consumers what contract this module is expected to fulfill. Such contract can be considered to be this module's API.
+Decoupling and detachment go hand in hand i.e. if modules are expected to be detached at will, consumers shouldn't rely on specific implementations. This method informs sibling consumers what contract this module is expected to fulfill. Such contract can be considered to be this module's API.
 
 - `exports():object`
 

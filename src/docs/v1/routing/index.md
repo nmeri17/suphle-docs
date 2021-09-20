@@ -161,74 +161,31 @@ class DragonCollection extends BaseCollection {
 It is apparent with the above that the lower level collection is part of a bigger puzzle collaborating in the grand scheme of things, and it doesn't even know it! For all it cares, it can exist just as independently as its host collection. As long as it either defines its group name AAA, or lets a host collection do that for it through the method name where it's defined. 
 When both are present, the outer declaration takes precedence. This means library authors can publish modules containing route collections, which can be imported into any parent scope whatsoever
 
+Subsequent solutions we'll be looking at are known to be solved at the deployment level. They're implemented here for the purpose of developers assumed to work without access to the privilege of devops engineers.
 
-Now, let's look at a subject a little more delicate
+## Canaries And Feature Toggling
 
-## Canaries
+Whether we're developing short lived features or internally demoing a permanent one to a subset of the userbase, that which is under review had preferably not leak out to the general public. As such we want to keep them decoupled from permanent routes. This allows them exist in their own little world, likely having their own controllers. The standard term for this is canary releases.
 
-Preamble
+You usually want to read the availability of such feature from its config, a .env, or database
 
-An application's feature can exist in 3 possible states:
+Canary releases should protect URLs under it from direct access, except users are authorized to be there
 
-In progress
+We're using this in combination with extension instead of conditionals in the existing code
 
-Under review
+Note: When serving to a group of users, use a concrete auth implementation, not the interface
 
-Released
+/// show how to point to a collection with more routes then that guy's controller is the extended one injecting relevant entities
 
-Of the last state, depending on business needs, the features are either 
-short lived or integrated permanently into the project. Either way, we 
-don't want features under review to leak out onto the general public. When 
-they eventually do, if they are short-lived, we want to keep them decoupled 
-from permanent routes. This allows them exist in their own little world 
-while in the current module. They can have their own controllers
-
-#
-Api endpoints are backwards compatible. Backwards, then compatible. We need 
-the given version of a path. If it isn't specified on this version, we look 
-for it on the previous version, recursively
+## Api Versioning
+Api endpoints are backwards compatible. Backwards, then compatible. We need the given version of a path. If it isn't specified on this version, we look for it on the previous version, recursively
 Lazy loading the route classes on demand
 
-In the route register
-BrowserRoutes = // calling api mirror on those classes populates below 
-object, while preventing routes we only want to have gui routes from 
-getting in there
 
 ApiRoutes = [V1 => this->browserRoutes(), v2 => classB ] //
 
 1) request comes in for v1, we skip v2 
-2)  v2, we slice the array from v2, and load backwards till a match is 
-found 
+2)  v2, we slice the array from v2, and load backwards till a match is found 
 
 
 You don't have to Extend api route collections. we're not reading its parents automatically from a numerically indexed array of versions cuz it won't be immediately understood by a human reader
-
-## CANARIES AND FEATURE TOGGLING
-*jump to content/ interlude*
-
-An often encountered scenario is that of short-lived features implemented 
-within our app, or perhaps, we're opening up a feature to a group of users. 
-These are actually two distinct occurrences. The latter is an attempt to 
-decipher which group of features eventually become integrated into the main 
-application. The standard term for this is canary releases. On the other 
-hand, the former involves temporary updates we want all users to utilize
-The situation with canary releases is often solved at the deployment level. 
-The devops engineers are looked upon to route a small subsection of random 
-users to parallel instances of our project. But what happens to teams/ solo 
-developers without access to complimentary devops members?
-
-There are two common ways of globally managing feature states. The first 
-one relies on a devops guy to deploy the feature branch (and revert to the 
-main branch). The second approach follows reading the availability of such 
-feature from a feature toggle file, a .env, database, or what have you
-
-While these do work, we tend to leave behind dead code at the toggle points 
-when we're no longer interested in those features. At times like this, our 
-logic layer becomes cluttered with conditionals that will never run.
-
-#
-Canary releases should protect URLs under it from direct access, except 
-users are authorized to be there. Thus, it makes sense for calls for user 
-fetching is restricted to those matching criteria in the canary. This 
-feature can equally be used when implementing route level gates
-
