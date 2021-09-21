@@ -8,3 +8,9 @@ One line of defense against this obstacle advocates against the use of relationa
 ## Listeners
 
 Mention event cascading
+
+Can take multiple space-delimited event names
+
+Begins where we supply from our config the sub class of eventManager where listeners are bound
+
+Listening to foreign events

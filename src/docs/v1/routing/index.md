@@ -187,5 +187,6 @@ ApiRoutes = [V1 => this->browserRoutes(), v2 => classB ] //
 1) request comes in for v1, we skip v2 
 2)  v2, we slice the array from v2, and load backwards till a match is found 
 
+Note that while mirroring, the authStorage is switched to the alternative used on the switched renderers. Can this be changed?
 
 You don't have to Extend api route collections. we're not reading its parents automatically from a numerically indexed array of versions cuz it won't be immediately understood by a human reader
