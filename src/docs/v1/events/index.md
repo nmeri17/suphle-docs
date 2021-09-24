@@ -14,3 +14,6 @@ Can take multiple space-delimited event names
 Begins where we supply from our config the sub class of eventManager where listeners are bound
 
 Listening to foreign events
+
+Local events are decoupled from the concrete that emits them. This makes it safe to listen to an interface or super class
+/// Example

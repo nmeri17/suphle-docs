@@ -181,12 +181,10 @@ Note: When serving to a group of users, use a concrete auth implementation, not 
 Api endpoints are backwards compatible. Backwards, then compatible. We need the given version of a path. If it isn't specified on this version, we look for it on the previous version, recursively
 Lazy loading the route classes on demand
 
-
+## route-inter-operability
 ApiRoutes = [V1 => this->browserRoutes(), v2 => classB ] //
 
 1) request comes in for v1, we skip v2 
-2)  v2, we slice the array from v2, and load backwards till a match is found 
-
-Note that while mirroring, the authStorage is switched to the alternative used on the switched renderers. Can this be changed?
+2)  v2, we slice the array from v2, and load backwards till a match is found
 
 You don't have to Extend api route collections. we're not reading its parents automatically from a numerically indexed array of versions cuz it won't be immediately understood by a human reader

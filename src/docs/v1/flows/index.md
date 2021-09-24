@@ -11,17 +11,8 @@ Due to their inherently temporary nature, they aren't updated when their origina
 Without prefetching/flow testing, it's safe to leave in the side effects in your controller. Otherwise, the data layer for get queries shouldn't contain side effects. Side effects for an route named "product/fetch" should trigger an event with either the route name or action method as event name
 
 #
-Flow request takes arguments informing it
-1. all possible routes user can visit next from here
-2. what parameters we're fetching ie. Instead of prefetching all products, 
-we could instruct it to prefetch on products returned in the previous 
-response
-
-#
-Post request can't make optimistic fetches because they're expected to be 
-validated
+Post request can't make optimistic fetches because they're expected to be validated
 
 ##
 
-Flow request uses a pub sub pattern ie. Publishing to all flows containing outgoing route (same way we pick event external handlers). Furthermore, each write to the redis data store by a queried database result set subscribes to that topic. Each write to the database looks up subscriptions 
-matching the criteria
+Flow request uses a pub sub pattern ie. Publishing to all flows containing outgoing route (same way we pick event external handlers). Furthermore, each write to the redis data store by a queried database result set subscribes to that topic. Each write to the database looks up subscriptions matching the criteria

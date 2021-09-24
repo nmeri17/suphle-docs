@@ -13,13 +13,13 @@ For the dynamism and OOP flexibility Suphple programs are expected to have, deve
 
 In practice, this refers to the process of type-hinting class constructors or specific methods of certain interfaces in order to reference predefined entities. These entities could be anything from interfaces to base types or primitives. The important takeaway is that developer doesn't get to use the `new` keyword or instantiate the constructor's arguments prior to their introduction into the required class.
 
-Auto-wiring is not some abstract concept only used to intercept request objects in action methods. It should be part and parcel of your codebase in order for those dependencies to be easily replaceable both during mocking and refactoring.
+Auto-wiring is not some abstract concept only used to intercept request objects in action methods. It should be part and parcel of your codebase in order for those dependencies to be easily replaceable during mocking, extension and refactoring.
 
 - `getClass`
 
 Suphple internally uses this method to hydrate entity instances. Those entities will usually rely on types that are either [provided](/docs/v1/service-provision) before the entity requests for them, or are instantiated at runtime. If you refer to the diagram in the [Basics](/docs/v1/basics/#anatomy-of-a-suphple-module), the numbered segments excluding 1, 2, and 7 all have auto-wiring enabled on their constructors. This implies you would hardly ever have the need to use this method directly. However, understanding how it works may prove beneficial in the way your object signatures are defined.
 
-Describe the fresh instance steps
+/// Describe the fresh instance steps
 
 ## Sub-provisions and super types
 Super classes aren't returned when consumers try to pull their sub classes because there's simply no way for the container to know a sub exists, given the way objects are being stored for fast retrieval i.e. direct lookup. However, providing base classes can be served to a known type of consumers. 
@@ -33,6 +33,10 @@ In order to achieve first scenario, convert Y to an interface and provide X as a
 
 The second scenario is useful when a variable group of classes with a base type need to provide an immutable or unchanging instance. In cases where this behavior is desirable, you will be better served by using the `sub` parameter
 ///
+
+:::info
+Service locator is widely considered an anti-pattern. But it does have a few good use cases. In a framework like Suphple, where some core classes exist outside the context of containers — classes managing even containers themselves — the only way to interact with contextual versions of certain classes is by use of a service locator. Another use case is while trying to lazy load or perform actions on an object lazily. While it's not expected to be used in user land, it might be the key to solving not just the two situations above, but accessing variable classes defined in user-land
+:::
 
 ## Contextual Binding
 If you are transitioning from front-end development, think of this as the back-end's version of state management. As earlier discussed, the Container is a repository of objects floating around in memory. Each of those objects can exist in states differing from what they were when instantiated. Contextual binding enables us assign objects in these desired states to diverse callers. This means that when hydrating those callers, or when they explicitly request these objects, predefined instances will be handed over to them. This *pre-definition* is known as object/service **provisioning**. There are a few ways to provision objects, either depending on how you intend the caller receives the object, or [when object should be hydrated](/docs/v1/service-providers).
@@ -64,8 +68,13 @@ Notice it works with `whenType`. Calls to any of the `needs` methods without fir
 
 The above invocation may be familiar to those who have heard of the term Service-Location. 
 
-## Namespace rewriting
-spaceNeedsFrom: Doesn't make services implementing interfaces strictly required. Useful while maybe refactoring from one service implementation to another, on a scale spanning multiple controllers
+## Namespace Rewriting
+
+- `spaceNeedsFrom`
+An incorrect use of interfaces is for converting all injectable services into contracts. This method is not intended for such purpose.
+An indication that an interface is ripe for creation is when more than one concrete implementations are available to consume it. A good rule (///link) says three. This situation could arise during a refactor. Refactoring occurs in various forms, one of which this method is primarily for
+
+Suppose a new business requirement affecting a number of our services is presented, as has been encouraged several times in this documentation, one should retain old implementations while developing the new. Taking that a step further, multiple services may be in the same situation, perhaps during a refactor to classes affected by a cross-cutting concern. Rather than individually bind each concrete to its desired consumer, we use `spaceNeedsFrom` to consistently point them
 
 Modules\CartModule\Controllers\CarController
 Modules\CartModule\Contracts\ICarService // or CarService
