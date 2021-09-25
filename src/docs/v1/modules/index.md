@@ -14,15 +14,15 @@ It's usually safer for concepts to start out as separate modules dependent on ea
 Modules comprise of whatever arrangement of classes we intend on introducing to our application as a whole. In order to achieve this, we will need to define a sub-class of `Suphple\App\ModuleDescriptor` which will be included in our application's list of modules.
 
 ## App Entry Point
-This is a class found in your project root folder, under the path "public/index.php". The actual class name doesn't matter. The only important requirements are that it extends `Suphple\App\ModuleAssembly` and exposes a list of `Suphple\App\ModuleDescriptor`s via its `getModules` method. Assuming we're publishing multiple modules, that would look like this:
+This is a class found in your project root folder, under the path "public/index.php". The actual class name doesn't matter. The only important requirements are that it extends `Suphple\App\ModuleHandlerIdentifier` and exposes a list of `Suphple\App\ModuleDescriptor`s via its `getModules` method. Assuming we're publishing multiple modules, that would look like this:
 
 ```php
 
-	use Suphple\App\{Container, ModuleAssembly};
+	use Suphple\App\{Container, ModuleHandlerIdentifier};
 
 	use ModuleLand\{ModuleOne\Descriptor as Descriptor1, ModuleTwo\Descriptor as Descriptor2};
 
-	class Index extends ModuleAssembly {
+	class Index extends ModuleHandlerIdentifier {
 		
 		function getModules():array {
 
@@ -51,7 +51,7 @@ Decoupling and detachment go hand in hand i.e. if modules are expected to be det
 Here, we return our concrete implementation of the interface presented through the `exportsImplements`.
 
 /// Example showing use of `Interactions` namespace and functionality exposure
-/// file ==> moduleAssembly. Same below
+/// file ==> ModuleHandlerIdentifier. Same below
 
 ### Consuming sibling modules
 - `setDependsOn(array $dependencies)`

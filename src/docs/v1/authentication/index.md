@@ -23,7 +23,7 @@ To secure regular routes, we need to include their pattern in this collection's 
 Then, return the mechanism type for this collection
 ///
 
-Note that whatever mechanism is returned must correspond with the one user was authenticated by while logging in.
+Note that whatever mechanism is returned must correspond with the one user was authenticated by while logging in. The caveat to bear in mind while working with mirrored routes is that it is assumed that the user visiting a mirrored route must have authenticated himself with the **current** mechanism i.e. only users who have logged in through the token channel can still access mirrored routes locked under the session channel, as long as their requests are accompanied with the authentication token they received.
 
 ## In Services
 The currently authenticated user can be resolved by the container by type-hinting the `AuthStorage` interface. By default, a session-based implementation is bound to the container to be returned on routes without authentication. Resources at such routes are intended for consumption by both authenticated and unauthenticated users. This binding can be changed by simply binding your `AuthStorage` of choice
