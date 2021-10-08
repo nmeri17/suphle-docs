@@ -17,11 +17,13 @@ highlight the fact that any method other than GET will result in an error in the
 ## Model hydration
 
 ```php
-function jj (NewsRequest $request, ControllerModel $newData) { // conceals News::where(id, id) stored on property x
+function jj (ControllerModel $newData) { // conceals News::where(id, id) stored on property x
 
         $this->newsRepository->updateJj($newData, $request); // cleaner. gets are lazier and under developer's control. avoids duplicating builders
 }
 ```
+
+`newData` has to match the incoming placeholder for this to work
 
 ## Permitted services
 Constructor injection

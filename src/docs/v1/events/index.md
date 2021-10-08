@@ -17,3 +17,7 @@ Listening to foreign events
 
 Local events are decoupled from the concrete that emits them. This makes it safe to listen to an interface or super class
 /// Example
+
+Setting a handler that implements Repository will get wrapped for you and behave as if the service was injected directly and wrapped with that proxy
+// example
+

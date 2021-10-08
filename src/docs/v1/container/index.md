@@ -70,11 +70,11 @@ The above invocation may be familiar to those who have heard of the term Service
 
 ## Namespace Rewriting
 
-- `spaceNeedsFrom`
+- `whenSpace`
 An incorrect use of interfaces is for converting all injectable services into contracts. This method is not intended for such purpose.
 An indication that an interface is ripe for creation is when more than one concrete implementations are available to consume it. A good rule (///link) says three. This situation could arise during a refactor. Refactoring occurs in various forms, one of which this method is primarily for
 
-Suppose a new business requirement affecting a number of our services is presented, as has been encouraged several times in this documentation, one should retain old implementations while developing the new. Taking that a step further, multiple services may be in the same situation, perhaps during a refactor to classes affected by a cross-cutting concern. Rather than individually bind each concrete to its desired consumer, we use `spaceNeedsFrom` to consistently point them
+Suppose a new business requirement affecting a number of our services is presented, as has been encouraged several times in this documentation, one should retain old implementations while developing the new. Taking that a step further, multiple services may be in the same situation, perhaps during a refactor to classes affected by a cross-cutting concern. Rather than individually bind each concrete to its desired consumer, we use `whenSpace` to consistently point them
 
 Modules\CartModule\Controllers\CarController
 Modules\CartModule\Contracts\ICarService // or CarService
