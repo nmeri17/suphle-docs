@@ -12,6 +12,13 @@ Beyond that, care is taken to prevent procedural helper functions that may be pr
 In summary, it works, but should be used as band aid for Suphple's current lack of packages
 
 #
+
+Some of Laravel components require scripts that aren't shipped independently. As such, in order to replicate their functionality in your Suphple project, you must first install the framework
+
+```bash
+composer require laravel/framework
+```
+
 User plugs in their service providers in a LaravelProviders array labelled by the class in the provider's register method. Then, we kind of imitate the same functionality of registering routes, views etc within our own scope
 
 In order to prevent facades being used in place of real object names, there is another verification to ensure instance name matches A's request

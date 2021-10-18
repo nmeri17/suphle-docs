@@ -34,7 +34,7 @@ This is a class found in your project root folder, under the path "public/index.
 		}
 	}
 
-	(new Index)->orchestrate();
+	echo (new Index)->orchestrate();
 ```
 The above is enough for situations where there is no form of communication between `Descriptor1` and `Descriptor2`. However, before we examine the finer details of such interaction, let's study the capabilities of a module descriptor.
 

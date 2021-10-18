@@ -10,9 +10,6 @@ Of course, both concepts can be combined as a powerful way to accomplish context
 /// Note 1
 If the concrete returned from the service provider refuses to match the interface by which it was provided, the container will not budge when asked to hydrate that interface.
 
-/// Note 2
-Concretes can't be provided i.e. the provider can't be labelled/denoted with the name of a concrete class
-
 /// creating a new provider, registering the provider
 
 What methods do they contain?

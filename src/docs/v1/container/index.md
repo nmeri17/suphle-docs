@@ -35,7 +35,7 @@ The second scenario is useful when a variable group of classes with a base type 
 ///
 
 :::info
-Service locator is widely considered an anti-pattern. But it does have a few good use cases. In a framework like Suphple, where some core classes exist outside the context of containers — classes managing even containers themselves — the only way to interact with contextual versions of certain classes is by use of a service locator. Another use case is while trying to lazy load or perform actions on an object lazily. While it's not expected to be used in user land, it might be the key to solving not just the two situations above, but accessing variable classes defined in user-land
+Service locator is widely considered an anti-pattern. But it does have a few good use cases. In a framework like Suphple, where some core classes exist outside the context of containers — classes managing even containers themselves — the only way to interact with contextual versions of certain classes is by use of a service locator. Another use case is while trying to lazy load or perform actions on an object lazily. While it's not expected to be used in user land, it might be the key to solving not just the two situations above, but accessing variable classes defined in user-land from either a package being developed or a test
 :::
 
 ## Contextual Binding
