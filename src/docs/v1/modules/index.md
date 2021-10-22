@@ -5,11 +5,13 @@ One of the great dividends of building opinionated structures is that it solves 
 ---
 
 ## The what and why
-In lower-level terms, modules come in handy when we intend to compose systems with detachable parts. That characteristic means they can be developed and tested independently, integrated without risk of crumbling the existing project. These conditions hold true as long as the incoming module and the existing project are not interwoven. When they are, it becomes imperative that their **integration** is thoroughly tested.
+In lower-level terms, modules come in handy when we intend to compose systems with detachable parts. That characteristic means they can be developed and tested independently, integrated without risk of crumbling the existing project.
 
-Note that modules shouldn't be shoe-horned into every project simply because they exist or are considered a cool fad. They are better suited for rapid development environments, AGILE settings where features will be likely short-lived, activated and deactivated.
+To be clear, modules offer no protection against breaking features after updating unrelated parts of the codebase. To solve that problem, you'd like to look at the testing chapter for integrating [new changes](/docs/v1/testing/confidently-integrating-upgrades).
 
-It's usually safer for concepts to start out as separate modules dependent on each other, and only get merged into one when the interactions between them becomes more than trivial. If module A's controller is dominated by calls to different services borrowed from module B that it depends on, it could mean they belong together.
+Note that modules shouldn't be shoe-horned into every project simply because they exist or are considered a cool fad. They are better suited for rapid development environments, AGILE settings where features will be likely short-lived, activated and deactivated. You want each module to contain services performing similar behaviour. It doesn't matter if they work with more than one model. A full-fledged module can be extracted from the rest of the application, and still retain enough conceptual meaning to be plugged somewhere else
+
+It's usually safer for concepts/domains to start out as separate modules dependent on each other, and only get merged into one when the interactions between them becomes more than trivial. If module A's controller is dominated by calls to different services borrowed from module B that it depends on, it could mean they belong together.
 
 Modules comprise of whatever arrangement of classes we intend on introducing to our application as a whole. In order to achieve this, we will need to define a sub-class of `Suphple\App\ModuleDescriptor` which will be included in our application's list of modules.
 

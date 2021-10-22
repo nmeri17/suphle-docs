@@ -45,6 +45,8 @@ This creates the following folder structure in the current working directory
 |___Models
 |___Tests
 ```
+The structure above is logic-driven rather than data-driven. This means our modules group related functionality together, which all operate against an omnipresent data layer surrounding them
+
 Don't fret about what the purpose of the files you aren't familiar with is. Soon enough, you will get to understand them in depth, enough to restructure it to more exquisite tastes.
 
 ## Your first request

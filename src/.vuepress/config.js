@@ -67,7 +67,7 @@ module.exports = {
 
       ["/docs/v1/modules/", "Modules"], ["/docs/v1/container/", "Container"], ["/docs/v1/service-providers/", "Service Providers"],
 
-      ["/docs/v1/testing/", "Testing"], // interlude
+      ["/docs/v1/testing/Achieving-test-automation-through-alternative-means", "Achieving test automation through alternative means"], // interlude
 
       ["/docs/v1/routing/", "Routing"], ["/docs/v1/controllers/", "Controllers"],
 
@@ -81,6 +81,8 @@ module.exports = {
       ["/docs/v1/flows/", "Flows"], ["/docs/v1/laravel-interop/", "Laravel Inter-op"],
 
       ["/docs/v1/plugins/", "Plugins"], ["/docs/v1/contributing/", "Contributing"], ["/docs/v1/credits/", "Credits"], ["/docs/v1/roadmap/", "Roadmap"],
+
+      ["/docs/v1/testing/Testing index", "Testing index"]
     ]
   },
 
