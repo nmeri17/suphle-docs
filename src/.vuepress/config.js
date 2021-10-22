@@ -67,7 +67,7 @@ module.exports = {
 
       ["/docs/v1/modules/", "Modules"], ["/docs/v1/container/", "Container"], ["/docs/v1/service-providers/", "Service Providers"],
 
-      ["/docs/v1/testing/Achieving-test-automation-through-alternative-means", "Achieving test automation through alternative means"], // interlude
+      ["/docs/v1/testing/Achieving-test-automation-through-alternative-means.md", "Achieving test automation through alternative means"], // interlude
 
       ["/docs/v1/routing/", "Routing"], ["/docs/v1/controllers/", "Controllers"],
 
