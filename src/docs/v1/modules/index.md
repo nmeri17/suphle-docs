@@ -1,7 +1,9 @@
 # Modules
 
 ## Preamble: The modular philosophy
+
 One of the great dividends of building opinionated structures is that it solves the architectural problem for its eventual user. With that out of the way, they are left to think in "services" -- isolated, exportable micro-units of logic. Think of it as a [design system](https://en.wikipedia.org/wiki/Design_system) for back-ends. Every mature design system has a user-contributed gallery of components conforming to its principles. *That* is one of the eventual dreams with Suphple; that projects can be commenced and executed with the aid of extended, freely available domain-specific business-oriented micro-dependencies, following an identical coding trend.
+
 ---
 
 ## The what and why

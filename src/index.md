@@ -18,8 +18,7 @@ footer: Made with ❤️ by Nmeri Alphonsus
 ---
 # Introduction
 
-Suphple (derived from the English word, "supple") is a php framework that by default, ships with an MVVM paradigm 
-for creating stateful web applications. It builds upon some of the [industry's most trusted](/docs/v1/database) components, but can equally get out of the way for you to insert libraries that make you feel more at home. Its recommended stack is STT (Suphple-Transphporm-Turbo)
+Suphple is a php framework that by default, ships with an MVVM paradigm for creating stateful web applications. It builds upon some of the [industry's most trusted](/docs/v1/database) components, but can equally get out of the way for you to insert libraries that make you feel more at home. Its recommended stack is STT (Suphple-Transphporm-Turbo)
 
 
 While building your projects with it, expect to often trigger custom [events](/docs/v1/events), extend your classes -- which could be anything from [routes](/docs/v1/routing) to [controllers](/docs/v1/controllers) or services; in short, you'll be performing practices for frequently changing, dynamic, and testable web applications.
