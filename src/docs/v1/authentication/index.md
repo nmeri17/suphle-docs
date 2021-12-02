@@ -67,4 +67,4 @@ The framework can be instructed to invalidate current authenticated status by ca
 You are encouraged to plant the logout-bearing module on the very first module in your apps module tree in order to avoid cycling through others down the stack
 
 ## Multi-user login
-Talk about `loginAs` flow for both mechanisms. What happens when I logout in that mode? How do I switch between users?
+Talk about `impersonate` flow for both mechanisms. What happens when I logout in that mode? How do I switch between users?

@@ -4,12 +4,12 @@ Suphple was created by Nmeri Alphonsus, a software architect whose stock in trad
 
 Over the long term, he is poised to build upon the foundations of the present day web landscape, and leave the practice in a better state than it was met.
 
-Suphple is one of his efforts to not just redeem developers from the horrors and abyss of technical debt into the enjoyable path of productive engineering, but empower them with required tools to deliver the best possible result when the stakes are at their highest. This documentation can be considered the author's literal means of conveying his intents and philosophies.
+Suphple is one of his efforts to redeem developers from the horrors and abyss of technical debt into the enjoyable path of productive engineering. This implies assembling the most fitting tools in existence, or creating those that will best empower them to deliver the topmost quality when the stakes are at their highest.
 
 He is on the constant lookout for challenges that broaden the scope of his experience across the range of development encompassing advanced concepts not frequently explored. He aims to further encounter practices and scenarios that can be improved even to the slightest degree.
 
 He is equally drawn to artsy demonstration of software techniques. As such, he will eagerly lend attentive ears should such opportunity rear its head in form of a conversation, article, or opening preferably involving Suphple.
 
-Other interests of his that can provoke delightful discourse include Game of Thrones, Lionel Messi, writing, and dank memes. If you mean to reach out regarding any of the above, he will be waiting over at [the mailbox](mailto:vainglories@gmail.com) with arms wide open. <!-- Or, if you're one of the cool kids, you can ping him on Twitter instead. -->
+Other interests of his that can provoke delightful discourse include Game of Thrones, Lionel Messi, the human condition, and dank memes. If you mean to reach out regarding any of the above, he will be waiting over at [the mailbox](mailto:vainglories@gmail.com) with arms wide open. <!-- Or, if you're one of the cool kids, you can ping him on Twitter instead. -->
 
 Happy coding!

@@ -75,7 +75,7 @@ protected test trait influencing a similar behaviour to the SUT without rigorous
 
 ## Culpable requests
 
-Convoluted payloads are a code smell. This means that if you have the slightest difficulty with writing out the request object your action method is expecting, it's an indication that finer grained control can be achieved by splitting that particular request over multiple, smaller requests, save their state somewhere, continue till the last stage. Multi step forms and lengthy forms, forms with diverse data types (think arrays) are most likely to put you in such position. Defend yourself with drafts or event sourcing. 
+Convoluted payloads are a code smell. This means that if you have the slightest difficulty with writing out the request object your action method is expecting, it's an indication that finer grained control can be achieved by splitting that particular request over multiple, smaller requests; save their state somewhere, continue till the last stage. Multi step forms and lengthy forms, forms with diverse data types (think arrays) are most likely to put you in such position. Defend yourself with drafts or event sourcing. 
 Don't allow the monolithic size of the payload obstruct you from testing sections of functionality
 
 It is easy for oversize to sneak through when request objects are auto generated during tests, or in the validation layer (link) due to the fact that libraries written for such purposes provide a wildcard character for describing fields expected to appear repeatedly. If your payloads are being generated, be careful in ensuring repeatable fields are not sent along with regular fields
@@ -122,7 +122,7 @@ There can be some dilemma between methods concealing variables vital to their in
 
 This conflict of interest occasionally presents itself as private methods, fixed values, dates (relative and semantic e.g today) or what have you.
 
-For the first case, employ the "guilty until proven innocent" approach. You can either examine what value the internal operation yields through a debugger, or cook up a fixture for it when required, and subject it to its own test. One of those two methods can be potentially arduous but has the benefit of being automated
+For the first case, employ the "guilty until proven innocent" approach. You can either examine what value the internal operation yields through a debugger, or cook up a fixture for it when required, and subject it to its own test (See [Waylaying at destination]()). One of those two methods can be potentially arduous but has the benefit of being automated
 
 ## Working with dates
 
@@ -131,11 +131,14 @@ As for dates, they should never be defined within the same space where they inte
 // example of seeding the purchases to a certain date (while organic code 
 uses today) and sending that to the fetcher
 
-## Middle of nowhere trap
+## Waylaying at destination
 
-Be sceptical about deriving values in the middle of nowhere
+This strategy comes in handy when stuck in the "Middle of nowhere" trap. This occurs when the unknown value we want to test is being derived within a crowded scope. It is neither assigned to a property nor returned by the method
 
-// example showing build, inject and derive value, further processing in 
-this method to arrive at final result, further processing before return
+// example showing inject, build and derive value x, further processing in this method to arrive at final result, then return
 
-Now, any attempt to test that final result demands dealing with all the noise surrounding it
+[As has already been said](link-to-induction-abi-observation), any value we intend to test has to end up somewhere, otherwise, there simply would be no way to observe it. Wrapping the steps leading up to `x` makes for cleaner code that is ready for reuse. But when that is not possible, hook up a checkpoint wherever `x` is eventually used, with the aid of mocks and spies
+
+// example
+
+

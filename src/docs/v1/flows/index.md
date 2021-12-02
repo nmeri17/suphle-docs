@@ -16,3 +16,7 @@ Post request can't make optimistic fetches because they're expected to be valida
 ##
 
 Flow request uses a pub sub pattern ie. Publishing to all flows containing outgoing route (same way we pick event external handlers). Furthermore, each write to the redis data store by a queried database result set subscribes to that topic. Each write to the database looks up subscriptions matching the criteria
+
+The default mechanism on the first container will be used When hydrating and comparing user instance during the flow request. The framework doesn't bother checking what mechanism was attached to the organic equivalent of the route. When this is not desired, you can always thwart it through the first module's `bindEntities` (I think) method
+
+// show example that uses requestDetails to check if request belongs to api and serves TokenStorage

@@ -1,8 +1,7 @@
 # Controllers
 
 ## Introduction
-Controllers are where the behaviour behind each endpoint 
-is decided.
+The Controller is where the behaviour behind each endpoint is decided.
 
 How do we retrieve input from the outside world?
 
@@ -23,7 +22,7 @@ function jj (ControllerModel $newData) { // conceals News::where(id, id) stored 
 }
 ```
 
-`newData` has to match the incoming placeholder for this to work
+`newData` has to match the incoming placeholder for this to work (Is this still valid?)
 
 ## Permitted services
 Constructor injection
@@ -31,20 +30,11 @@ Constructor injection
 ## Config
 Validating dependencies at runtime may raise some eyebrows, especially when there are less on-demand solutions such as static analysis after each code update. It is assumed that the barrier for syntax memorization is so low, any beginner can get in — junior developers who should not be trusted to know what they're doing. In exchange, the cost of validation is a few micro seconds in performance. If it's either not a price you are willing to pay, perhaps out of trust in your abilities and that of your colleagues, the controller configuration setting method "validates" should return false
 
-## Atomic services
-While decisive steps are put in place to drive the service-oriented gospel home, it is not an invitation to delegate your entire calls to the services. That way, we will still end up with fat services, and be repeating the same structure we claim to run away from, by converting what should be value pipes into bloated controllers.
-
-/// Example
-
-The ideology here is to recognize and extract recurring patterns or behaviour into atomic methods. This makes them flexible for reuse, and testing. The onus of achieving this recognition ultimately lies in developer's hands. Thus, our above example will be rewritten as
-
-/// Alternative
-
-Here, the services do not care about presentation format (which is the controller's primary responsibilty), but are helpers to accessing value objects.
-
 # Services
 
 Explain what ReboundsEvents, CommandService do (assumes the underlying method is laden with db calls to numerous tables)
+
+One of the incentives for services to inherit from a semantic type is that one can comfortably launch a list of db-based operations and only begin their IO counterparts when the DB ops succeed. If the operations fail and are being rolled back, the caller catches the error and either recurses until success is achieved, or doesn't proceed to send out the IO calls
 
 ## Logic Factories
 
