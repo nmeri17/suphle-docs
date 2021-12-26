@@ -24,6 +24,13 @@ function jj (ControllerModel $newData) { // conceals News::where(id, id) stored 
 
 `newData` has to match the incoming placeholder for this to work (Is this still valid?)
 
+// Example of ControllerModel builder usage
+// show fetcing only products with prices above an invalid value (in addition to the id)
+
+Builder Selects
+
+Note that the relationships are not going to have the selects unless manually added (hint: by injection into the relationship method)
+
 ## Permitted services
 Constructor injection
 

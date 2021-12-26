@@ -178,7 +178,7 @@ Note: When serving to a group of users, use a concrete auth implementation, not 
 /// show how to point to a collection with more routes then that guy's controller is the extended one injecting relevant entities
 
 ## Api Versioning
-Api endpoints are backwards compatible. Backwards, then compatible. We need the given version of a path. If it isn't specified on this version, we look for it on the previous version, recursively
+Api endpoints are backwards compatible. We need the given version of a path. If it isn't specified on this version, we look for it on the previous version, recursively
 Lazy loading the route classes on demand
 
 ## route-inter-operability
@@ -187,4 +187,15 @@ ApiRoutes = [V1 => this->browserRoutes(), v2 => classB ] //
 1) request comes in for v1, we skip v2 
 2)  v2, we slice the array from v2, and load backwards till a match is found
 
-You don't have to Extend api route collections. we're not reading its parents automatically from a numerically indexed array of versions cuz it won't be immediately understood by a human reader
+You don't have to Extend api route collections as this would tightly couple each new collection to the previous one. Incoming collections should be able to pick up where their preceding collection left off
+
+We're not reading its parents automatically from a numerically indexed array of versions cuz it won't be immediately understood by a human reader
+
+## CRUD routes
+CRUD are operations commonly used for managing resources or entities. Rather than defining them for each entity in our application, the collection class offers the `_crud` method. It doesn't in itself return the required method, but a `CrudBuilder` object that enables us fashion the prepared renderers to our desired tastes.
+
+`CrudBuilder` assumes the application's primary consumer is a browser and as such, uses browser-based renderers rather than JSON
+
+For endpoints rendering HTML content the `CrudBuilder`
+
+describe the method behaviors so they can know which ones they want overriden. draw a table showing their end patterns against the returned renderer

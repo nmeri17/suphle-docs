@@ -5,7 +5,9 @@ Service providers are classes bound lazily to the Container, in a way that centr
 - It can be easily replaced
 - The concretes booting phase can be edited
 
-Of course, both concepts can be combined as a powerful way to accomplish contextual provision i.e. diverse callers receiving differing states of the same concrete. The perfect use-case for service providers is when a group of callers require some kind of adapter. In an ideal world where library authors all fashion their packages after a common interface, with the aid of service providers, consumers can effortlessly swap out a payment or share link generation concrete by updating its initialization logic.
+Both can't be combined since consumers are not meant to be aware or coupled to the underlying concrete. In addition, if this were possible, it would permit diverse callers to receive differing states of the same concrete, which would in turn lead to programs difficult to reason about.
+
+The perfect use-case for service providers is when a group of callers require some kind of adapter. In an ideal world where library authors all fashion their packages after a common interface, with the aid of service providers, consumers can effortlessly swap out a payment or share link generation concrete by updating its initialization logic.
 
 /// Note 1
 If the concrete returned from the service provider refuses to match the interface by which it was provided, the container will not budge when asked to hydrate that interface.
