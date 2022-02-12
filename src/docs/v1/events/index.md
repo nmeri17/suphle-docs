@@ -1,9 +1,11 @@
 # Events
 
 ## Introduction
-A criminally overlooked part of back end engineering. Suphple would restrict all read/write database operations to be only executable within the context of a specific side-effect event handler. But for the sole purpose of commands whose producers are more optimized with synchronous responses, such imposition was left to the developer's discretion. A fine example being our module sending a create event for a related model within the boundaries of another module.
+Events are a criminally overlooked part of back end engineering. It is so crucial that Suphple would restrict all write database operations to be only executable within event handlers. But for the sole purpose of commands whose producers require the ID of sub entities, such imposition was left to the developer's discretion. A fine example being our module sending a create event for a related model within the boundaries of another module.
 
-One line of defense against this obstacle advocates against the use of relational models in service oriented architectures. A less drastic opinion suggests making use of guids instead of auto incremented ids. Whatever design decision is made based on these considerations, events are expected to be an important part of it. Pay attention at seams for operations whose results are of no importance to the response.
+One line of defense against this obstacle advocates against the use of relational models in service oriented architectures. A less drastic opinion suggests making use of guids instead of auto incremented ids. Then again, in cases where commands that rely on data from sub-commands, the sub-command can be considered a query, and should probably receive the same treatment as other queries i.e. being imported into the consumer
+
+Whatever design decision is made based on these considerations, events are expected to be an important part of it. This is because they are a strong symbol of high cohesion, enabling us escape the terrors of transactional scripts (link). You want to pay attention at seams for operations whose results are of no importance to the response.
 
 ## Listeners
 
@@ -15,9 +17,15 @@ Begins where we supply from our config the sub class of eventManager where liste
 
 Listening to foreign events
 
+Binding listeners to an emittor more than once will overwrite the previous bindings
+
 Local events are decoupled from the concrete that emits them. This makes it safe to listen to an interface or super class
 /// Example
 
-Setting a handler that implements Repository will get wrapped for you and behave as if the service was injected directly and wrapped with that proxy
-// example
 
+## Event-based Concerns
+The beauty of utilising events to exchange commands between modules is nearly tainted by the fact that they tend to limit the amount of information one can deduce by looking at an originating action. It's difficult to assess access and effect of the scrutinised action, thereby making reasoning about it an uphill task. Fortunately, interfaces (which every module happens to implement) have constants. This implies one can simply check for all usages of the constant, as a guiding light to locate subscribers if need be
+
+This equally means that modules merely reacting to events from an emitting module don't have to import a concrete version of it. All it takes to react to it is to reference the interface in the reactor, and Suphle will handle the rest
+
+// example of using a constant as event name

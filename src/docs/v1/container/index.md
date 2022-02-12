@@ -5,9 +5,11 @@ Container pages are not the kind typically visited while perusing documentation.
 ## Introduction
 At the most basic level, they are object caches — you store object instances in them so you don't instantiate multiple versions of the same class and have them running all over the place. As applications grow more complex, we look onto them to fulfill needs beyond just object caching.
 
-Containers are the missing feature of every back end language. They are associated with making concretes out of interfaces but take care of other details such as hydrating and wiring arguments. One characteristic of a good back end framework is that its container is both versatile and powerful enough for the developer to never pull objects out of it directly.
+Containers are the missing feature of every back end language. They are associated with making concretes out of interfaces but take care of other details such as conditionally hydrating, decorating and wiring objects. In reality, Suphple's Container is not just one class, but a suite comprising a multitude of components for gaining control in the most elegant manner over what and how objects are fashioned for a caller.
 
-For the dynamism and OOP flexibility Suphple programs are expected to have, developers should not shy away from actively interacting with the container. The framework itself heavily relies on it to achieve the modular architecture.
+One characteristic of a good back end framework is that its container is both versatile and powerful enough for the developer to never pull objects out of it directly. This means methods on the main Container class are conceptually divided into two: those for putting things into the Container, and those for reading those things out of it. Unless you are building developer-facing functionality, you aren't expected to need methods in the second category. To that effect, we will first look at put related methods, read methods, then the other capabilities of this component
+
+*Start from put*
 
 ## Auto-wiring and dependency injection
 

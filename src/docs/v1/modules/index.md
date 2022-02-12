@@ -85,8 +85,12 @@ This is the method through which internal configuration is assigned (or replaced
 
 /// Example of replacing Auth config
 
-Sometimes, we may want to allow configuration values be set by the module's consumer. In such case, the value should be assigned to instance level properties. Inside the relevant service provider/config, the module will be type hinted, and the value lifted
+Sometimes, we may want to allow configuration values be set by the module's consumer. In such case, the value should be assigned to instance level properties.
 
 /// Example
 
 Each module should have its own vendor folder i.e. None at the root
+
+Discuss how module shells import other descriptors puts them in a hibernated state until they're ready to run
+
+Testing a module with absent dependencies is as straightforward as stubbing out the contract it's expected to fulfill

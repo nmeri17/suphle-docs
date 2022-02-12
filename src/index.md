@@ -6,11 +6,11 @@ actionText: Quick Start →
 actionLink: /docs/v1/quick-start/
 features:
 - title: Built for the architecturally inclined
-  details: Domain Driven Design? Modular-monoliths? Decoupled components? SOLID principles? Slim controllers? Service oriented architectures? If those terms appeal to you, you are at the right place!
+  details: Modular-monoliths? Decoupled components? SOLID principles? Slim controllers? If those terms appeal to you, you are at the right place!
 - title: Intuitive Design
-  details: Given a penchant for OOP, class names are preferred over aliases in all cases (labelling, payloads/DTOs, routing), both for instant recognition of its purpose and location, and for auto-wiring them. No includes, no folder scanning, no questionable instantiation (during booting or whenever) is done without your consent
+  details: Given a penchant for OOP, class names are preferred over aliases in all cases (labelling, payloads/DTOs, routing), both for instant recognition of its purpose and location, but for lazy-loading and auto-wiring them. In addition, there are includes, no folder scanning, no questionable instantiation (during booting or whenever) is done without your consent
 - title: Infinite flexibility
-  details: Every step of the core experience is both replaceable and configurable in order to maximize your comfort. No conventional assumptions are made regarding project's requirements
+  details: Every step of the core experience is both replaceable and configurable in order to maximize your comfort. No conventional assumptions are made regarding project's requirements. No hard-coded folder names. Don't like the ORM? Swap it out!
 footer: Made with ❤️ by Nmeri Alphonsus
 ---
 
