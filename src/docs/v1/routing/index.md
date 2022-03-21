@@ -178,10 +178,7 @@ Note: When serving to a group of users, use a concrete auth implementation, not 
 /// show how to point to a collection with more routes then that guy's controller is the extended one injecting relevant entities
 
 ## Api Versioning
-Api endpoints are backwards compatible. We need the given version of a path. If it isn't specified on this version, we look for it on the previous version, recursively
-Lazy loading the route classes on demand
-
-## route-inter-operability
+Api endpoints are backwards compatible. We need the given version of a path. If it isn't specified on this version, we look for it on the previous version, recursively Lazy loading the route classes on demand
 ApiRoutes = [V1 => this->browserRoutes(), v2 => classB ] //
 
 1) request comes in for v1, we skip v2 
@@ -190,6 +187,14 @@ ApiRoutes = [V1 => this->browserRoutes(), v2 => classB ] //
 You don't have to Extend api route collections as this would tightly couple each new collection to the previous one. Incoming collections should be able to pick up where their preceding collection left off
 
 We're not reading its parents automatically from a numerically indexed array of versions cuz it won't be immediately understood by a human reader
+
+## Route Inter-operability
+...after introduction
+It's not always that our APIs return the same response verbatim. Some developers may decide to follow one of the JSON specifications such as JSON-LD, Hapi, and what have you. In such case, we will simply plant a middleware in the stack that wraps all outgoing API response appropriately
+
+// example
+
+Another workable approach may be extending the `Json` renderer, and overriding the `render()` method
 
 ## CRUD routes
 CRUD are operations commonly used for managing resources or entities. Rather than defining them for each entity in our application, the collection class offers the `_crud` method. It doesn't in itself return the required method, but a `CrudBuilder` object that enables us fashion the prepared renderers to our desired tastes.

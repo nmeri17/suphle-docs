@@ -77,8 +77,17 @@ public function replyMe (HelloWorld $request):array {
 
 Now, when we open [http://localhost:8080/say/hi](http://localhost/say/hi), we are able to see exactly "Hi" even though it wasn't defined in the route pattern.
 
-Congratulations! In your hands lies the power to build the **next big thing.** All that is left is for you to delve deeper into getting a better understanding of the possibilities that can be accomplish with Suphple. It has so many other interesting aspects, although the primary one of every web framework is making a request and getting responses back
+Congratulations? Well, not really. We were wrong to have verified a successful request through our browser. Now, let's do this again; this time, properly
 
-You can take things easy, [sequentially](/docs/v1/modules) getting your feet wet, or could hop over to [routing](/docs/v1/routing) which we just perused.
+Navigate to [[the test class]]. Paste the following test in it
+
+// test
+
+Run this in the terminal
+// use same link as above
+
+And, voila! We have a reproducible, irrefutble confirmation that our very first endpoint passes in flying colors. Now, we are ready for the serious business -- because, in our hands lies the power to build the **next big thing.** All that is left is for us to delve deeper into getting a better understanding of the possibilities we can accomplish with Suphple
+
+You can either take things easy, [sequentially](/docs/v1/modules) getting your feet wet. Or, you can hop right over to [routing](/docs/v1/routing) which we just perused.
 
 Have a jolly ride.

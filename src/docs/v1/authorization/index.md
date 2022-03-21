@@ -10,6 +10,16 @@ Authorization is divided into two categories: route-based protection and a entit
 
 Collocating this class of rules provides us the advantage of centralizing module rules to where one can quickly glance at available permissions for each resource
 
+As can be seen above, Return type for methods on ModelAuthorities is bool, although Suphle doesn't expect you to actually return false. The binary data-type here is a stand-in for what should be a TrueOrException<T> generic. `T`, here, would represent the specific authorization being violated. We compensate for lack of such data-type using the following polyfill:
+
+// example showing the current way, but with custom exception
+
+The generic authorization exception is namespace\UnauthorizedServiceAccess. By throwing it, request will promptly be terminated. As with [other exceptions](/exceptions), its handler is stored on `Tilwa\Contracts\Config\ExceptionInterceptor`, and can be used to override what renderers determine eventual response
+
+// example
+
+But the general idea is that custom exceptions should be thrown from authorization methods, in place of `false`.
+
 ### Eloquent note
 
 Permissions don't have effect when the model is fetched from a relationship. You'll have to protect the models in those relationships themselves

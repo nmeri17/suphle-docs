@@ -58,17 +58,18 @@ This is the genesis of all contextual binding. The type being provided is suppli
 
 - `whenTypeAny()`
 
-Equally functions as `whenType`, however, it enables this definition to apply to every other class that wasn't provided
+Equally functions as `whenType`, however, it enables this definition to apply to every other class that wasn't provided. When a class provisions some classes in a list, then attempts to get some other classes outside that list, the container fallsback to global provisions made using `whenTypeAny()`
 
 - `needs(array types)`
 
 In order to directly influence `getClass` return value on a per-caller basis, the desired concrete must be provided to it through this method
-///
-Example
+/// Example
 
-Notice it works with `whenType`. Calls to any of the `needs` methods without first defining what type is being provided will result in an exception.
+Notice it works with `whenType`. Calls to any of the `needs` methods without first defining what type is being provided will result in a `HydrationException`.
 
-The above invocation may be familiar to those who have heard of the term Service-Location. 
+The above invocation may be familiar to those who have heard of the term Service-Location.
+
+When using either `needs` or `needsAny`, none of the concretes can correspond to one bound to an interface through any subclasses of `BaseInterfaceCollection`. It doesn't make sense to provide such concretes. When the Container encounters such scenarios, it skips the provision and creates a fresh concrete
 
 ## Namespace Rewriting
 
@@ -84,9 +85,13 @@ Modules\CartModule\Services\CarServiceImpl //
 
 
 ## Circular dependencies
-These are usually a code smell. Which is why most containers crumble when these are thrown at them. Logical flow ought to be composed in a hierarchical manner that expresses the lower level elements as entirely oblivious of their higher level counterparts. Service return values should be collated at a central point such as the controller and sent to evaluating service. Such situations are usually an indication that some part of those services should exist on their own. This enriches the application with a decoupled dependency chain, and by extension, testability.
+These are usually a code smell; which is why most containers crumble when these are thrown at them. Logical flow ought to be composed in a hierarchical manner that expresses the lower level elements as entirely oblivious of their higher level counterparts. Service return values should be collated at a central point such as the controller and sent to evaluating service. Such situations are usually an indication that some part of those services should exist on their own. This enriches the application with a decoupled dependency chain, and by extension, testability.
 
-That said, "tell, don't ask" principle may appeal to some, and services can wind up in the constructor of their own dependencies. For instance, it may be undesirable to retrieve values from service x and plug into y (show example of chatty controller). In such cases, Suphple's container handles it using an otherwise, primitive implementation of class templates/generics/decorators
+That said, "tell, don't ask" principle may appeal to some, and services can wind up in the constructor of their own dependencies. For instance, it may be undesirable to retrieve values from service x and plug into y
+
+// show example of chatty controller vs passing the entire service to that guy for it to select the properties/methods it wants
+
+In such cases, Suphple's container handles it by proxying calls to the first consumed of both classes. But not without raising a `E_USER_WARNING` that will be caught by your logger if you have any listening
 
 ```php
 
@@ -109,3 +114,10 @@ class B {
     }
 }
 ```
+
+## Caveat
+The fact that concretes are decoupled from their interfaces makes the likelihood of one concrete unwittingly referring to an interface whose concrete, in turn, refers to it high. Bear in mind that proxying interfaces is different from concretes since it has methods that need implementations.
+
+When this is the case, the container won't proxy calls to the interface. Even though it's possible to extract and wrap their concrete on the fly, the overhead and sheer *sorcery* of such an implementation deviate too far away from the language's expected behaviour, for very little benefit, as such, going against one of Suphle's core principles. That said, when Container encounters such concretes, it will throw a `HydrationException`
+
+As with all problems in this category, the solution is to breakdown the intertwining bits either into a third, decoupled entity; or, to defer evaluation of the *lesser* of both dependencies
