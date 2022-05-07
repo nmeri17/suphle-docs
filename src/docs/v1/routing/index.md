@@ -188,6 +188,8 @@ You don't have to Extend api route collections as this would tightly couple each
 
 We're not reading its parents automatically from a numerically indexed array of versions cuz it won't be immediately understood by a human reader
 
+API documentation should be cast in stone. This means that after generating documentation for a certain version of your API, once it has consumers or clients, that artifact should become immutable. New changes should be destined for a patch or minor release version
+
 ## Route Inter-operability
 ...after introduction
 It's not always that our APIs return the same response verbatim. Some developers may decide to follow one of the JSON specifications such as JSON-LD, Hapi, and what have you. In such case, we will simply plant a middleware in the stack that wraps all outgoing API response appropriately

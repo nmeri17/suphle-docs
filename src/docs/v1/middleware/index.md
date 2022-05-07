@@ -18,3 +18,5 @@ With this kind of middleware, one cannot pass in specific parameters as it is me
 Since patterns are being composed down tries, route collections middlewares should contain references to what pattern method they are bound to. But since patterns can contain nested collections, their internal patterns would have to be able to detach themselves from what middleware their parents activated
 
 How do we pass arguments to middleware from their definition point?
+
+`BaseMiddleware` hands over a requestDetails object down to you. It's mostly for convenience since it's the object you're expected to interact with in this environment. Bear this in mind when overwriting the constructor 

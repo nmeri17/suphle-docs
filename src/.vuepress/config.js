@@ -73,12 +73,13 @@ module.exports = {
 
       ["/docs/v1/events/", "Events"], ["/docs/v1/queues/", "Queues"], ["/docs/v1/config/", "Config"],
 
-      ["/docs/v1/authentication/", "Authentication"], ["/docs/v1/authorization/", "Authorization"],
+      ["/docs/v1/authentication/", "Authentication"], ["/docs/v1/authorization/", "Authorization"], ["/docs/v1/database/", "Database"],
 
       ["/docs/v1/middleware/", "Middleware"], ["/docs/v1/error-handling/", "Error Handling"],
-      ["/docs/v1/templating/", "Templating"], // this and database should probably go under "adapters"
+      ["/docs/v1/templating/", "Templating"],
+      ["/docs/v1/sessions/", "Sessions"],
 
-      ["/docs/v1/flows/", "Flows"], ["/docs/v1/laravel-interop/", "Laravel Inter-op"],
+      ["/docs/v1/flows/", "Flows"], ["/docs/v1/laravel-interop/", "Laravel Inter-op"], ["/docs/v1/cli/", "Console Commands"],
 
       ["/docs/v1/plugins/", "Plugins"], ["/docs/v1/contributing/", "Contributing"], ["/docs/v1/credits/", "Credits"], ["/docs/v1/roadmap/", "Roadmap"],
 

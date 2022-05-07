@@ -121,3 +121,8 @@ The fact that concretes are decoupled from their interfaces makes the likelihood
 When this is the case, the container won't proxy calls to the interface. Even though it's possible to extract and wrap their concrete on the fly, the overhead and sheer *sorcery* of such an implementation deviate too far away from the language's expected behaviour, for very little benefit, as such, going against one of Suphle's core principles. That said, when Container encounters such concretes, it will throw a `HydrationException`
 
 As with all problems in this category, the solution is to breakdown the intertwining bits either into a third, decoupled entity; or, to defer evaluation of the *lesser* of both dependencies
+
+***
+Ensure you know what you're doing when using `refreshClass`. It will recursively wipe all objects where given target was injected by container. This includes all of their provisions. Mention the caveat of using `ClassHydrationBehavior`
+
+(can't depend on dependency's concrete) it may be lurking in afterBind, not just in the constructor (goes to container)

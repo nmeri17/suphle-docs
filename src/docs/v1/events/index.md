@@ -29,3 +29,10 @@ The beauty of utilising events to exchange commands between modules is nearly ta
 This equally means that modules merely reacting to events from an emitting module don't have to import a concrete version of it. All it takes to react to it is to reference the interface in the reactor, and Suphle will handle the rest
 
 // example of using a constant as event name
+
+Any object that wishes to emit events requires its module to have at least one class extending from `EventManager`, even if it doesn't actually listen to any events. This is because the main `EventManager` is declared abstract, and as such, can't be instantiated
+
+// after showing basic emission
+
+There is a recommended safety trait, `EmitProxy`, that prevents emittors from falsely emitting events using the name of other classes
+// show usage

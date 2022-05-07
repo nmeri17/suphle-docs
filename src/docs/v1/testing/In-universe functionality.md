@@ -8,3 +8,19 @@ Suphle has a number of base, low-level test types which most of your tests are e
 At the bottom of the hierarchy is `TestVirginContainer`. This is where all the other low-level test types extend from
 
 You may be curious as to the reason behind ModuleLevelTest requiring explicit specification of what modules to test, as opposed to say, plugging in `MyApp` directly. What this gives us is the ability to test specific modules before even involving them in the thick of the action
+
+**
+`replaceConstructorArguments` enables us inject stubs into the target object's constructor
+
+As you may have heard already, Containers will throw all sorts all errors if they find themselves in an unconducive state. This means that if an object's constructor receives a simply stubbed Container, it would lead to unexpected results. For this reason, `replaceConstructorArguments` automatically fills in `getContainer` of the running base test type. If you plan on stubbing in an additionally configured Container, you can set the `useBaseContainer` argument to `false`
+
+`replaceWithConcrete` exists to prevent us from doing things like `$this->modules[0]->getContainer()->whenTypeAny` inside the test body. If there are objects lifted from container, you want to replace with doubles, the test body isn't the place for them
+
+
+
+Illuminate\Database\QueryException: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'suphle.users' doesn't exist (SQL: insert into `users` (`email`, 
+
+Your migrations ought to have one folder where all table creations reside, in order to avoid errors similar to the above. This sort of structure will guarantee that all models, at the bare minimum, containing this folder have been migrated. The individual features can then go in the appropriate folder
+
+within tests that make http requests, after calling `get` or `post`, Suphle refreshes `StdInputReader`. `PayloadStorage` depends on this class. And as you know, `Container::refreshClass`(link) cascades to all preceding consumers. This means that if your test contains a double using `PayloadStorage` or any class dependent on it, this double that obviously wasn't hydrated by container will be looking at a stale `PayloadStorage` and will produce unexpected results. In such cases, you want to inject `PayloadStorage` only after making the http request
+[think this only applies to the lower level `setHttpParams`]

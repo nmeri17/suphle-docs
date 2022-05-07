@@ -11,7 +11,7 @@ features:
   details: Given a penchant for OOP, class names are preferred over aliases in all cases (labelling, payloads/DTOs, routing), both for instant recognition of its purpose and location, but for lazy-loading and auto-wiring them. In addition, there are includes, no folder scanning, no questionable instantiation (during booting or whenever) is done without your consent
 - title: Infinite flexibility
   details: Every step of the core experience is both replaceable and configurable in order to maximize your comfort. No conventional assumptions are made regarding project's requirements. No hard-coded folder names. Don't like the ORM? Swap it out!
-footer: Made with ❤️ by Nmeri Alphonsus
+footer: Made with blood and tears by Nmeri Alphonsus
 ---
 
 
@@ -27,10 +27,6 @@ It equally expects such programs to be patronized by large traffic, and [retain 
 
 <!-- #how does it compare against others?
 Present performance benchmarks -->
-
-### Sustainability
-
-Being the framework of choice to power a number of long term projects currently in the works, there is no doubt it'll be the subject of constant updates improving it both in the near and distant future
 
 ### Closing remarks
 If the features described above are yet to resonate with your use cases and you'd like to have them looked into, do not hesitate to [contact the author](mailto:vainglories@gmail.com) to discuss them. 
