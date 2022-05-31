@@ -15,6 +15,34 @@ You may be curious as to the reason behind ModuleLevelTest requiring explicit sp
 As you may have heard already, Containers will throw all sorts all errors if they find themselves in an unconducive state. This means that if an object's constructor receives a simply stubbed Container, it would lead to unexpected results. For this reason, `replaceConstructorArguments` automatically fills in `getContainer` of the running base test type. If you plan on stubbing in an additionally configured Container, you can set the `useBaseContainer` argument to `false`
 
 `replaceWithConcrete` exists to prevent us from doing things like `$this->modules[0]->getContainer()->whenTypeAny` inside the test body. If there are objects lifted from container, you want to replace with doubles, the test body isn't the place for them
+// gotcha
+While injecting mocks from `getModules`, be careful to ensure you're passing in a single instance
+
+```php
+protected function getModules ():array {
+
+	$bindsCommands = function (WriteOnlyContainer $container) {
+
+		$consoleConfig = Console::class;
+
+		$container->replaceWithMock($consoleConfig, $consoleConfig, [
+
+			"commandsList" => [$this->sutName]
+		])
+		/*->replaceWithConcrete($this->sutName, $this->getMock)*/; // bad. Will create a mock per module, thereby giving false positives about what methods were invoked
+
+		$this->configureWriteOnly($container); // good
+	};
+
+	return [
+
+		$this->replicateModule(ModuleOneDescriptor::class, $bindsCommands),
+
+		$this->replicateModule(ModuleTwoDescriptor::class, $bindsCommands)
+	];
+}
+
+```
 
 
 
@@ -24,3 +52,7 @@ Your migrations ought to have one folder where all table creations reside, in or
 
 within tests that make http requests, after calling `get` or `post`, Suphle refreshes `StdInputReader`. `PayloadStorage` depends on this class. And as you know, `Container::refreshClass`(link) cascades to all preceding consumers. This means that if your test contains a double using `PayloadStorage` or any class dependent on it, this double that obviously wasn't hydrated by container will be looking at a stale `PayloadStorage` and will produce unexpected results. In such cases, you want to inject `PayloadStorage` only after making the http request
 [think this only applies to the lower level `setHttpParams`]
+
+The purpose of using `dataProvider` is in order to have access to objects available to the container or module list at test build time i.e. during `setUp`. This method stores the state of all available containers before running and doesn't expect them to have been altered within any of the data sets of the given providers or within the tests themselves. This isn't the case outside `dataProvider` since PHPUnit is responsible for backing up and restoring object states in-between tests. `dataProvider` is ran as a single test rather than a series. This means you are responsible for resetting the container after interacting with it by either binding or extracting objects that should be unique between tests
+
+// example @see IntraModuleTest->test_stores_correct_data_in_cache, makeRouteBranches

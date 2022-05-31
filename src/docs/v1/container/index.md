@@ -125,4 +125,10 @@ As with all problems in this category, the solution is to breakdown the intertwi
 ***
 Ensure you know what you're doing when using `refreshClass`. It will recursively wipe all objects where given target was injected by container. This includes all of their provisions. Mention the caveat of using `ClassHydrationBehavior`
 
-(can't depend on dependency's concrete) it may be lurking in afterBind, not just in the constructor (goes to container)
+(can't depend on dependency's concrete) it may be lurking in afterBind, not just in the constructor
+
+ModifyInjected is subdivided into two handler kinds:
+- Those that modify decorated instance without calling it
+- Those that call decorated instance
+
+Combining A cocktail of decorators with handlers that trigger underlying concrete will result in a disaster. In such cases, ambiguity will be removed by executing the cross-cutting method in a converging handler

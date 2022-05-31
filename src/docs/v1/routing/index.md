@@ -206,3 +206,7 @@ CRUD are operations commonly used for managing resources or entities. Rather tha
 For endpoints rendering HTML content the `CrudBuilder`
 
 describe the method behaviors so they can know which ones they want overriden. draw a table showing their end patterns against the returned renderer
+
+Below, you will find a table containing method, route patterns and their handlers
+
+Note that Authentication resumption happens before canary routing. Or, better put, authentication is evaluated for canaries attempting to read user status, before the app-wide one that terminates on user absence

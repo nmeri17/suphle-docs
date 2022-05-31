@@ -31,13 +31,15 @@ When a flow url is ineligible for access, it is being cleared from the storage. 
 
 // example, maybe?
 
-# Flow types
+## Precaution
+While making use of Flows, you run a risk of DDOS-sing your database, so exercise caution depending on your underlying `OrmDialect`. If you're on the Eloquent adapter, it can help if your database connection credentials specifies unique configuration for read and write. If you're using CycleOrm instead, the services being called from your serviceCoordinators should make parallel/asynchronous connections to the database
 
+## Flow types
 Flows are sub-divided into two types:
 - Those that deal with single value nodes, known as Single Nodes
 - Nodes that contain a list of data (such as database entities), known as Collection Nodes
 
-In both cases, the idea is to reach into the previous response with a key matching one of those returned from that payload. The value at this key will determine whether it is a single or collection node. The key can either be the actual key name:
+Think of flow types as javascript promises, since they don't work on the response body immediately but resolve to the appropriate renderer at a later date. In both classes of Flow, the idea is to reach into the previous response with a key matching one of those returned from that payload. The value at this key will determine whether it is a single or collection node. The key can either be the actual key name:
 
 // example
 
