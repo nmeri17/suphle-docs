@@ -56,3 +56,50 @@ within tests that make http requests, after calling `get` or `post`, Suphle refr
 The purpose of using `dataProvider` is in order to have access to objects available to the container or module list at test build time i.e. during `setUp`. This method stores the state of all available containers before running and doesn't expect them to have been altered within any of the data sets of the given providers or within the tests themselves. This isn't the case outside `dataProvider` since PHPUnit is responsible for backing up and restoring object states in-between tests. `dataProvider` is ran as a single test rather than a series. This means you are responsible for resetting the container after interacting with it by either binding or extracting objects that should be unique between tests
 
 // example @see IntraModuleTest->test_stores_correct_data_in_cache, makeRouteBranches
+
+```php
+public function test_successLogin () {
+			$this->containerTelescope->setNoiseFilter(function ($telescope) {
+
+				$result = $telescope->missedArgumentFor(
+					\Tilwa\Contracts\Bridge\LaravelContainer::class,
+
+					"requestDetails"
+				);
+if ($result) var_dump(22222222);
+				return $result;
+			});
+var_dump("before updating url");
+			$this->sendCorrectRequest(self::LOGIN_PATH); // given
+```
+Note that with the above, you don't need to manually set telescope on containers even if you're using moduleLevelTest. All you need is the property, unless you want to monitor activities on a select number of containers
+
+There is an emargo imposed on OrmDialect that may trip you up: whenever it's reset or refreshed, it reads the database state as it was when the test began-- or more specifically, as it was before transaction commenced--not as it is at present. What this implies is that if any modifications are made within the test, and a connection reset action occurs, the subsequent part of the test cannot expect to find inserted data
+
+```php
+public function test_successLogin () {
+
+	$this->sendCorrectRequest(self::LOGIN_PATH); // given
+
+	$this->injectLoginRenderer(1, 0); // then
+
+	$this->evaluateLoginStatus(); // when
+}
+```
+
+For the above scenario to work, we'd have to make all inserts before the test, using the `preDatabaseFreeze` hook
+
+```php
+	protected function preDatabaseFreeze ():void {
+
+		$this->sendCorrectRequest(self::LOGIN_PATH); // given
+	}
+
+	public function test_successLogin () {
+
+		$this->injectLoginRenderer(1, 0); // then
+
+		$this->evaluateLoginStatus(); // when
+	}
+```
+This limits us from making multiple insert-request calls within one test case

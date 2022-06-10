@@ -132,3 +132,7 @@ ModifyInjected is subdivided into two handler kinds:
 - Those that call decorated instance
 
 Combining A cocktail of decorators with handlers that trigger underlying concrete will result in a disaster. In such cases, ambiguity will be removed by executing the cross-cutting method in a converging handler
+
+(module class binding method)
+Careful to decouple dependencies during binding. Starting a bind call within another will confuse the outer one
+// example
