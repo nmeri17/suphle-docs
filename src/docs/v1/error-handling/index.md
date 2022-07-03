@@ -5,3 +5,22 @@ In practice, it's highly important that we test our application's shutdown funct
 // show how to throw things at shutdown
 
 We need to take an action with the greatest chance of leaving evidence behind. Writing to a file is relatively reliable but is insufficient since it doesn't actually call anybody to action. By default, we combine both to complement each other. If this outcome doesn't suit, you can override the `disgracefulShutdown` method. Bear in mind that the less fancy action taken here is, the safer for all parties. Assume all else has failed and this is the last ditch of last ditches. The fewer dependencies/IO required to execute this step, the better
+
+$this->message = json_encode(
+
+				$this->evaluator->getValidatorErrors(), JSON_PRETTY_PRINT
+			); // using this since error handler will be stubbed out in tests, thus precluding us from seeing what failed
+
+InvestigateSystemCrash
+Enables us trigger an action and investigate system behavior afterwards.
+... after describing gracefulShutdown and disgracefulShutdown
+
+Three possible paths exist after undertaking a failable action:
+1. Action succeeds, no exception is thrown
+1. Action fails, but is handled by gracefulShutdown
+1. gracefulShutdown fails and falls back to disgracefulShutdown
+
+By default, disgracefulShutdown is stubbed out for you. It's just a helper and doesn't mean the method shouldn't be tested. It's simply expected that tests covering gracefulShutdown will outnumber those for disgracefulShutdown. disgracefulShutdown will never run if gracefulShutdown never fails.
+
+When you're ready to test disgracefulShutdown, set `softenDisgraceful` to false and stub gracefulShutdown with a double that throws an exception
+// example

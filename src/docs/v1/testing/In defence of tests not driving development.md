@@ -10,3 +10,6 @@ Except the generator is an AI that understands input on what is required of the 
 
 Unit tests are not compulsory for those not practising TDD, since it 
 engages the "green" phase of the red - green - refactor chain. In its absence, some behaviours may fortunately work, while others won't. This implies uncertainty at what point of the chain we start at, thus obscuring the hard requirement on unit tests. When we're not incrementally developing ie progress dictated by success of tests of preceding code, we can get away with having no tests at that level if all the internal code paths can be explored by testing objects with greater hierarchy
+
+## 
+You are free to pay the price for posterity sake e.g if code making use of that lower level functionality is removed in future. Otherwise, in my opinion, the failing higher test is already a pointer as to whether the lower code behaves as expected. Using mocks in and of themselves doesn't indirectly fix the test

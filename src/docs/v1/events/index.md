@@ -36,3 +36,8 @@ Any object that wishes to emit events requires its module to have at least one c
 
 There is a recommended safety trait, `EmitProxy`, that prevents emittors from falsely emitting events using the name of other classes
 // show usage
+
+However, using it will preclude you from binding listeners to an interface, if you have the need to do so
+
+**
+Event handlers receive emitted payload as-is–without meta information such as the emitting instance etc. For this reason, suphle doesn't interfere by enforcing payload type. The emitter must document what type its consumers are expected to adhere to

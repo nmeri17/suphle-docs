@@ -10,6 +10,8 @@ He is on the constant lookout for challenges that broaden the scope of his exper
 
 He is equally drawn to artsy demonstration of software techniques. As such, he will eagerly lend attentive ears should such opportunity rear its head in form of a conversation, article, or opening preferably involving Suphple.
 
-Other interests of his that can provoke delightful discourse include Game of Thrones, Lionel Messi, the human condition, and dank memes. If you mean to reach out regarding any of the above, he will be waiting over at [the mailbox](mailto:vainglories@gmail.com) with arms wide open. <!-- Or, if you're one of the cool kids, you can ping him on Twitter instead. -->
+Other interests of his that can provoke delightful discourse include Game of Thrones, Lionel Messi, the human condition, and dank memes. If you mean to reach out regarding any of the above, he will be waiting over at [the mailbox](mailto:vainglories17@gmail.com) with arms wide open. <!-- Or, if you're one of the cool kids, you can ping him on Twitter instead. -->
+
+Special gratitude to Laravel's maintainers, who have been examplary in  producing some of the most extensible components in the game, without which the foundation to lay Suphle upon would've been much more steep--namely, Eloquent and TestResponse
 
 Happy coding!
