@@ -1,6 +1,6 @@
 # Contributing
 
-It is emotionally uplifting that you feel compelled to take time out of your schedule to invest in what makes Suphple tick. However, the breathtaking improvements you are bringing on board will be better received if it meets a few non-negotiable criteria. This is not to say your modalities are inaccurate, but it's an attempt to ensure a consistent, homogenic fundamental code style.
+It is emotionally uplifting that you feel compelled to take time out of your schedule to invest in what makes Suphle tick. However, the breathtaking improvements you are bringing on board will be better received if it meets a few non-negotiable criteria. This is not to say your modalities are inaccurate, but it's an attempt to ensure a consistent, homogenic fundamental code style.
 
 1. First and foremost, there is no need for includes or requires anywhere.
 

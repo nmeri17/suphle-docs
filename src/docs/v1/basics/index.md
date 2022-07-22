@@ -1,6 +1,6 @@
-# Suphple Basics
+# Suphle Basics
 
-## Anatomy of a Suphple module
+## Anatomy of a Suphle module
 
 ![suphple-module](/suphple-module.jpeg)
 
@@ -20,14 +20,14 @@ Though not compulsory, it's strongly recommended to compartmentalize your app in
 
 For every request received by your app, it's apportioned to its appropriate handler before being passed onto a module where applicable.
 
-Suphple has 3 different kinds of request, which are in turn, subdivided into their subcategories:
+Suphle has 3 different kinds of request, which are in turn, subdivided into their subcategories:
 - [Login requests](/docs/v1/authentication)
 - [Flow requests](/docs/v1/flows)
 - [Regular requests](/docs/v1/controllers)
 
 When framework deciphers incoming request is a regular one, it cycles from module to module. First, each module is booted into an intermediary state from which its autonomous router can be queried for a match against incoming request. The *booting* generally involves preliminary activities such as [object binding](/docs/v1/container#contextual-binding) required to identify matching requests.
 
-When a module informs Suphple about its ability to handle request, the rest of the module is initialized e.g. [event listeners](/docs/v1/events#listeners) are mounted. The purpose of personalizing internal objects before routing commences is they are all expected to *not* know about context of other modules. Autoloading them shouldn't reveal information conflicting with context of the present scope. This is important considering the fact that all things being equal, every single dependency should be [autoloaded](/docs/v1/container#auto-wiring).
+When a module informs Suphle about its ability to handle request, the rest of the module is initialized e.g. [event listeners](/docs/v1/events#listeners) are mounted. The purpose of personalizing internal objects before routing commences is they are all expected to *not* know about context of other modules. Autoloading them shouldn't reveal information conflicting with context of the present scope. This is important considering the fact that all things being equal, every single dependency should be [autoloaded](/docs/v1/container#auto-wiring).
 
 After initialization completes, authentication, authorization and validation checks are performed. If they all succeed, a [middleware](/docs/v1/middleware) stack is assembled, to convene and decide whether they will rather handle request, or delegate to whatever handler is designated in their module's router. With their permission, request can then reach your controllers, and compute a response data which is forwarded to the renderer assigned in the router.
 

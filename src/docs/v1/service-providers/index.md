@@ -24,7 +24,7 @@ Of course, when providing interfaces, there are no constructor methods to fill. 
 Show example
 
 ## Service Integration
-Developers coming from laravel may expect to see more details concerning the integration of external libraries through this medium. However, Suphple differs in that such tweaks are achieved by means of configuration classes.
+Developers coming from laravel may expect to see more details concerning the integration of external libraries through this medium. However, Suphle differs in that such tweaks are achieved by means of configuration classes.
 
 For instance, one who intends to do x might be better off...
 

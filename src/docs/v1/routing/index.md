@@ -4,13 +4,13 @@
 
 Routing is one of most frameworks' strongest focal points. It's the location from which core components such as authentication, authorization, controllers and middleware are exposed by developer. It'll otherwise be duplicitous to introduce those components elsewhere and apply relevant routes to them.
 
-That being the case, Suphple takes them a step further as the location for defining [flows](/docs/v1/flows) and response types. However, we won't examine all of that in this chapter. This one will only equip you with all you need to translate user requests to their controllers
+That being the case, Suphle takes them a step further as the location for defining [flows](/docs/v1/flows) and response types. However, we won't examine all of that in this chapter. This one will only equip you with all you need to translate user requests to their controllers
 
 ---
 Routing consists of definining [controller](/docs/v1/controllers) adapters i.e. portals between an incoming request and its execution. This means that for all the power controllers are known to wield, they are answerable to what is being dictated from route definitions. As will soon be seen with route collections, one can plug in various co-existing controller implementations as the need may be.
 
 ## Route collections
-These are classes where routes/paths are defined. Route collections can either implement the `Suphple\Contracts\RouteCollection` or preferably, extend `Suphple\Routing\BaseCollection` which should be the base class for your lower level collections. 
+These are classes where routes/paths are defined. Route collections can either implement the `Suphle\Contracts\RouteCollection` or preferably, extend `Suphle\Routing\BaseCollection` which should be the base class for your lower level collections. 
 
 ## Defining paths
 
@@ -18,9 +18,9 @@ At the most basic level, paths are derived from method names:
 
 ```php
 
-use Suphple\Routing\BaseCollection;
+use Suphle\Routing\BaseCollection;
 
-use Suphple\Response\Format\Markup;
+use Suphle\Response\Format\Markup;
 
 use Modules\CarModule\Controllers\EntryController;
 
@@ -99,7 +99,7 @@ class TownRoutes extends BaseCollection {
 The trailing number **0** indicates that whether "name" is present or not, this method is qualified to execute request.
 
 ## Request methods
-So far, we have only seen methods mapping to **GET** requests through the `_get()` method. What about the three other major HTTP request methods namely **POST**, **PUT**, and **DELETE** HTTP methods? Suphple currently makes provision for them through the `_post()`, `_put()`, and `_delete()` methods respectively.
+So far, we have only seen methods mapping to **GET** requests through the `_get()` method. What about the three other major HTTP request methods namely **POST**, **PUT**, and **DELETE** HTTP methods? Suphle currently makes provision for them through the `_post()`, `_put()`, and `_delete()` methods respectively.
 
 ---
 But it's not advisable to compress all our segments into one method as we have in all the earlier examples. Ideally, each 
@@ -127,7 +127,7 @@ class AnimalRoutes extends BaseCollection {
 
 Note that the above method neither returns a renderer nor tags any http method. So what's the catch? We will find out after looking at the contents of `Modules\ZooModule\Collections`.
 
-Wrapping related endpoints under the same umbrella happens to come with some additional perks: let's take a moment to understand how routes are matched in Suphple, shall we?
+Wrapping related endpoints under the same umbrella happens to come with some additional perks: let's take a moment to understand how routes are matched in Suphle, shall we?
 
 ## Route matching: a brief history
 

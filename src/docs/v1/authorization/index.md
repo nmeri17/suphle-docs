@@ -14,7 +14,7 @@ As can be seen above, Return type for methods on ModelAuthorities is bool, altho
 
 // example showing the current way, but with custom exception
 
-The generic authorization exception is namespace\UnauthorizedServiceAccess. By throwing it, request will promptly be terminated. As with [other exceptions](/exceptions), its handler is stored on `Tilwa\Contracts\Config\ExceptionInterceptor`, and can be used to override what renderers determine eventual response
+The generic authorization exception is namespace\UnauthorizedServiceAccess. By throwing it, request will promptly be terminated. As with [other exceptions](/exceptions), its handler is stored on `Suphle\Contracts\Config\ExceptionInterceptor`, and can be used to override what renderers determine eventual response
 
 // example
 

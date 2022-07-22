@@ -62,7 +62,7 @@ public function test_successLogin () {
 			$this->containerTelescope->setNoiseFilter(function ($telescope) {
 
 				$result = $telescope->missedArgumentFor(
-					\Tilwa\Contracts\Bridge\LaravelContainer::class,
+					\Suphle\Contracts\Bridge\LaravelContainer::class,
 
 					"requestDetails"
 				);

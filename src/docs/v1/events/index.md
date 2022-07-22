@@ -1,7 +1,7 @@
 # Events
 
 ## Introduction
-Events are a criminally overlooked part of back end engineering. It is so crucial that Suphple would restrict all write database operations to be only executable within event handlers. But for the sole purpose of commands whose producers require the ID of sub entities, such imposition was left to the developer's discretion. A fine example being our module sending a create event for a related model within the boundaries of another module.
+Events are a criminally overlooked part of back end engineering. It is so crucial that Suphle would restrict all write database operations to be only executable within event handlers. But for the sole purpose of commands whose producers require the ID of sub entities, such imposition was left to the developer's discretion. A fine example being our module sending a create event for a related model within the boundaries of another module.
 
 One line of defense against this obstacle advocates against the use of relational models in service oriented architectures. A less drastic opinion suggests making use of guids instead of auto incremented ids. Then again, in cases where commands that rely on data from sub-commands, the sub-command can be considered a query, and should probably receive the same treatment as other queries i.e. being imported into the consumer
 

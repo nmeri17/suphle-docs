@@ -23,4 +23,6 @@ Three possible paths exist after undertaking a failable action:
 By default, disgracefulShutdown is stubbed out for you. It's just a helper and doesn't mean the method shouldn't be tested. It's simply expected that tests covering gracefulShutdown will outnumber those for disgracefulShutdown. disgracefulShutdown will never run if gracefulShutdown never fails.
 
 When you're ready to test disgracefulShutdown, set `softenDisgraceful` to false and stub gracefulShutdown with a double that throws an exception
-// example
+// example (still true?)
+
+You may observe that when your call to `assertWillCatchException` passes, response gets dumped to terminal. This is because PHPUnit starts buffering output during each test. When your action raises the exception you expect it to, this buffer isn't cleaned/flushed, and on script termination, all variables from when request failed are automatically flushed by PHP

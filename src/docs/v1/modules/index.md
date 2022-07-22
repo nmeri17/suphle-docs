@@ -4,7 +4,7 @@
 
 One of the great dividends of building upon opinionated structures is that it decides on a solution to the architectural problem for its eventual user. With that out of the way, user is left to figure out higher-level problems. For web applications, those higher-level problems are usually called services or domain logic.
 
-At an even higher level, those services, bespoke on a now lower-level, become applicable units of logic in that domain as a whole. *That* is one of the eventual dreams with Suphple -- that projects can be commenced and executed with the aid of domain-specific dependencies following a predictable, proven trend.
+At an even higher level, those services, bespoke on a now lower-level, become applicable units of logic in that domain as a whole. *That* is one of the eventual dreams with Suphle -- that projects can be commenced and executed with the aid of domain-specific dependencies following a predictable, proven trend.
 
 This doesn't mean every application should be structured in the same manner. The idea is that the number of ways to poorly structure an application far outnumber proven ways to build applications that are easier to maintain. It takes a level of thought that can be expensive for some. For these set of developers, it helps to condense proven designs into reusable frameworks, in order to take that responsibility away from them. In our case, modules should not be shoe-horned into every project simply because they exist or are considered a cool fad. They are better suited for rapid development environments, AGILE settings where features will likely be short-lived, activated and deactivated.
 
@@ -14,16 +14,16 @@ You want each module to contain services performing similar behaviour (at the ri
 
 // show that picture here and add credit
 
-Modules comprise of whatever arrangement of classes we intend on introducing to our application as a whole. In order to achieve this, we will need to define a sub-class of `Suphple\Modules\ModuleDescriptor` which will be included in our application's list of modules.
+Modules comprise of whatever arrangement of classes we intend on introducing to our application as a whole. In order to achieve this, we will need to define a sub-class of `Suphle\Modules\ModuleDescriptor` which will be included in our application's list of modules.
 
 ## App Entry Point
 project root folder, under the path "public/index.php
 
-it extends `Suphple\Modules\ModuleHandlerIdentifier` and exposes a list of `Suphple\Modules\ModuleDescriptor`s via its `getModules` method. Assuming we're publishing multiple modules, that would look like this:
+it extends `Suphle\Modules\ModuleHandlerIdentifier` and exposes a list of `Suphle\Modules\ModuleDescriptor`s via its `getModules` method. Assuming we're publishing multiple modules, that would look like this:
 
 ```php
 
-	use Suphple\Modules\{Container, ModuleHandlerIdentifier};
+	use Suphle\Modules\{Container, ModuleHandlerIdentifier};
 
 	use ModuleLand\{ModuleOne\Descriptor as Descriptor1, ModuleTwo\Descriptor as Descriptor2};
 
@@ -100,3 +100,6 @@ Sometimes, we may want to allow configuration values be set by the module's cons
 Discuss how module shells import other descriptors puts them in a hibernated state until they're ready to run
 
 Testing a module with absent dependencies is as straightforward as stubbing out the contract it's expected to fulfill
+
+## New user-land modules
+The structure in template folder is expected to mirror destination structure

@@ -1,11 +1,11 @@
 # Containers
 
-Container pages are not the kind typically visited while perusing documentation. However, understanding what can be achieved with Suphple's container promises to pay huge dividends in the long run. But first of all, what is a container, and what does it "contain", anyway?
+Container pages are not the kind typically visited while perusing documentation. However, understanding what can be achieved with Suphle's container promises to pay huge dividends in the long run. But first of all, what is a container, and what does it "contain", anyway?
 
 ## Introduction
 At the most basic level, they are object caches — you store object instances in them so you don't instantiate multiple versions of the same class and have them running all over the place. As applications grow more complex, we look onto them to fulfill needs beyond just object caching.
 
-Containers are the missing feature of every back end language. They are associated with making concretes out of interfaces but take care of other details such as conditionally hydrating, decorating and wiring objects. In reality, Suphple's Container is not just one class, but a suite comprising a multitude of components for gaining control in the most elegant manner over what and how objects are fashioned for a caller.
+Containers are the missing feature of every back end language. They are associated with making concretes out of interfaces but take care of other details such as conditionally hydrating, decorating and wiring objects. In reality, Suphle's Container is not just one class, but a suite comprising a multitude of components for gaining control in the most elegant manner over what and how objects are fashioned for a caller.
 
 One characteristic of a good back end framework is that its container is both versatile and powerful enough for the developer to never pull objects out of it directly. This means methods on the main Container class are conceptually divided into two: those for putting things into the Container, and those for reading those things out of it. Unless you are building developer-facing functionality, you aren't expected to need methods in the second category. To that effect, we will first look at put related methods, read methods, then the other capabilities of this component
 
@@ -19,7 +19,7 @@ Auto-wiring is not some abstract concept only used to intercept request objects 
 
 - `getClass`
 
-Suphple internally uses this method to hydrate entity instances. Those entities will usually rely on types that are either [provided](/docs/v1/service-provision) before the entity requests for them, or are instantiated at runtime. If you refer to the diagram in the [Basics](/docs/v1/basics/#anatomy-of-a-suphple-module), the numbered segments excluding 1, 2, and 7 all have auto-wiring enabled on their constructors. This implies you would hardly ever have the need to use this method directly. However, understanding how it works may prove beneficial in the way your object signatures are defined.
+Suphle internally uses this method to hydrate entity instances. Those entities will usually rely on types that are either [provided](/docs/v1/service-provision) before the entity requests for them, or are instantiated at runtime. If you refer to the diagram in the [Basics](/docs/v1/basics/#anatomy-of-a-suphple-module), the numbered segments excluding 1, 2, and 7 all have auto-wiring enabled on their constructors. This implies you would hardly ever have the need to use this method directly. However, understanding how it works may prove beneficial in the way your object signatures are defined.
 
 /// Describe the fresh instance steps
 
@@ -37,7 +37,7 @@ The second scenario is useful when a variable group of classes with a base type 
 ///
 
 :::info
-Service locator is widely considered an anti-pattern. But it does have a few good use cases. In a framework like Suphple, where some core classes exist outside the context of containers — classes managing even containers themselves — the only way to interact with contextual versions of certain classes is by use of a service locator. Another use case is while trying to lazy load or perform actions on an object lazily. While it's not expected to be used in user land, it might be the key to solving not just the two situations above, but accessing variable classes defined in user-land from either a package being developed or a test
+Service locator is widely considered an anti-pattern. But it does have a few good use cases. In a framework like Suphle, where some core classes exist outside the context of containers — classes managing even containers themselves — the only way to interact with contextual versions of certain classes is by use of a service locator. Another use case is while trying to lazy load or perform actions on an object lazily. While it's not expected to be used in user land, it might be the key to solving not just the two situations above, but accessing variable classes defined in user-land from either a package being developed or a test
 :::
 
 ## Contextual Binding
@@ -46,7 +46,7 @@ If you are transitioning from front-end development, think of this as the back-e
 Callers can either consume dependencies from their constructors or by directly invoking [`getClass`](#auto-wiring-and-dependency-injection)
 
 // example
-In both scenarios, the desired outcome can be different. As earlier mentioned, Suphple internally makes heavy use of calls to `getClass`, so you don't have to unless you are a [plugin developer](/docs/v1/plugins). It's mostly an avenue to replace the regular hydration of those classes.
+In both scenarios, the desired outcome can be different. As earlier mentioned, Suphle internally makes heavy use of calls to `getClass`, so you don't have to unless you are a [plugin developer](/docs/v1/plugins). It's mostly an avenue to replace the regular hydration of those classes.
 
 - `whenType(string ConsumerClass)`
 
@@ -91,7 +91,7 @@ That said, "tell, don't ask" principle may appeal to some, and services can wind
 
 // show example of chatty controller vs passing the entire service to that guy for it to select the properties/methods it wants
 
-In such cases, Suphple's container handles it by proxying calls to the first consumed of both classes. But not without raising a `E_USER_WARNING` that will be caught by your logger if you have any listening
+In such cases, Suphle's container handles it by proxying calls to the first consumed of both classes. But not without raising a `E_USER_WARNING` that will be caught by your logger if you have any listening
 
 ```php
 
