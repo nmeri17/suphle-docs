@@ -161,7 +161,7 @@ class DragonCollection extends BaseCollection {
 It is apparent with the above that the lower level collection is part of a bigger puzzle collaborating in the grand scheme of things, and it doesn't even know it! For all it cares, it can exist just as independently as its host collection. As long as it either defines its group name AAA, or lets a host collection do that for it through the method name where it's defined. 
 When both are present, the outer declaration takes precedence. This means library authors can publish modules containing route collections, which can be imported into any parent scope whatsoever
 
-Subsequent solutions we'll be looking at are known to be solved at the deployment level. They're implemented here for the purpose of developers assumed to work without access to the privilege of devops engineers.
+Subsequent solutions to be examined are familiar to those who have dabbled in devops and deployment. But they are invited into the programmatic domain for the purpose of developers either oblivious of their existence, or those who have limited access to tooling regarding the subject and the deployment level.
 
 ## Canaries And Feature Toggling
 

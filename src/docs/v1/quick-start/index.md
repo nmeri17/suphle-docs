@@ -86,7 +86,7 @@ Navigate to [[the test class]]. Paste the following test in it
 Run this in the terminal
 // use same link as above
 
-And, voila! We have a reproducible, irrefutble confirmation that our very first endpoint passes in flying colors. Now, we are ready for the serious business -- because, in our hands lies the power to build the **next big thing.** All that is left is for us to delve deeper into getting a better understanding of the possibilities we can accomplish with Suphple
+And, voila! We have a reproducible, irrefutable confirmation that our very first endpoint passes in flying colors. Now, we are ready for the serious business -- because, in our hands lies the power to build the **next big thing.** All that is left is for us to delve deeper into getting a better understanding of the possibilities we can accomplish with Suphle
 
 You can either take things easy, [sequentially](/docs/v1/modules) getting your feet wet. Or, you can hop right over to [routing](/docs/v1/routing) which we just perused.
 

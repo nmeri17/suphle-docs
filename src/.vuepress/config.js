@@ -4,7 +4,7 @@ module.exports = {
   /**
    * Ref：https://v1.vuepress.vuejs.org/config/#title
    */
-  title: "Suphple Docs",
+  title: "Suphle Docs",
   /**
    * Ref：https://v1.vuepress.vuejs.org/config/#description
    */
@@ -47,13 +47,10 @@ module.exports = {
         link: "/docs/v1/quick-start/",
       },
       {
-        text: "Motivation",
-        link: "/docs/v1/motivation/"
+        text: "Suphle on Github",
+        link: "https://github.com/nmeri17/tilwa"
       },
       /*{
-        text: "Suphple on Github",
-        link: "https://github.com/nmeri17/tilwa"
-      }{
         text: 'Languages',
         ariaLabel: 'Language Menu',
         items: [
@@ -81,7 +78,7 @@ module.exports = {
 
       ["/docs/v1/flows/", "Flows"], ["/docs/v1/laravel-interop/", "Laravel Inter-op"], ["/docs/v1/cli/", "Console Commands"],
 
-      ["/docs/v1/plugins/", "Plugins"], ["/docs/v1/contributing/", "Contributing"], ["/docs/v1/credits/", "Credits"], ["/docs/v1/roadmap/", "Roadmap"],
+      ["/docs/v1/packages/", "Packages"], ["/docs/v1/contributing/", "Contributing"], ["/docs/v1/credits/", "Credits"], ["/docs/v1/roadmap/", "Roadmap"],
 
       ["/docs/v1/testing/Testing index", "Testing index"]
     ]

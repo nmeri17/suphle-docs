@@ -103,3 +103,6 @@ Testing a module with absent dependencies is as straightforward as stubbing out 
 
 ## New user-land modules
 The structure in template folder is expected to mirror destination structure
+
+## How do you add additional routes to a module?
+You don't, as that would require controllers, services and the likes. You are better off defining those routes in your own module, only utilizing functionality on the imported module. See chapter on [packages](/docs/v1/packages)

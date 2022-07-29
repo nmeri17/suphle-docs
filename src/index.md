@@ -40,7 +40,7 @@ In a broader sense, if you're coming from a framework written in another languag
 - *Rust:* Macros, Result
 - *Phoenix:* Livewire
 
-For each of those intersecting functionality, implementation details differ. For instance, Suphle's modules are much more isolated and independent. The rest of the documentation goes into thorough details about how that, as well as other implementations you're used to were improved upon.
+It may interest you to know that some of these best practices were only found to intersect Suphle was mostly complete rather than a preemptive attempt to build a chimera of widely acclaimed functionality. And that is why in Suphle, their implementation details differ. For instance, Suphle's modules are much more isolated and independent. The rest of the documentation goes into thorough details about how that, as well as other implementations you're used to were improved upon.
 
 ## How it's different
 You may be thinking:
