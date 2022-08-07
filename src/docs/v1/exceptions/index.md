@@ -1,4 +1,4 @@
-## Error Handling
+## Introduction
 
 In practice, it's highly important that we test our application's shutdown function. There is a saying that "to have peace, we must prepare for war". If peradventure, an unfortunate event cause application to terminate abruptly, and in its dying breath, it attempts to send an SOS to the external error logger, and that fails too, we can either blurt error to user, assuming he is the developer, or keep mum altogether and pretend nothing happened. In both cases, we will arrive at the same point we were before we set out to alert app maintainer on system malfunction
 
@@ -26,3 +26,5 @@ When you're ready to test disgracefulShutdown, set `softenDisgraceful` to false 
 // example (still true?)
 
 You may observe that when your call to `assertWillCatchException` passes, response gets dumped to terminal. This is because PHPUnit starts buffering output during each test. When your action raises the exception you expect it to, this buffer isn't cleaned/flushed, and on script termination, all variables from when request failed are automatically flushed by PHP
+
+`DetectedExceptionManager::queueAlertAdapter` is used for preventing errors from terminating user requests. It's a method used by a number of constructs such as the `ServiceErrorCatcher` decorator, `BaseHttpRequest`, among others. However, when automating tests for the software, we usually do not want to receive alerts about our broken program, so this method is stubbed out with a dummy that does nothing. This is because when requests are sent in, Suphle has another channel it uses to detect whether or not an error occured. When constructs that directly interact with this method fail within a test and we want to know what happened, the `muffleExceptionBroadcast` property should be set to `true`

@@ -59,7 +59,7 @@ In both cases, the caller has to confirm that operation didn't fail, however the
 1. you can receive a non-null value, as specified in failureState
 1. the objective here is to make it as seamless as possible for the caller to carry on its journey; its next action may or may not be influenced by the call result. But under no circumstance should request terminate on error
 
-When convertToDTO fails, responsibilty for the next action is returned to caller. The point is that expected DTO couldn't materialize, without compromising our central theme of errors not terminating request without caller's permission
+When convertToDomainObject fails, responsibilty for the next action is returned to caller. The point is that expected DTO couldn't materialize, without compromising our central theme of errors not terminating request without caller's permission
 // if is null and hasErrors; while failureState always has a value, so if hasErrors
 
 Action methods expect to be injected only with information that is meaningful for handling that request--something that would otherwise lack context within another handler method, or an object that can't be known at compile time, or can't be provided. Anything else should be gathered at the constructor as there's every likelihood that it'll be used for multiple handlers, and we don't want to repeat ourselves. The only objects that fit this description are `ModelfulPayload` and `ModellessPayload`. Violating this rule will result in an `InvalidArgumentsException`
