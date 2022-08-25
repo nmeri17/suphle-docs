@@ -81,7 +81,7 @@ public function test_successLogin () {
 
 	$this->sendCorrectRequest(self::LOGIN_PATH); // given
 
-	$this->injectLoginRenderer(1, 0); // then
+	$this->injectLoginMediator(1, 0); // then
 
 	$this->evaluateLoginStatus(); // when
 }
@@ -97,7 +97,7 @@ For the above scenario to work, we'd have to make all inserts before the test, u
 
 	public function test_successLogin () {
 
-		$this->injectLoginRenderer(1, 0); // then
+		$this->injectLoginMediator(1, 0); // then
 
 		$this->evaluateLoginStatus(); // when
 	}

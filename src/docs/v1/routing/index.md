@@ -159,7 +159,14 @@ class DragonCollection extends BaseCollection {
 ```
 
 It is apparent with the above that the lower level collection is part of a bigger puzzle collaborating in the grand scheme of things, and it doesn't even know it! For all it cares, it can exist just as independently as its host collection. As long as it either defines its group name AAA, or lets a host collection do that for it through the method name where it's defined. 
-When both are present, the outer declaration takes precedence. This means library authors can publish modules containing route collections, which can be imported into any parent scope whatsoever
+When both are present, the outer declaration takes precedence ((still true??)). This means authors can publish modules containing route collections, which can be imported into any parent scope whatsoever
+
+## Selectively extending route collections
+
+Suppose we want to reuse a route collection, but don't want all the routes there to appear in the current app, we can't use traits or inheritance since the collection automatically reads all class methods. Class composition is elegant and comes in handy when the number of patterns to import are minor
+// example
+
+It may become cumbersome having collections making so many calls to a dependency. In such case, it may be better exposed through a [component template](/docs/v1/component-templates)
 
 Subsequent solutions to be examined are familiar to those who have dabbled in devops and deployment. But they are invited into the programmatic domain for the purpose of developers either oblivious of their existence, or those who have limited access to tooling regarding the subject and the deployment level.
 
@@ -176,6 +183,8 @@ We're using this in combination with extension instead of conditionals in the ex
 Note: When serving to a group of users, use a concrete auth implementation, not the interface
 
 /// show how to point to a collection with more routes then that guy's controller is the extended one injecting relevant entities
+
+Authentication resumption happens before canary routing. Or, better put, authentication is evaluated for canaries attempting to read user status, before the app-wide one that terminates on user absence
 
 ## Api Versioning
 Api endpoints are backwards compatible. We need the given version of a path. If it isn't specified on this version, we look for it on the previous version, recursively Lazy loading the route classes on demand
@@ -209,4 +218,12 @@ describe the method behaviors so they can know which ones they want overriden. d
 
 Below, you will find a table containing method, route patterns and their handlers
 
-Note that Authentication resumption happens before canary routing. Or, better put, authentication is evaluated for canaries attempting to read user status, before the app-wide one that terminates on user absence
+## The three challenges of api dev
+
+Decoupled development
+Documentation
+Seamless integration
+
+If you don't have the luxury of developing at your pace, you will greatly benefit from design first tools like API blueprint. It's important to not work under pressure of delivering endpoints to kick off API consumption. Aside from this, APIs should be rapidly prototyped. And the first step in doing so would be setting up the routes and returning dummy responses. That's the bare minimum promise of what is to come
+
+If you don't care much about using an API design tool, it is assumed you have an alternative or intuitive means of arriving at a decent design your consumers will consent to. Should this be the case, after implementation, suphle solves the documentation problem by generating openAPI schemas from your routes and their associated responses

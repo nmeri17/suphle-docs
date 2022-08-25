@@ -1,4 +1,4 @@
-# In defence of tests not driving development
+# Juxtaposing TDD against retroactive testing
 
 The main purpose of writing tests after code is to enable its author confirm his work behaves in an intended way, while taking a second look at it. It's like repeating numbers you just listened to for assurance that you heard correctly. The difference between this and a test - driven approach is that this is more of a cross check whereas with TDD, the checklist is composed and stricken off almost in parallel
 
@@ -13,3 +13,10 @@ engages the "green" phase of the red - green - refactor chain. In its absence, s
 
 ## 
 You are free to pay the price for posterity sake e.g if code making use of that lower level functionality is removed in future. Otherwise, in my opinion, the failing higher test is already a pointer as to whether the lower code behaves as expected. Using mocks in and of themselves doesn't indirectly fix the test
+
+
+Asserting the same behavior using lesser tests is smart but comes at the cost of an inadequately tested system. TDD doesn't guarantee expansive confidence either. But starting with tests allows for broadly visualising all possible behaviour. This foreknowledge forces the developer to write clairvoyant code that is beyond the peripheral business requirements
+
+In order to bridge this gap, the retroactive tester should be unsatisfied with asserting their code conforms with the brd. Since they theoretically have more time on their hands, it should be channelled at pondering what ways the current system could go wrong, and including barriers that account for such situations before a customer performs such action. You may consider consulting with a domain expert so as to avoid making provisions for realistically impossible scenarios. There is a limit to what combination of system states should validly hit your code
+
+While making adjustments to account for irregular behaviour, beware that some parts of the preceding tests may fail. The objective here is for the underlying sut to exist in a homogenous state that satisfies all the tests exercising. Modify it as required

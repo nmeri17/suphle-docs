@@ -10,5 +10,7 @@ how do i create one? what do i extend and how do i connect it? how do i trigger 
 Commands are being loaded into the test runner from the `setUp` method of your `CommandLineTest`. This makes it convenient for you to simply find command and run it
 // example
 
-This snippet assumes you aren't testing command itself, but its side effects. If you are doing the former perhaps, trying to provide a double to your modules within your test method, the double will not be acknowledged. In such cases, you want to inject your doubles from `getModules`
+This snippet assumes you aren't testing command itself, but its side effects. Behavior is usually what you want to test, through the underlying service
+
+If indeed, the command is what you want to test, trying to provide a double to your modules within your test method, the double will not be acknowledged. In such cases, you want to inject your doubles from `getModules`
 // example

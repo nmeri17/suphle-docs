@@ -10,7 +10,7 @@ He is on the constant lookout for challenges that broaden the scope of his exper
 
 He is equally drawn to artsy demonstration of software techniques. As such, he will eagerly lend attentive ears should such opportunity rear its head in form of a conversation, article, or opening preferably involving Suphle.
 
-Other interests of his that can provoke delightful discourse include Game of Thrones, Lionel Messi, the human condition, and dank memes. If you mean to reach out regarding any of the above, he will be waiting over at [the mailbox](mailto:vainglories17@gmail.com) with arms wide open. <!-- Or, if you're one of the cool kids, you can ping him on Twitter instead. -->
+Other interests of his that can provoke delightful discourse include Game of Thrones, Lionel Messi, the human condition, and dank memes. If you mean to reach out regarding any of the above, he will be waiting over at [the mailbox](mailto:vainglories17@gmail.com) with arms wide open. He is on [twitter](https://twitter.com/mmayboy_) although dev sagacity doesn't occur to him as frequently as you'd anticipate.
 
 Special gratitude to the hundreds of authors and maintainers who have indirectly contributed to Suphle by setting a standard that is not only examplary, but have produced some of the most extensible components in the game--such as Eloquent and TestResponse--without which the foundation to lay Suphle upon would've been much more steep.
 

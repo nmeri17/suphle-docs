@@ -76,3 +76,44 @@ You only want to use this when you have a common list of implementations with di
 1. Dependencies are still strongly-typed
 
 See https://pastebin.com/8idvNsyu
+
+##
+Centralise the location for optimizing model queries according to controller constraints at each endpoint.
+*
+When we advocate extraction of controller behaviour into services, what is our end goal? The controllers are technically classes, so why are they restricted from housing logic?
+
+You may expect to see testability leading the pack as one of the reasons. In the traditional controller, action methods return full blown response objects. You will hardly test the methods without constructing a request and testing response object returned. This problem doesn't exist in suphle.Some argue that it's difficult to replace to stub the database and io operations. Fair enough; although as discussed in xxx (link to why in appendix), it's not necessary to stub out your database during tests
+
+However, there are other concerns that make it imperative for logic to be abstracted away
+1) reuse
+Your logic may be used by other endpoints, services, modules. You want them to exist in a fluid, atomic state free of unwanted dependencies. You want to reliably test the individual nodes your response payloads aggregate
+
+2) replaceablility
+Arguably the most important. Applications evolve. And when they do, you don't want to stand the risk of breaking things (link to adding features). You want to develop and test the next step of the evolution before it's connected through the controller
+
+3) controllers are god classes
+They're not the kind of object you want to be moving around everywhere. They contain diverse functionality that isn't relevant to all requests
+
+4) suphle service types enable us define application-level constraints
+* Because it's very easy to misuse, suphle restrains the amount of responsibility you'll demand of the traditional controller.
+
+*
+Try to centralize things as much as possible. In the real world, you're likely to do things like checking whether an account is restricted before performing all actions. You want to whether user has an active subscription before accessing certain services. A common trope engages the use of middleware. Conceptually speaking, this is wrong, since both examples are inherently authoritative in nature. They should be dealt with in that layer. An even worse solution often seen in codebases is manually checking the condition for each action that should be protected by it
+// if model-get is foo
+// do x, do y elsewhere etc
+
+By "centralize", what you're adviced to do is to move that condition to the source. Delegate it to an intermediary and use that as source rather than the entity itself
+// fooService-getAll
+
+The caller shouldn't be responsible for that check, as it's easy to forget. This isn't limited to conditionals. It equally applies to adding a clause to a query–in general, any action expected to precede another should be abstracted as high as realistically required business wise, without callers concerning themselves with it
+
+* the modeful and modelless section
+In just about any framework you're familiar with, there's a way to translate payload into strong typed objects. All but in suphle; which should be surprising since one of our most foremost philosophies is typing everything. There are a few reason for this:
+1) such objects are single use
+2) the type doesn't bear much meaning to the domain or serve any purpose beside transferring data to the service doing the actual work
+3) in applications doing more complex work than bland crud, simply type-hinting the model obstructs us from streamlining the query
+
+There is but one justification for strongly typed request object, and that is for validation. However, the fact that proper or complete validation in those languages is usually aided by decorators and annotations, replacing them with strings (link to validation section) seems like a pragmatic compromise
+
+# validation
+talk about the adapter

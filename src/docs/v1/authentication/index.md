@@ -1,34 +1,209 @@
-## Authentication
+## Introduction
 
-Suphle will not hold you to ransom on what payload field names or database columns to authenticate your users against. This means you are at liberty to use as many fields as you deem fit, in any comparison requirement demanded by the business. Keep in mind that Suphle ships with default comparison for the generic app, which we will soon look at.
+This chapter refers to the practise of user login and determining whether the viewer of a content is a registered one or a guest. This is a more widespread requirement across software in general than the specifics of how the users got in there i.e. registration. For this reason, along with the facts that it doesn't directly impact the Framework, it may be more suitable to publish the kitchen sink of security management as its own [Component](/docs/v1/component-templates).
 
-As previously discussed, login requests are prioritized by the router. The login flow begins from the paths set for authentication in the config. Requests matching these paths are then forwarded to services attached to it for authentication to be attempted and a response derived.
+Be that as it may, the login routes are the only ones the Framework is aware of. Suphle spins through all user-defined routes, any [Flow](/docs/v1/flows) route available, before checking whether the request matches defined login paths. This is advantegeous since we want to avoid hydrating and evaluating processes unnecessary for each request.
 
-## Completing the login flow
-In order to integrate the default login system to our app, we will need to connect it to our user entity. An instance of `Illuminate\Database\Eloquent\Model` is linked by default, in accordance with the underlying ORM. When Eloquent is not in use, replace the injected concrete for `Suphle\Contracts\Auth\User` with an implementation conforming to the active ORM.
+The overall overview of the login flow is as you might expect: check for matching paths, compare incoming credentials with existing, attach relevant authentication mechanism to authenticated user, send appropriate response.
 
-## Customization
-The entry point set on the config to customize login requests is through the renderers, which in turn derive or perform designated actions from the repositories they point to. These two concepts are crucial to bending the authentication system to any shape desired.
+## Login paths
 
-/// show config. note: the paths are hard compared. you don't add placeholders except you wish to replace the `authConfig->getPathRenderer]` with a regex that does
+These are defined in `Suphle\Contracts\Config\AuthContract::getLoginPaths` config. You typically want to extend `Suphle\Config\Auth` if at all you want to [replace it](/docs/v1/config), as it is already connected as default.
 
-The renderers are the specialized login equivalent of route collections. However, rather than implement `Suphle\Contracts\Routing\RouteCollection`, they are required to implement `Suphle\Contracts\LoginRenderers`
+```php
+namespace Suphle\Config;
 
-// example
+use Suphle\Contracts\Config\AuthContract;
 
-Note that they're not wrapped in a http method.
+use Suphle\Auth\Renderers\{BrowserLoginMediator, ApiLoginMediator};
 
-The repos can be considered as the controller action method but for login requests. As such, they are expected to provide a validator
+class Auth implements AuthContract {
 
-On successful validation, control is handed over to the repos, where there's no need to check for presence of fields. In accordance with the two routes on the renderer, the repos are expected to expose two handler methods for successful and failed login attempts respectively. On success, `BrowserAuthRepo` initializes a session for the authenticated user and, as directed by the renderer, will redirect to the page of choice. `ApiAuthRepo` on the other hand, responds with the token of the logged in user.
+	protected function getLoginPaths ():array {
 
-Both authentication forms utilize an identical identification technique that compares the incoming email and password with a user on the underlying database. In later sections, we will see how to customize that when it doesn't satisfy business requirements.
+		return [
+			$this->markupRedirect() => BrowserLoginMediator::class,
 
-## Validation
-The difference between login and regular validators is that the method name for the former is being derived from the action method. Login only consists of one route, thus, only one valid rule-set is required. The default repos, implementing `LoginActions`, return the name of the validator class
-// show method (validatorCollection)
+			"api/v1/login" => ApiLoginMediator::class
+		];
+	}
 
-tell us what it does
+	public function markupRedirect ():string {
+
+		return "login";
+	}
+}
+```
+
+The array is keyed by desired login paths, which will eventually be compared against incoming request. Matching requests are then forwarded to login renderers. You can define as many login paths as necessary for your application. However, note that paths defined here are automatically designated to the POST HTTP method. You are free to connect the UI and GET pattern in their regular layers.
+
+## Login mediators
+
+These are an intermediary between login paths, computing authentication status and the renderer from which response will be derived. They are required to implement `Suphle\Contracts\Auth\LoginFlowMediator`. On the default config, some renderers are already defined-- we have `Suphle\Auth\Renderers\BrowserLoginMediator` and `Suphle\Auth\Renderers\ApiLoginMediator`.
+
+`BrowserLoginMediator`, which is intended to apply to HTML based responses, is the more interesting of the duo. When a login attempt fails, it reloads the page but when successful, it checks for an intended destination, using the default location, "/", when that is absent. To overwrite this location, override the `BrowserLoginMediator::successDestination` protected property in your extended renderer. You don't have to attach an intended destination manually. Whenever a protected path is unable to find an active user, Suphle throws a `Suphle\Exception\Explosives\Unauthenticated` exception, that is in turn [handled](/docs/v1/exceptions) by `Suphle\Exception\Diffusers\UnauthenticatedDiffuser`. This diffuser uses the failed authentication's mechanism to determine whether it's a HTML based route. When true, it redirects user to `Suphle\Contracts\Config\AuthContract::markupRedirect` defined above, along with the intended location tacked as a query, causing a seamless login UX.
+
+The methods `successRenderer` and `failedRenderer` on `Suphle\Contracts\Auth\LoginFlowMediator` are used to provide what renderer will be presented to user based on the authentication attempt status. Should the defaults not suit your business requirements, you can as well override and connect them under your custom interface collection.
+
+`Suphle\Auth\Renderers\ApiLoginMediator` is a simple class:
+
+```php
+use Suphle\Contracts\Auth\{LoginFlowMediator, LoginActions};
+
+use Suphle\Contracts\Presentation\BaseRenderer;
+
+use Suphle\Response\Format\Json;
+
+use Suphle\Auth\Repositories\ApiAuthRepo;
+
+class ApiLoginMediator implements LoginFlowMediator {
+
+	private $authService;
+
+	public function __construct (ApiAuthRepo $authService) {
+
+		$this->authService = $authService;
+	}
+
+	public function successRenderer ():BaseRenderer {
+
+		return new Json( "successLogin");
+	}
+
+	public function failedRenderer ():BaseRenderer {
+
+		return new Json( "failedLogin");
+	}
+
+	public function getLoginService ():LoginActions {
+
+		return $this->authService;
+	}
+}
+```
+You may have observed that the renderers are not wrapped in any HTTP method using `_get`. As we hinted earlier, all routes on this level are designated as POSTs.
+
+## Login services
+
+These are responsible for communicating with whatever medium we intend to extract users from and authenticate against. They can be considered as [controller](/docs/v1/controllers) action methods but for login requests. The same [validator-for-POST-request rule](/docs/v1/controllers#validation) on regular controllers applies to them. Login services are classes that implement `Suphle\Contracts\Auth\LoginActions`.
+
+Both default login mediators have complementary login services-- `Suphle\Auth\Repositories\BrowserAuthRepo`, and `Suphle\Auth\Repositories\ApiAuthRepo`. Each of them utilizes an identical identification technique but have a slight difference in their behavior on success; `BrowserAuthRepo` initializes a session for the authenticated user and outputs whatever renderer is given in `BrowserLoginMediator::successRenderer`. `ApiAuthRepo` on the other hand, responds with a token to use in authenticating user during subsequent visits.
+
+```php
+namespace Suphle\Auth\Repositories;
+
+class ApiAuthRepo extends BaseAuthRepo {
+
+	public function successLogin () {
+
+		return [
+
+			"token" => $this->authStorage->startSession($this->comparer->getUser()->getId())
+		];
+	}
+}
+```
+Notice that methods on `Suphle\Contracts\Auth\LoginActions` correspond to those defined in our mediator renderers--controller actions.
+
+All this while, we have looked at success methods and their failure counterparts. But how is Suphle able to decipher whether or not credentials received are accurate?
+
+### Obtaining Login status
+
+The average business will require a way to determine whether incoming credentials belong to an existing user. We usually employ the use of payload field names or database columns. A common trope is searching a user on the database matching the incoming email and comparing his hashed password with the incoming one. As you may have guessed, the default status is resolved using an implementation of the process described. If your authentication needs exceed those provided by an email-password comparison, or assuming you want to emit an event that initiates some domain specific action, custom functionality can be provided through `Suphle\Contracts\Auth\LoginActions::compareCredentials`.
+
+Both login services available include a default implementation of the email-password paradigm using `Suphle\Auth\EmailPasswordComparer`.
+
+```php{10}
+namespace Suphle\Auth\Repositories;
+
+use Suphle\Contracts\Auth\LoginActions;
+
+abstract class BaseAuthRepo implements LoginActions {
+
+	protected $comparer;
+
+	public function compareCredentials ():bool {
+
+		return $this->comparer->compare();
+	}
+}
+```
+
+```php{8}
+namespace Suphle\Auth\Repositories;
+
+use Suphle\Auth\Storage\TokenStorage;
+
+use Suphle\Auth\EmailPasswordComparer;
+
+class ApiAuthRepo extends BaseAuthRepo {
+
+	private $authStorage;
+
+	public function __construct (EmailPasswordComparer $comparer, TokenStorage $authStorage) { 
+		
+		$this->comparer = $comparer;
+
+		$this->authStorage = $authStorage;
+	}
+}
+```
+If you're not interested in this paradigm at all, you are free to supply custom login services that inject an appropriate comparer. The only important factor is that Suphle is informed through `Suphle\Contracts\Auth\LoginActions::compareCredentials` whether or not authentication succeeded. If however, you want email-password but with additional bells and whistles, you can customize `EmailPasswordComparer` as follows.
+
+### Extending `EmailPasswordComparer`
+
+This comparer uses `Suphle\Contracts\Auth\UserHydrator::findAtLogin` to hydrate a user *specifically* relevant to the login process. `UserHydrator`s represent the underlying user storage. For a database-driven storage, the hydrator will rely on the active `Suphle\Contracts\Database\OrmDialect`, since the user it returns should conform to its model instance. From the Eloquent implementation, we can extract the following snippet:
+
+```php
+namespace Suphle\Adapters\Orms\Eloquent;
+
+use Suphle\Contracts\Auth\{UserContract, UserHydrator as HydratorContract};
+
+class UserHydrator implements HydratorContract {
+
+	protected $loginColumnIdentifier = "email";
+
+	/**
+	 *  {@inheritdoc}
+	*/
+	public function findAtLogin ():?UserContract {
+
+		return $this->model->where([
+
+			$this->loginColumnIdentifier => $this->payloadStorage->getKey($this->loginColumnIdentifier)
+		])->first();
+	}
+}
+```
+Depending on your needs, you can either update the `loginColumnIdentifier` property, or replace the `findAtLogin` method altogether.
+
+### Login service Validation
+
+As was stated earlier, `Suphle\Contracts\Auth\LoginActions` should be considered as controller actions--they are entitled to compulsory vaidators that must run before `Suphle\Contracts\Auth\LoginActions::compareCredentials`. This means we can confidently work with fields inside the comparer without the need to check for presence of fields.
+
+The difference between login and validators you're [accustomed to](/docs/v1/controllers#validation) is that the method name for the former is being derived from the action method. Login only consists of one route, thus, only one valid rule-set is required. The validation rules are expected to reside at `Suphle\Contracts\Auth\LoginActions::successRules`. 
+
+Both our login services are constrained by the following rules:
+
+```php
+namespace Suphle\Auth\Repositories;
+
+use Suphle\Contracts\Auth\LoginActions;
+
+abstract class BaseAuthRepo implements LoginActions {
+
+	public function successRules ():array {
+
+		return [
+			"email" => "required|email",
+
+			"password" => "required|alpha_num|min:5"
+		];
+	}
+}
+```
+
+That's all there is to the login flow. Deep customization may seem like a lot but we have achieved is not muddling up responsibilities in a way that's going to make modification a nightmare. We also have no god objects. It's flexible enough to authenticate and connect users from any source, using clearly defined interfaces.
 
 ## Securing routes
 Every collection can decide on what authentication mechanism it prefers to use. This is required since route collections are meant to be inter-operable between more than one channel i.e. web, api etc. While different routes utilising diverse mechanisms may seem impractical, the major advantage is for the fluid transition to other channels discussed under the [routing topic](/docs/v1/routing#route-inter-operability). During this process, the mechanism internally switches to that used by the active collection.
@@ -47,13 +222,6 @@ This can be achieved in two different ways, depending on where the user is reque
 ### During login flow
 The user doesn't exist on `AuthStorage` during the login procedure but in subsequent requests with the active authentication criteria resolved. By default, the resolved user instance can be read from `Suphle\Auth\EmailPasswordComparer` which is accessible from the `comparer` property if you're making use of the default repositories mentioned in the [Customization section](/docs/v1/authentication#Customization).
 
-/// Example of comparer->getUser() in a repo
-
-If your authentication needs exceed those provided by an email-password comparison, you can either override the provided implementation of `Suphle\Contracts\Auth\UserHydrator` in the container, or pass your own comparer altogether to an extended version of the repos
-/// Example of the latter not even using email/password checks, perhaps for logging some info or sending notification or other fields
-
-For simple cases where password is required but user hydration logic differs, the above is an overkill. It's safe to override the hydrator and specifically, the `findAtLogin` method. When this is not suitable, you are responsible for retrieving the user however you deem fit. The only important factor is that the framework is informed through the active repo's `compareCredentials` method whether or not authentication succeeded.
-
 ### Everywhere else
 Authenticated user can be resolved by the container by type-hinting the `AuthStorage` interface and calling its `getUser` method. By default, a session-based implementation is bound to the container to be returned on routes without authentication. Resources at such routes are intended for consumption by both authenticated and unauthenticated users. This binding can be changed by simply binding your `AuthStorage` of choice.
 
@@ -68,3 +236,6 @@ You are encouraged to plant the logout-bearing module on the very first module i
 
 ## Multi-user login
 Talk about `impersonate` flow for both mechanisms. What happens when I logout in that mode? How do I switch between users?
+
+* where we discuss session resumption
+The clear disparity in controlling session initialisation and resumption allows us easily perform actions such as updating user login status while retaining their login date, or implementing single sign on.

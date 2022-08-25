@@ -41,3 +41,9 @@ However, using it will preclude you from binding listeners to an interface, if y
 
 **
 Event handlers receive emitted payload as-is–without meta information such as the emitting instance etc. For this reason, suphle doesn't interfere by enforcing payload type. The emitter must document what type its consumers are expected to adhere to
+
+*
+Note in the docs, queues are the deferred equivalent of events. Both should be used whenever the controller method doesn't need the result of a method call (be it from local or external modules)
+
+* cascading bit
+The handlers are fired in the order the modules are stacked. This could result in actions dependent on completion of a prior activities, having to rely on a brittle arrangement. In such cases, rather than the dependent activity listening to events on the original emitter, it will be more robust for the preceding listener to rethrow its own event onto the stack for direct dependents to listen on, instead. Let's see how that would look in practice

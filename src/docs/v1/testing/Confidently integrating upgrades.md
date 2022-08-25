@@ -5,7 +5,8 @@ That can be likened to bringing a knife to a gunfight. As a wise friend once put
 
 In reality, replacing parts of what has been built poses the risk of the ensuing void collapsing into a pile of rubble. In this chapter, we'll be looking at strategies for the new addition to dovetail the way it would have, had it been planned along with the original structure. This chapter assumes an already [firm grasp of test automation](/docs/v1/testing/Achieving-test-automation-through-alternative-means)
 
-When delivering a project as a decoupled, composed tree of components, we have nothing to fear while including new features, as long as incoming modifications and the existing project are not interwoven. When they are, it becomes imperative that their **integration** is thoroughly tested.
+When delivering a project as a decoupled, composed tree of components, we have nothing to fear while including new features, as long as incoming modifications and the existing project are not interwoven. When they are, it becomes imperative that their **integration** is thoroughly tested. To be clear, after implementing our shiny new feature, modifying or refactoring an existing one, existing software is bound to break. Have no doubt about it. To be fair, the odds are not entirely 99:1, but they're so negligible that it's more realistic to simply round it off. Your only hope of raising that figure to anything else is by testing it
+How do you guarantee new feature functions as intended? (note that this is different from maintaining system equilibrium as was our aim in the previous paragraph). Same way -- testing. There isn't a reality in back end engineering where a developer can escape having verification in place before and after modifying an existing system. You already converted your business expectations into code. Now, you have to programmatically verify that that code indeed does what you intended it to do.
 
 ## Issues with launching new features
 
@@ -39,4 +40,20 @@ Though not a strict requirement, it helps if both the extension and integration 
 
 ## Refactoring the data layer
 We wanna add new columns on our database/model A for module A but don't wanna break the code in other modules reliant on model A. We create model A2 extending model A, add new columns on database, update occurences/type-hints of A in module A to A2. Model A gets discarded whenever its dependents upgrade to A2
+
+## After building-- and an error is spotted
+
+Modules assist in making dependency chains more glaring, but not every component can exist in a modular format
+
+*
+When an existing part of the system is discovered to be broken, our aim is to rectify its consumption of the shared service. If the modification substituted existing functionality of the shared service, and the existing code wants to retain its current behaviour, we need to avoid their conflict of interest by moving that functionality elsewhere and redirecting our test to that new sut.If we don't want to retain the current behaviour, we need to bring our test up to speed with the changes propagated by latest additions
+
+If the existing code failed because of an incompatible api, we want to find a common ground between the new and old systems. Rather than unifying their signatures into a longer list of arguments, the dependent method may have to be separated into two distinct methods that trigger an internal, common process
+
+To recap, the first step is to identify what changed on the dependency. That would then inform our reaction either in the failing test, on the dependency, or on the consumer
+
+* intro
+One of the biggest pitfalls in software is maintaining projects written by someone else. Things can quickly go south if it was requires significant refractor. You can apply the concept of low coupling using events but without full test coverage, it's impossible to truly tell whether our modification has had adverse effects on an unintended portion of the system.
+
+Our events for non fetches approach serves us for as long as we're not modifying existing behaviour itself but only augmenting it. When the motive is to replace existing behaviour, you still want to make sure nothing will be hurt by testing the system as a whole. This is one of the inspirations for static analysis to be included during server build. Even though it doesn't do much to assure us that contents of the objects we're looking at and behavior of the system is expected, we are 100% guaranteed against pursuing syntactic errors we would otherwise have spotted at runtime.
 

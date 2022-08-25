@@ -106,3 +106,11 @@ The structure in template folder is expected to mirror destination structure
 
 ## How do you add additional routes to a module?
 You don't, as that would require controllers, services and the likes. You are better off defining those routes in your own module, only utilizing functionality on the imported module. See chapter on [packages](/docs/v1/packages)
+
+## what goes in a descriptor api?
+Php doesn't have the concept of packages yet. This means, you can still comfortably reach into modules, manipulating them as you deem fit. However, descriptor apis offer a uniform platform for listing the capabilities this module offers its consumers. Note that it doesn't have to mention everything the module itself does. Some functionalities of the module can be managed by the framework – routing, events etc don't need to be extracted and bound in the consumer.
+
+When one of the capabilities include exporting data to the module's consumers, the purpose of the data should determine what format it is being served in. Data intended to used in the computation of a consumer can be served in its raw format. However, data needed for direct plugging into a view template may benefit more from view composition (link) to achieve a higher degree of modularity
+
+## templates
+You may have observed that the default template contains a connected route collection along with a controller. Note that this doesn't reflect a mandatory requirement for a valid module. The only reason for this is to facilitate bootstrapping a brand new suphle project. A module that itself doesn't handle requests can afford to miss a router config, route collection, and more importantly, should not be connected under module handler identifier
