@@ -1,5 +1,3 @@
-# Routing
-
 ## Introduction
 
 Routing is one of most frameworks' strongest focal points. It's the location from which core components such as authentication, authorization, controllers and middleware are exposed by developer. It'll otherwise be duplicitous to introduce those components elsewhere and apply relevant routes to them.
@@ -7,7 +5,7 @@ Routing is one of most frameworks' strongest focal points. It's the location fro
 That being the case, Suphle takes them a step further as the location for defining [flows](/docs/v1/flows) and response types. However, we won't examine all of that in this chapter. This one will only equip you with all you need to translate user requests to their controllers
 
 ---
-Routing consists of definining [controller](/docs/v1/controllers) adapters i.e. portals between an incoming request and its execution. This means that for all the power controllers are known to wield, they are answerable to what is being dictated from route definitions. As will soon be seen with route collections, one can plug in various co-existing controller implementations as the need may be.
+Routing consists of defining [controller](/docs/v1/controllers) adapters i.e. portals between an incoming request and its execution. This means that for all the power controllers are known to wield, they are answerable to what is being dictated from route definitions. As will soon be seen with route collections, one can plug in various co-existing controller implementations as the need may be.
 
 ## Route collections
 These are classes where routes/paths are defined. Route collections can either implement the `Suphle\Contracts\RouteCollection` or preferably, extend `Suphle\Routing\BaseCollection` which should be the base class for your lower level collections. 
@@ -201,11 +199,12 @@ API documentation should be cast in stone. This means that after generating docu
 
 ## Route Inter-operability
 ...after introduction
+
+talk about the config and applicable middleware if any
+...
 It's not always that our APIs return the same response verbatim. Some developers may decide to follow one of the JSON specifications such as JSON-LD, Hapi, and what have you. In such case, we will simply plant a middleware in the stack that wraps all outgoing API response appropriately
 
 // example
-
-Another workable approach may be extending the `Json` renderer, and overriding the `render()` method
 
 ## CRUD routes
 CRUD are operations commonly used for managing resources or entities. Rather than defining them for each entity in our application, the collection class offers the `_crud` method. It doesn't in itself return the required method, but a `CrudBuilder` object that enables us fashion the prepared renderers to our desired tastes.

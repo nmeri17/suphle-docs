@@ -117,3 +117,7 @@ There is but one justification for strongly typed request object, and that is fo
 
 # validation
 talk about the adapter
+
+* systemModelEdit and MultiUserEdit
+
+These decorators enforce a more automatic form of authorization, so that even if the developer is not conscious about it in their software, this level of insecurity is unable to penetrate. The decorators are defined on `Suphle\Services\ServicesCoordinator` and implement common security techniques logical for user created resources i.e. (describe/summarize what they do)
