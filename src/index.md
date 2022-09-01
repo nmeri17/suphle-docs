@@ -1,6 +1,6 @@
 ---
 home: true
-heroImage: /logo.jpg
+heroImage: /suphle.jpg
 tagline: Opinionated PHP framework for building performant, extensible, and testable web applications
 actionText: Quick Start →
 actionLink: /docs/v1/quick-start/

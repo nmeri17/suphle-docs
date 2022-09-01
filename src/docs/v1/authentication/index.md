@@ -111,48 +111,46 @@ All this while, we have looked at success methods and their failure counterparts
 
 The average business will require a way to determine whether incoming credentials belong to an existing user. We usually employ the use of payload field names or database columns. A common trope is searching a user on the database matching the incoming email and comparing his hashed password with the incoming one. As you may have guessed, the default status is resolved using an implementation of the process described. If your authentication needs exceed those provided by an email-password comparison, or assuming you want to emit an event that initiates some domain specific action, custom functionality can be provided through `Suphle\Contracts\Auth\LoginActions::compareCredentials()` method.
 
-Both login services available include a default implementation of the email-password paradigm using `Suphle\Auth\EmailPasswordComparer`.
+Both login services available inject an interface, `Suphle\Contracts\Auth\ColumnPayloadComparer`, for comparing input with existing data. Default implementation of this interface is `Suphle\Auth\EmailPasswordComparer`; a class which, as the name implies, compares email field on incoming payload to the email database column. You are free to supply custom login services that inject an appropriate comparer. The only important factor is that Suphle is informed through `Suphle\Contracts\Auth\LoginActions::compareCredentials()` whether or not authentication succeeded.
 
-```php{10}
-namespace Suphle\Auth\Repositories;
+### Custom comparer
 
-use Suphle\Contracts\Auth\LoginActions;
+`EmailPasswordComparer` uses its `columnIdentifier` property to hydrate a user based on email fields. You can afford to extend it and set that property to any field of your choosing. When one field comparison is not sufficient, you can override `EmailPasswordComparer::findMatchingUser():?UserContract`.
 
-abstract class BaseAuthRepo implements LoginActions {
+```php
 
-	protected $comparer;
+protected function findMatchingUser ():?UserContract {
 
-	public function compareCredentials ():bool {
+	return $this->userHydrator->findAtLogin([
 
-		return $this->comparer->compare();
-	}
+		"username" => $this->payloadStorage->getKey("username"),
+
+		"other_field" => $this->payloadStorage->getKey("other_field")
+	]);
+}
+```
+The comparer will use that to compare passwords.
+
+If you're not interested in password comparisons at all, consider ditching `EmailPasswordComparer` altogether, using `UserHydrator` on your `Suphle\Contracts\Auth\ColumnPasswordComparer` implementation to obtain a user instance.
+
+```php
+
+public function compare ():bool {
+
+	$user = $this->userHydrator->findAtLogin([
+
+		"username" => $this->payloadStorage->getKey("username"),
+
+		"other_field" => $this->payloadStorage->getKey("other_field")
+	]);
+
+	$hasActiveAccount = $user->some_condition != false;
+
+	return $hasActiveAccount;
 }
 ```
 
-```php{8}
-namespace Suphle\Auth\Repositories;
-
-use Suphle\Auth\Storage\TokenStorage;
-
-use Suphle\Auth\EmailPasswordComparer;
-
-class ApiAuthRepo extends BaseAuthRepo {
-
-	private $authStorage;
-
-	public function __construct (EmailPasswordComparer $comparer, TokenStorage $authStorage) { 
-		
-		$this->comparer = $comparer;
-
-		$this->authStorage = $authStorage;
-	}
-}
-```
-If you're not interested in this paradigm at all, you are free to supply custom login services that inject an appropriate comparer. The only important factor is that Suphle is informed through `Suphle\Contracts\Auth\LoginActions::compareCredentials()` whether or not authentication succeeded. If however, you want email-password but with additional bells and whistles, you can customize `EmailPasswordComparer` as follows.
-
-### Extending `EmailPasswordComparer`
-
-This comparer uses `Suphle\Contracts\Auth\UserHydrator::findAtLogin()` to hydrate a user *specifically* relevant to the login process. `UserHydrator`s represent the underlying user storage. For a database-driven storage, the hydrator will rely on the active `Suphle\Contracts\Database\OrmDialect`, since the user it returns should conform to its model instance. From the Eloquent implementation, we can extract the following snippet:
+`UserHydrator`s represent the underlying user storage. For a database-driven storage, the hydrator will rely on the active `Suphle\Contracts\Database\OrmDialect`, since the user it returns should conform to its model instance. The Eloquent implementation simply looks like this:
 
 ```php
 namespace Suphle\Adapters\Orms\Eloquent;
@@ -161,21 +159,17 @@ use Suphle\Contracts\Auth\{UserContract, UserHydrator as HydratorContract};
 
 class UserHydrator implements HydratorContract {
 
-	protected $loginColumnIdentifier = "email";
-
 	/**
 	 *  {@inheritdoc}
 	*/
-	public function findAtLogin ():?UserContract {
+	public function findAtLogin (array $criteria):?UserContract {
 
-		return $this->model->where([
-
-			$this->loginColumnIdentifier => $this->payloadStorage->getKey($this->loginColumnIdentifier)
-		])->first();
+		return $this->model->where($criteria)->first();
 	}
 }
 ```
-Depending on your needs, you can either update the `loginColumnIdentifier` property, or replace the `findAtLogin` method altogether.
+
+It's at the database layer. You don't want to change it unless additional query clauses beyond simple fields are required for comparison.
 
 ### Login service Validation
 
@@ -202,6 +196,8 @@ abstract class BaseAuthRepo implements LoginActions {
 	}
 }
 ```
+
+These values are set to conform with the default `EmailPasswordComparer` discussed above. If you wish to replace it, remember to update the validator as well.
 
 That's all there is to the login flow. Deep customization may seem like a lot but we have achieved is not muddling up responsibilities in a way that's going to make modification a nightmare. We also have no god objects. It's flexible enough to authenticate and connect users from any source, any ORM, using clearly defined interfaces.
 
@@ -238,11 +234,11 @@ class SecureBrowserCollection extends BaseCollection {
 }
 ```
 
-`Suphle\Routing\BaseCollection` injects `Suphle\Contracts\Auth\AuthStorage` into its constructor, which would lift whatever default is set in `BaseInterfaceCollection`. If you have any reason to override your collection's constructor, do well to provide a preferred authentication mechanism as well. The sub-class, `Suphle\Routing\BaseApiCollection` uses the more specific `Suphle\Auth\Storage\TokenStorage`
+`Suphle\Routing\BaseCollection` injects `Suphle\Contracts\Auth\AuthStorage` into its constructor, which would lift whatever mechnism is set as default in `BaseInterfaceCollection`. If you have any reason to override your collection's constructor, do well to provide a preferred authentication mechanism as well. The sub-class, `Suphle\Routing\BaseApiCollection` uses the more specific `Suphle\Auth\Storage\TokenStorage`
 
 ### Authentication in nested collections
 
-As route patterns cascade, protection applied to a prefixed pattern or method applies to all the collection below it. For sub-collections we'd like to expose some patterns, we secure only those patterns we want to retain. When Suphle encounters authentication in a nested collection, it filters off patterns not on that list. For example, given the following collection sequence:
+As route patterns cascade, protection applied to a prefixed pattern or method applies to patterns in the collection below it. To selectively apply authentication to a sub-collection, we mention only those patterns we want to retain authentication on. When Suphle encounters authentication in a nested collection, it filters off patterns not on that list. For example, given the following collection sequence:
 
 ```php
 use Suphle\Routing\BaseCollection;
@@ -315,7 +311,7 @@ During the course of development, the need to assign a unique resource pertainin
 
 ### During login flow
 
-Within this procedure, you can only be sure of working with a valid user after `Suphle\Contracts\Auth\LoginActions::compareCredentials()` returns true. `Suphle\Auth\EmailPasswordComparer`, which exists on both login services under the `comparer` property, has a method `getUser()` that you would typically use either in `Suphle\Contracts\Auth\LoginActions::successLogin()` or any custom event handlers employed to avoid attracting business logic there.
+Within this procedure, you can only be sure of working with a valid user after `Suphle\Contracts\Auth\LoginActions::compareCredentials()` returns true. `Suphle\Contracts\Auth\ColumnPayloadComparer`, which exists on both login services under the `comparer` property, has a method `getUser()` that you would typically use either in `Suphle\Contracts\Auth\LoginActions::successLogin()` or any custom event handlers employed to avoid attracting business logic there.
 
 If you're using your own comparer, you might as well provide a similar method for reading the user you confirmed is legitimate.
 
@@ -337,7 +333,7 @@ interface AuthStorage {
 For whatever mechanism is active, there are one or two distinct features you'll want to be aware of. They both implement multi-user login -- a phenomenon applicable in hierarchial applications where it may be necessary for a privileged user to browse as one with lesser authorities -- but it's more pronounced under session-based authentication.
 
 - `Suphle\Auth\Storage\TokenStorage`
-This requires the presence of certain env variables. They are already defined in the .env file that comes with a fresh Suphle installation. Multi-user login is achieved by calling `Suphle\Contracts\Auth\AuthStorage::imitate(string $newIdentifier)`, rather than successive calls to logout and log back in. This mechanism will return a token for the given identifier. It is expected that the client will store the parent identifier and will be responsible for reverting to it.
+This requires the presence of certain env variables. They are already defined in the .env file that comes with a fresh Suphle installation. Multi-user login is achieved by calling `Suphle\Contracts\Auth\AuthStorage::imitate(string $newIdentifier)`, rather than successive calls to logout and log back in. This mechanism will return a token for the given identifier. It is expected that the client will store the parent identifier and be responsible for reverting to it.
 
 - `Suphle\Auth\Storage\SessionStorage`
 This mechanism uses the same signature as above for impersonation purposes. However, the state of both active users are stored on the server. You would typically hide the route that triggers this functionality under an administrative [authorization](/docs/v1/authorization#Route-based-authorization).
@@ -356,7 +352,7 @@ It will return true if an earlier user is impersonating another. After we're don
 $sessionStorage->startSession($sessionStorage->getPreviousUser());
 ```
 
-Note the use of `startSession()` here instead of `imitate()`. This is because `imitate()` is strictly for setting the superior-level to revert to -- the getaway driver.
+Note the use of `startSession()` here instead of `imitate()`. This is because `imitate()` is strictly for setting the superior-level to revert to -- the getaway driver, if you like.
 
 ## Logging out
 
@@ -382,14 +378,14 @@ They are expected to interact with the actual mechanism and facilitate other use
 ## Testing authentication
 
 Within test environment, we'll want to simulate the authentication states to examine our software's behavior in those states. For this purpose, Suphle provides the trait
-`Suphle\Testing\Proxies\SecureUserAssertions`, applicable on all the [test types](/docs/v1/testing/in-universe-functionality.md). In order to keep this trait test-type agnostic, in module-enable tests, it uses the titular module for hydrating `Suphle\Contracts\Auth\AuthStorage`. It contains utilities for a streamlined experience working with the authentication mechanisms:
+`Suphle\Testing\Proxies\SecureUserAssertions`, applicable on all the [test types](/docs/v1/testing/in-universe-functionality.md). It contains utilities for a streamlined experience working with the authentication mechanisms:
 
 ```php
 
 protected function getAuthStorage (?string $storageName = null):AuthStorage
 ```
 
-When called without an argument, will return the default bound mechanism. If we're manually testing a mechanism different from that which was bound, it'll properly boot it before returning an instance.
+When called without an argument, it returns the default bound mechanism. If we're manually testing a mechanism different from that which was bound, it'll properly boot it for you before returning an instance.
 
 ```php
 

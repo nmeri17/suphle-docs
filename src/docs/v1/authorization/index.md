@@ -190,6 +190,110 @@ The above tag will prohibit access to all routes matching "/admin-entry", as wel
 Suppose we want to exclude certain sub-patterns under "/admin/\*", we'll use `Suphle\Request\PathAuthorizer::forgetRule(array $patterns, string $rule):self` method:
 
 ```php
+class UnlocksAuthorization1 extends BaseCollection {
+
+	public function _handlingClass ():string {
+
+		return EmploymentEditController::class;
+	}
+
+	public function RETAIN () {
+
+		$this->_get(new Json("simpleResult"));
+	}
+
+	public function ADDITIONAL__RULEh () {
+
+		$this->_get(new Json("simpleResult"));
+	}
+
+	public function SECEDE () {
+
+		$this->_get(new Json("simpleResult"));
+	}
+
+	public function GMULTI__EDITh_id () {
+
+		$this->_get(new Json("getEditableResource"));
+	}
+
+	public function GMULTI__EDIT__UNAUTHh () {
+
+		$this->_get(new Json("getEditableResource"));
+	}
+
+	public function _authorizePaths (PathAuthorizer $pathAuthorizer):void {
+
+		$pathAuthorizer->addRule (
+
+			[ "GMULTI__EDITh_id"], EmploymentEditRule::class // note that this equates &&
+		)
+		->forgetRule([
+
+			"SECEDE", "GMULTI__EDIT__UNAUTHh"
+		], AdminRule::class);
+	}
+}
 ```
 
-## Testing
+In the collection above, we declare some patterns but modify existing authorization inherited from the parent collection in a few ways: we use `forgetRule` to detach authorization applied from preceding collections. It doesn't necessarily have to be the immediate parent collection.
+
+While at it, we apply an additional authorization rule. Instead of overwriting `AdminRule`, what this does is combine both into a stack of rules that looks like:
+
+```php
+$patternRules = [AdminRule::class, EmploymentEditRule::class];
+```
+
+`EmploymentEditRule` will never run if `AdminRule` fails, so there's no need to combine the logic manually in the rule class. By the way, `EmploymentEditRule` is a model-based authorization, meaning that where necessary, there's no problem with combining both.
+
+```php
+class EmploymentEditRule extends RouteRule {
+
+	private $model, $pathPlaceholders;
+
+	public function __construct (AuthStorage $authStorage, Employment $model, PathPlaceholders $pathPlaceholders) {
+
+		$this->model = $model;
+
+		$this->pathPlaceholders = $pathPlaceholders;
+
+		parent::__construct($authStorage);
+	}
+
+	public function permit ():bool {
+
+		return $this->authStorage->getId() == $this->getCreatorId();
+	}
+
+	protected function getCreatorId ():int {
+
+		return $this->model->find(
+		
+			$this->pathPlaceholders->getSegmentValue("id")
+		)->employer->user_id;
+	}
+}
+```
+
+This will make that pattern accessible to only admins AND the resource's creator.
+
+## Testing authorization
+
+```php
+
+protected function assertForbidden ():void
+```
+
+We use this on HTTP-based tests to verify permission to access resources was properly restricted. If denial was encountered, test will fail.
+
+```php
+
+public function test_nested_missing_all_rules_fails () {
+
+	$this->actingAs($this->admin); // given
+
+	$this->get(self::EDIT_PATH . $this->randomEmploymentId()) // when
+
+	->assertForbidden(); // then
+}
+```

@@ -60,9 +60,9 @@ module.exports = {
       }*/
     ],
     sidebar: [
-      ["/docs/v1/quick-start/", "Quick Start"], ["/docs/v1/basics/", "Basics"],
+      ["/docs/v1/quick-start/", "Quick Start"],
 
-      ["/docs/v1/modules/", "Modules"], ["/docs/v1/container/", "Container"], ["/docs/v1/service-providers/", "Service Providers"],
+      ["/docs/v1/modules/", "Modules"], ["/docs/v1/container/", "Container"],
 
       ["/docs/v1/testing/Achieving test automation through alternative means.md", "Achieving test automation through alternative means"], // interlude
 
@@ -78,7 +78,7 @@ module.exports = {
 
       ["/docs/v1/flows/", "Flows"], ["/docs/v1/bridges/", "Framework Bridge"], ["/docs/v1/console/", "Console Commands"],
 
-      ["/docs/v1/component-templates/", "Component-templates"], ["/docs/v1/contributing/", "Contributing"], ["/docs/v1/credits/", "Credits"], ["/docs/v1/roadmap/", "Roadmap"],
+      ["/docs/v1/component-templates/", "Component-templates"], ["/docs/v1/contributing/", "Contributing"], ["/docs/v1/credits/", "Credits"],
 
       ["/docs/v1/testing/Testing index", "Testing index"]
     ]

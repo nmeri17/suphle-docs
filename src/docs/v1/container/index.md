@@ -136,3 +136,32 @@ Combining A cocktail of decorators with handlers that trigger underlying concret
 (module class binding method)
 Careful to decouple dependencies during binding. Starting a bind call within another will confuse the outer one
 // example
+
+describe the three kinds of interfaces we have
+Config are simple: extend configMarker and live on method x
+
+Talk about precedence if necessary
+
+## Interface loaders
+
+While they may seem related to [contextual-binding](/docs/v1/container/#contextual-binding), they offer a very different kind of functionality. Maybe by comparison, we can clearly distinguish their differences. If contextual-binding is a way to supply a multitude of callers with applicable concretes, service provision can only be used to provide just one concrete. However, it centralizes this concrete to a point where:
+- It can be easily replaced
+- The concretes booting phase can be edited
+
+Both can't be combined since consumers are not meant to be aware or coupled to the underlying concrete. In addition, if this were possible, it would permit diverse callers to receive differing states of the same concrete, which would in turn lead to programs difficult to reason about. ((review))
+
+The perfect use-case for service providers is when a group of callers require some kind of adapter. In an ideal world where library authors all fashion their packages after a common interface, with the aid of service providers, consumers can effortlessly swap out a payment or share link generation concrete by updating its initialization logic.
+
+/// Note 1
+If the concrete returned from the service provider refuses to match the interface by which it was provided, the container will not budge when asked to hydrate that interface.
+
+/// creating a new provider, registering the provider
+
+What methods do they contain?
+
+- `bindArguments`
+We use this method to obscure away instantiation details from an interface's consumer -- which they shouldn't be bound to. Any arguments required by the given constructor are described here.
+
+Of course, when providing interfaces, there are no constructor methods to fill. The key/value expected to populate this array is a blank cheque matching whatever parameters are required to instantiate the concrete being supplied
+///
+Show example
