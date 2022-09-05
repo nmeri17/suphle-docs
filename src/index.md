@@ -23,14 +23,18 @@ Suphle is a PHP framework for enterprises and SAASes to build anything from robu
 ## Performance
 // insert missing image icon
 
-If you're coming from the JS ecosystem, you must be itching to see whether Suphle has the longest bar among a row of competing contenders. By now, it should be common knowledge that if you're not building one of the FAANG companies, handling thousands of requests per second should be the least of your worries. Suphle has a number of objectives it advices you prioritize over speed benchmarks:
+If you're coming from the JS ecosystem, you must be itching to see whether Suphle has the longest bar among a row of competing contenders. By now, it should be common knowledge that if you're not building one of the FAANG companies, handling hundreds of thousands of requests per second should be the least of your worries.
 
-- Building software maintainable by both minnows and those who didn't originally create it
-- Bridging the gap between developers who make best practices optional and those who don't--standardizing them, if you will
+Performance graphs compare frameworks/runtimes built for Hello World projects, or rudimentary apps making a very simple SQL query. These "educational" apps lack the context of a realistic project using an ORM to make dynamic, unpredictable or un-cacheable queries. That is not to discredit the value of speed. In Suphle, we use a trie-based router for quick failure, a RoadRunner server that's as close to a compiled language as it gets, and Flows for preemptively caching endpoints serving complex content.
+
+Suphle has a number of objectives it advices you prioritize over speed benchmarks. That is:
+
+- Building software maintainable by both minnows and those who didn't originally create it.
+- Bridging the gap between developers who make best practices optional and those who don't -- standardizing them, if you will.
 - Get developers who don't yet to take automated testing more seriously
-- Deprecate error pages and responses
+- Deprecate error pages and responses.
 
-I won't get away with fulfilling that mission in this fabulous language, where an instance is spun up to handle each incoming request, where there's no static type-checking to snipe out what can be classified as compile-time errors. Thankfully, its ecosystem has matured enough to boast of tools like PHPStan and RoadRunner to attend to both fears. Suphle comes pre-built with both these tools, although it can still handle requests in the traditional PHP fashion.
+Thankfully, PHP's ecosystem has matured enough to boast of  static type-checking tools to snipe out what can be classified as compile-time errorsand RoadRunner to attend to both fears. Suphle comes pre-built with these tools, although it can still handle requests in the traditional PHP fashion.
 
 ## How it's similar
 In a broader sense, if you're coming from a framework written in another language, some features there parallel what is obtainable in Suphle:
@@ -40,19 +44,19 @@ In a broader sense, if you're coming from a framework written in another languag
 - *Rust:* Macros, Result
 - *Phoenix:* Livewire
 
-It may interest you to know that some of these best practices were only found to intersect Suphle was mostly complete rather than a preemptive attempt to build a chimera of widely acclaimed functionality. And that is why in Suphle, their implementation details differ. For instance, Suphle's modules are much more isolated and independent. The rest of the documentation goes into thorough details about how that, as well as other implementations you're used to were improved upon.
+It may interest you to know that some of these best practices were only found to intersect after Suphle was mostly complete rather than a premeditated attempt to build a chimera of widely acclaimed functionality. That is why in Suphle, their implementation details differ. For instance, Suphle's modules are wired/built differently. The rest of the documentation goes into thorough detail about how that, as well as other implementations you're used to were improved upon.
 
 ## How it's different
 You may be thinking:
 
-> I'm in too much of a hurry to sift through the entire docs in search of what captivating goodies Suphle has to offer, in concrete terms
+> I'm in too much of a hurry to sift through the entire docs in search of what captivating goodies Suphle has to offer, in concrete terms.
 
-Let me spare you the hassle by listing topics you should find compelling:
+Let me spare you the hassle by listing topics I personally find compelling:
 
 1. The routing system, guaranteed to be the most unconventional you've seen till date
 1. Module descriptors and wiring
 1. Flows
-1. Testing framework to mock and verify behavior exposed by every single Suphle component
+1. Testing framework to mock and verify behavior exposed by every observable functionality
 1. The default decorators available
 1. 3rd party framework bridge
 1. Exception handling, testing, broadcasting
