@@ -68,7 +68,7 @@ module.exports = {
 
       ["/docs/v1/routing/", "Routing"], ["/docs/v1/controllers/", "Controllers"],
 
-      ["/docs/v1/events/", "Events"], ["/docs/v1/queues/", "Queues"], ["/docs/v1/config/", "Config"],
+      ["/docs/v1/events/", "Events"], ["/docs/v1/queues/", "Queues"], ["/docs/v1/environment/", "Environment"],
 
       ["/docs/v1/authentication/", "Authentication"], ["/docs/v1/authorization/", "Authorization"], ["/docs/v1/database/", "Database"],
 
@@ -78,7 +78,7 @@ module.exports = {
 
       ["/docs/v1/flows/", "Flows"], ["/docs/v1/bridges/", "Framework Bridge"], ["/docs/v1/console/", "Console Commands"],
 
-      ["/docs/v1/component-templates/", "Component-templates"], ["/docs/v1/contributing/", "Contributing"], ["/docs/v1/credits/", "Credits"],
+      ["/docs/v1/component-templates/", "Component-templates"], ["/docs/v1/credits/", "Credits"],
 
       ["/docs/v1/testing/Testing index", "Testing index"]
     ]

@@ -96,14 +96,70 @@ As is one of Suphle's most dominant principles, this is user/client-facing and o
 
 ## Testing commands
 
-Console based tests have a test-type reminiscent of `Suphle\Testing\TestTypes\ModuleLevelTest`, but with some slight differences -- most notable is the inability to make HTTP assertions or in-bound requests. The designated class is `Suphle\Testing\TestTypes\CommandLineTest`.
+Console based tests have a test-type reminiscent of `Suphle\Testing\TestTypes\ModuleLevelTest`, but with the sole difference that is their inability to make HTTP assertions or in-bound requests. The designated class is `Suphle\Testing\TestTypes\CommandLineTest`.
 
-### Setting up command test
+Commands are being extracted from all the modules and loaded into the test runner from your `CommandLineTest::setUp()` method. This makes it convenient for you to simply find command and run it as is described by the component's authors. A simple test of the above command would turn out like this:
 
-Commands are being loaded into the test runner from the `setUp` method of your `CommandLineTest`. This makes it convenient for you to simply find command and run it
-// example
+```php
+class AltersConcreteTest extends CommandLineTest {
 
-This snippet assumes you aren't testing command itself, but its side effects. Behavior is usually what you want to test, through the underlying service
+	protected function getModules ():array {
 
-If indeed, the command is what you want to test, trying to provide a double to your modules within your test method, the double will not be acknowledged. In such cases, you want to inject your doubles from `getModules`
-// example
+		return [new ModuleOneDescriptor(new Container) ];
+	}
+
+	public function test_can_run_alter_command () {
+
+		$command = $this->consoleRunner->findHandler(
+
+			AltersConcreteCommand::commandSignature()
+		);
+
+		$commandTester = new CommandTester($command);
+
+		$commandTester->execute([
+
+			AltersConcreteCommand::NEW_VALUE_ARGUMENT => 8
+		]);
+
+		// then
+		$commandTester->assertCommandIsSuccessful(); // $commandTester::getDisplay can be used to extract console output as a string
+	}
+}
+```
+
+Short and simple. A few things to observe from this test's contents:
+
+- We didn't clutter it with verifications about behavior of the underlying service. Just as we prevent the dichotomy between API and web routes by keeping decoupling business logic from client medium or input source, we relegate command classes to consumers of service classes containing logic. When not extensive, this test can be responsible for testing that service's side effect. Otherwise, we take of advantage of abstracting the logic by extracting the logic's test to its own method or class.
+
+- The class above affirms command executed properly; it doesn't test the command itself. If you have any need to test the command, trying to provide a double to your modules within your test method, the double will not be acknowledged. In such cases, you want to inject your doubles from `getModules`.
+
+```php
+class AltersConcreteTest extends CommandLineTest {
+
+	protected function getModules ():array {
+
+		return [
+
+			$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+
+				$consoleConfig = Console::class;
+
+				$container->replaceWithMock($consoleConfig, $consoleConfig, [
+
+					"commandsList" => [$this->sutName]
+				]);
+
+				$container->replaceWithConcrete($this->sutName, $this->mockCommand());
+			})
+		];
+	}
+
+	public function test_can_run_alter_command () {
+
+		// trigger execution
+	}
+}
+```
+
+This is the recommended way to inject things within module-based tests, but occassionally, this isn't convenient so we get away with doing it within the test. However, the limit is with the commands themselves.

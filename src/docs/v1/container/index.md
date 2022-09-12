@@ -1,77 +1,411 @@
-# Containers
-
-Container pages are not the kind typically visited while perusing documentation. However, understanding what can be achieved with Suphle's container promises to pay huge dividends in the long run. But first of all, what is a container, and what does it "contain", anyway?
-
 ## Introduction
-At the most basic level, they are object caches — you store object instances in them so you don't instantiate multiple versions of the same class and have them running all over the place. As applications grow more complex, we look onto them to fulfill needs beyond just object caching.
 
-Containers are the missing feature of every back end language. They are associated with making concretes out of interfaces but take care of other details such as conditionally hydrating, decorating and wiring objects. In reality, Suphle's Container is not just one class, but a suite comprising a multitude of components for gaining control in the most elegant manner over what and how objects are fashioned for a caller.
+Container pages are not the kind typically visited while perusing documentation. However, understanding what can be achieved with Suphle's container promises to pay huge dividends in the long run. But what is a container and what does it "contain" anyway?
 
-One characteristic of a good back end framework is that its container is both versatile and powerful enough for the developer to never pull objects out of it directly. This means methods on the main Container class are conceptually divided into two: those for putting things into the Container, and those for reading those things out of it. Unless you are building developer-facing functionality, you aren't expected to need methods in the second category. To that effect, we will first look at put related methods, read methods, then the other capabilities of this component
+At the most basic level, they are object caches — you store object instances in them so you don't instantiate multiple versions of the same class and have them running all over the place. However, as applications grow more complex, we look onto containers to fulfill needs beyond just object caching, since they are the backbone of every back end framework. They're associated with making concretes out of interfaces, but take care of other details such as conditionally hydrating, decorating and wiring objects. In Suphle, our Container is not one class, but a suite comprising a multitude of components for gaining control in the most elegant manner over what and how objects are fashioned for a caller.
 
-*Start from put*
+Methods on the main Container class are conceptually divided into two: those for putting things into it, and those for reading those things out of it. Unless you are building developer-facing functionality or writing tests, you aren't expected to need methods in the second category. That said, we will look at the basic capabilities of the container.
 
-## Auto-wiring and dependency injection
+## Putting objects into the container
 
-In practice, this refers to the process of type-hinting class constructors or specific methods of certain interfaces in order to reference predefined entities. These entities could be anything from interfaces to base types or primitives. The important takeaway is that developer doesn't get to use the `new` keyword or instantiate the constructor's arguments prior to their introduction into the required class.
+For the record, the container is able to recursively walk object constructors, hydrating type-hinted dependencies all the way. It only needs assistance when a type-hint is an interface. Other times, we may want to inject the instance of a class booted to a desired state. We're not expected to inject primitives since, for them to be dynamic, they have to come from some other source (most often, [the env](/docs/v1/environment)), that should be strongly typed. What we're putting into the container determines how it's being put.
 
-Auto-wiring is not some abstract concept only used to intercept request objects in action methods. It should be part and parcel of your codebase in order for those dependencies to be easily replaceable during mocking, extension and refactoring.
+### Providing interfaces
 
-- `getClass`
+We have different kinds of interfaces in Suphle, but all converge at a central location: `Suphle\Contracts\Hydration\InterfaceCollection`. This class is then connected to its parent module using its `Suphle\Contracts\Modules\DescriptorInterface::interfaceCollection` method like so,
 
-Suphle internally uses this method to hydrate entity instances. Those entities will usually rely on types that are either [provided](/docs/v1/service-provision) before the entity requests for them, or are instantiated at runtime. If you refer to the diagram in the [Basics](/docs/v1/basics/#anatomy-of-a-suphple-module), the numbered segments excluding 1, 2, and 7 all have auto-wiring enabled on their constructors. This implies you would hardly ever have the need to use this method directly. However, understanding how it works may prove beneficial in the way your object signatures are defined.
+```php
 
-/// Describe the fresh instance steps
+use Suphle\Modules\ModuleDescriptor;
 
-## Sub-provisions and super types
-Super classes aren't returned when consumers try to pull their sub classes because there's simply no way for the container to know a sub exists, given the way objects are being stored for fast retrieval i.e. direct lookup. However, providing base classes can be served to a known type of consumers. 
-To illustrate, consider (convert this to code) X is a sub-class of Y, B is the sub of A
+use Suphle\Tests\Mocks\Interactions\ModuleOne;
 
-1) A pulls X --> only works if A provided X
-2) B pulls Y --> works if A provided Y
+class ModuleOneDescriptor extends ModuleDescriptor {
 
-In order to achieve first scenario, convert Y to an interface and provide X as an implementation
+    public function exportsImplements():string {
+
+        return ModuleOne::class;
+    }
+
+    /**
+     * {@inheritdoc}
+    */
+    public function interfaceCollection ():string {
+
+        return CustomInterfaceCollection::class;
+    }
+}
+```
+
+Suphle already provides a default implementation of this class, `Suphle\Hydration\Structures\BaseInterfaceCollection`, from which you're expected to extend. `InterfaceCollection` exposes methods that describe what kind of interface it is being provided. They all return key-value arrays pairing the interface to the name of a concrete implementation. At the very least, you're going to have an interface collection with a semblance to that below:
+
+```php
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Meta;
+
+use Suphle\Hydration\Structures\BaseInterfaceCollection;
+
+use Suphle\Contracts\Config\{ Router, Events};
+
+use Suphle\Tests\Mocks\Modules\ModuleOne\Config\{RouterMock, EventsMock};
+
+use Suphle\Tests\Mocks\Interactions\ModuleOne;
+
+class CustomInterfaceCollection extends BaseInterfaceCollection {
+
+    public function getConfigs ():array {
+
+        return array_merge(parent::getConfigs(), [
+
+            Events::class => EventsMock::class,
+
+            Router::class => RouterMock::class
+        ]);
+    }
+
+    public function simpleBinds ():array {
+
+        return array_merge(parent::simpleBinds(), [
+
+            ModuleOne::class => ModuleApi::class
+        ]);
+    }
+}
+```
+
+We go into more detail about the kinds of interface in a [later section](/#working-with-interfaces). But for now, let's deal with bind concretes.
+
+### Binding instances
+
+If you transitioned here from front-end development, think of instance binding as the back-end's version of state management. As earlier discussed, Container is a repository of objects floating around in memory. Each of those objects can exist in states differing from what they were when instantiated. Binding of object instances enables us assign objects in these desired states to diverse callers. This means that when hydrating those callers, or when they explicitly request these objects, predefined instances will be handed over to them. This pre-definition is known as *provisioning* while the process of reception by one or more callers is known as *contextual binding*.
+
+Callers can either consume dependencies from their constructors, manually fetching method arguments or using service-location. These methods of consumption (subsequently referred to as contextual-binding), are what determine how an instance would be bound. You would typically bind your provisions before request execution reaches the domain i.e. controller layer and below.
+
+#### Plain provisioning
+
+This is the simplest form of binding and the one you should least likely use. It's intended as the venue for binding object instances critical to module boot process. Objects bound here have global visibility i.e. or else where overridden, they'll be injected to all contexts within that module. This kind of binding is done on the `Suphle\Contracts\Modules\DescriptorInterface::globalConcretes()` method.
+
+```php
+
+public function globalConcretes ():array {
+
+    return array_merge(parent::globalConcretes(), [
+
+        ModuleFiles::class => new AscendingHierarchy(__DIR__, __NAMESPACE__,
+
+            $this->container->getClass(FileSystemReader::class))
+    ]);
+}
+``` 
+
+Every other binding type should be done on `Suphle\Contracts\Modules\DescriptorInterface::registerConcreteBindings` method as follows,
+
+```php
+
+protected function registerConcreteBindings ():void {
+
+    parent::registerConcreteBindings();
+
+    // bind things to $this->container here
+}
+```
+
+The specifics of how each object is bound within this method depends on the context the object is required in.
+
+#### All method arguments context
+
+Suppose two class signatures define a dependency on a third class in their constructor.
+
+```php
+
+class A {
+
+    private $c;
+
+    public function __construct (C $c) {
+
+        $this->c = $c;
+    }
+}
+
+class B {
+
+    private $c;
+
+    public function __construct (C $c) {
+
+        $this->c = $c;
+    }
+}
+
+class C {
+
+    private $value;
+
+    public function setValue (int $value):void {
+
+        $this->value = $value;
+    }
+}
+```
+
+We can instruct the container to provide the same instance of class C to both consumers using a combination of `whenTypeAny()` and `needsArguments()` methods.
+
+```php
+
+protected function registerConcreteBindings ():void {
+
+    parent::registerConcreteBindings();
+
+    $objectInstance = new C;
+
+    $objectInstance->setValue(10);
+
+    $this->container->whenTypeAny()->needsArguments([
+
+        C::class => $objectInstance
+    ]);
+}
+```
+
+`needsArguments()` takes as many provisions as we want, that applies to every other class without an explicit provision. When hydrating arguments for a provisioned type, if any of the dependencies provides its own argument instances, their provided context will take precedence over that of the calling type, recursively.
+
+#### Explicit method arguments context
+
+When we want class `A` to get a separate instance of `C`, we provide that argument like so,
+
+```php
+
+protected function registerConcreteBindings ():void {
+
+    parent::registerConcreteBindings();
+
+    $objectInstance = new C;
+
+    $objectInstance->setValue(10);
+
+    $this->container->whenType(A::class)->needsArguments([
+
+        C::class => $objectInstance
+    ]);
+}
+```
+
+In the above examples, arguments are provided using class types. However, we may want to hydrate an old, untyped class, or a rare case where a class injects two different instances of the same dependency. In such case, we'll resort to a provision using the parameter name. This isn't recommended since it makes the binding resistant to naming refactorings.
+
+#### Service-locator context
+
+This refers to provisions intended for when we [manually retrieve objects from the container](/#Service-location). The same working model described for `whenType()` and `whenTypeAny()` are prevalent here. However, instead of `needsArguments()`, we use the `needs()` method.
+
+```php
+
+protected function registerConcreteBindings ():void {
+
+    parent::registerConcreteBindings();
+
+    $objectInstance = new C;
+
+    $objectInstance->setValue(10);
+
+    $this->container->whenTypeAny()->needs([
+
+        C::class => $objectInstance
+    ]);
+}
+```
+
+These methods return a fluent interface but it may be safer to terminate the end of each entity provision to avoid ambiguity. Any attempt to define a provision without first declaring its context will raise a `Suphle\Exception\Explosives\Generic\HydrationException`. Avoid nesting provisions so as not to encounter unpleasant scenario of outer provision using the inner one.
+
+All provisions are required to be compatible with hydrated type; otherwise, an `Suphle\Exception\Explosives\Generic\InvalidImplementor` exception is thrown.
+
+## Getting objects from the container
+
+Your application is composed of diverse entities serving unique purposes -- controllers, event handlers, middlewares, etc. Over the course of a request, Suphle encounters these objects and attempts to hydrate them for you, first looking for a possible provision before falling back to its default hydration procedure. This process is known as auto-wiring or dependency injection, and absolves you the need to use the `new` keyword except for temporary objects not intended for reuse in another class or management by the container. This shouldn't be some abstract concept only used to intercept request objects in action methods. It should be an integral part of your codebase in order for those dependencies to be easily replaceable during test-doubling, extension and refactoring.
+
+### Service location
+
+With type-hinting in place, there are only a handful scenarios where you'll require manually extracting object instances from the container:
+
+- When building developer-level functionality where it's necessary to pull certain user-land objects. This is evident where we lazily provide a classes' fully qualified name
+
+- When writing tests that seeks to verify a classes' behavior
+
+Regardless of the method used for instructing the container what concrete to return, or whether an entity was provided, at all, we use the central `getClass` to manually obtain or hydrate an instance.
+
+```php
+
+protected function test_class_A_can_foo ():void {
+
+    $sut = $this->container->getClass($this->sutName);
+}
+```
+
+### Providing super types
+
+Super classes aren't returned when consumers try to pull their sub classes because the container has no way of knowing a sub class exists. However, providing a base class can be served to a known type of consumers. To illustrate, consider the following heirarchy:
+
+```php
+
+class HydratorConsumer {
+
+    protected $container;
+
+    public function __construct (Container $container) {
+
+        $this->container = $container;
+    }
+}
+
+class UnknownUserLandHydrator extends HydratorConsumer {
+
+    public function getSelfBCounter ():ImmutableDependency {
+
+        return $this->container->getClass(ImmutableDependency::class);
+    }
+}
+
+class ImmutableDependency {
+
+    public function bar () {
+
+        //
+    }
+}
+
+class SubImmutableDependency extends ImmutableDependency {
+
+    public function fooBar () {
+
+        //
+    }
+}
+```
+
+Since this is a developer-level facility, `UnknownUserLandHydrator` is unknown at build-time thus, we provision `HydratorConsumer` as follows,
+
+```php
+
+protected function registerConcreteBindings ():void {
+
+    parent::registerConcreteBindings();
+
+    $this->container->whenType(HydratorConsumer::class)->needs([
+
+        ImmutableDependency::class => $objectInstance
+    ]);
+}
+```
+
+We'll end up restricting ourselves from extended, sub-classes on both sides:
+
+1. `HydratorConsumer` is stuck with a binding to `ImmutableDependency`. It's never aware of `SubImmutableDependency`.
+
+1. The provisions made on `HydratorConsumer` go past `UnknownUserLandHydrator` without any effect.
+
+The first problem is more well-known, so it's used here to illustrate the second one. It exists because hydration would take much longer if parent provisions are additionally evaluated. Dependency Inversion principle teaches us that high-level modules are prohibited from depending on concretions but should use abstractions, instead. With the simple adjustment:
+
+```php
+
+class ImmutableDependency implements ImmutableClientContract {
+
+    public function bar () {
+
+        //
+    }
+}
+```
+
+When `ImmutableClientContract` is type-hinted, its concrete bound through [the instructed channel](/#working-with-interfaces) is what will be served. Those channels are all 1-1 pairings between interface and concrete; which also means some base class like a collection can't bind dependencies for a variable group of sub-classes.
+
+In some frameworks, this is solved using container tags. We don't use those in Suphle due to our emphasis on connecting entities to their fully qualified names rather than random strings. What we want to do is to access the parent entity's provision, and that is done using the 2nd argument to `getClass()`. If we slightly adjust `UnknownUserLandHydrator` as follows:
+
+```php
+
+class UnknownUserLandHydrator extends HydratorConsumer {
+
+    public function getSelfBCounter ():ImmutableDependency {
+
+        return $this->container->getClass(ImmutableDependency::class, true);
+    }
+}
+```
+
+## Working with interfaces
+
+We have different ways of hydrating concrete interfaces in Suphle, depending on what purpose the interface is intended for.
+
+### Config interfaces
+
+In Suphle, component configs are contracts between the component and consumer. They are distinguished from other interfaces by extending `Suphle\Contracts\Hydration\ConfigMarker` and live on method `Suphle\Contracts\Hydration\InterfaceCollection::getConfigs()`. For example, the signature of the router config bears semblance to this:
+
+```php
+
+interface Router extends ConfigMarker {
+
+    public function apiPrefix ():string;
+}
+```
+
+They should be predominantly used on the library developer side, but with an extendable default provided. As much as possible, endeavor to exempt logic or computation from config classes. They are a polyfill for the specification "readonly, type-safe".
+
+### Interface loaders
+
+This is all about pointing interfaces to concretes that should be booted into a usable state before being injected. This is more likely to occur during use of adapter interfaces pointing to 3rd-party libraries. It enables us centralize initialization of the libraries such that:
+
+- Library entry point can be easily replaced.
+
+- Libraries' booting phase can be edited to conform with the underlying specifics.
+
+Interface loaders are expected to extend `Suphle\Hydration\BaseInterfaceLoader`, and are connected to the framework through the `Suphle\Contracts\Hydration\InterfaceCollection::getLoaders()` method.
+
+#### Defining library entry point
+
+Suppose our adapter has a loader `CProvider`, its entry point will look like so:
+
+```php
+
+class CProvider extends BaseInterfaceLoader {
+
+    public function concreteName ():string {
+
+        return CConcrete::class;
+    }
+}
+```
+
+The class returned from `BaseInterfaceLoader::concreteName()` is the primary class Suphle will hydrate for this interface and is expected to be one of its implementations.
+
+#### Booting the library
+
+```php
+
+class CProvider extends BaseInterfaceLoader {
+
+    public function afterBind ($initialized):void {
+
+        // trigger functionality on $initialized
+    }
+}
+```
+
+`BaseInterfaceLoader::afterBind()` personifies the essence of interface loaders. It receives the freshly hydrated instance of given entry point, but relevant classes can equally collaborate here to meet consuming client's expected state. As with all interfaces, the consuming client only cares about functionality declared on the signature, not initialization details.
+
+#### Entry point arguments
+
+These are analogous to providing the [arguments context](#All-method-arguments-context)
+    public function bindArguments ():array {
+
+        return ["value" => 10];
+    }
+We use this method to obscure away instantiation details from an interface's consumer -- which they shouldn't be bound to. Any arguments required by the given constructor are described here.
+
+Of course, when providing interfaces, there are no constructor methods to fill. The key/value expected to populate this array is a blank cheque matching whatever parameters are required to instantiate the concrete being supplied
 ///
+Show example
 
-The second scenario is useful when a variable group of classes with a base type need to provide an immutable or unchanging instance. In cases where this behavior is desirable, you will be better served by using the `sub` parameter
-///
 
-:::info
-Service locator is widely considered an anti-pattern. But it does have a few good use cases. In a framework like Suphle, where some core classes exist outside the context of containers — classes managing even containers themselves — the only way to interact with contextual versions of certain classes is by use of a service locator. Another use case is while trying to lazy load or perform actions on an object lazily. While it's not expected to be used in user land, it might be the key to solving not just the two situations above, but accessing variable classes defined in user-land from either a package being developed or a test
-:::
+public function simpleBinds():array;
 
-## Contextual Binding
-If you are transitioning from front-end development, think of this as the back-end's version of state management. As earlier discussed, the Container is a repository of objects floating around in memory. Each of those objects can exist in states differing from what they were when instantiated. Contextual binding enables us assign objects in these desired states to diverse callers. This means that when hydrating those callers, or when they explicitly request these objects, predefined instances will be handed over to them. This *pre-definition* is known as object/service **provisioning**. There are a few ways to provision objects, either depending on how you intend the caller receives the object, or [when object should be hydrated](/docs/v1/service-providers).
-
-Callers can either consume dependencies from their constructors or by directly invoking [`getClass`](#auto-wiring-and-dependency-injection)
-
-// example
-In both scenarios, the desired outcome can be different. As earlier mentioned, Suphle internally makes heavy use of calls to `getClass`, so you don't have to unless you are a [plugin developer](/docs/v1/plugins). It's mostly an avenue to replace the regular hydration of those classes.
-
-- `whenType(string ConsumerClass)`
-
-This is the genesis of all contextual binding. The type being provided is supplied, and a fluent interface is returned for definition of the dependencies.
-
-[[Review]] Bear in mind that while hydrating arguments for a provisioned type, if those any of the arguments were equally provisioned, their provided context will take precedence over that of the calling type
-
-/// Example
-
-- `whenTypeAny()`
-
-Equally functions as `whenType`, however, it enables this definition to apply to every other class that wasn't provided. When a class provisions some classes in a list, then attempts to get some other classes outside that list, the container fallsback to global provisions made using `whenTypeAny()`
-
-- `needs(array types)`
-
-In order to directly influence `getClass` return value on a per-caller basis, the desired concrete must be provided to it through this method
-/// Example
-
-Notice it works with `whenType`. Calls to any of the `needs` methods without first defining what type is being provided will result in a `HydrationException`.
-
-The above invocation may be familiar to those who have heard of the term Service-Location.
-
-When using either `needs` or `needsAny`, none of the concretes can correspond to one bound to an interface through any subclasses of `BaseInterfaceCollection`. It doesn't make sense to provide such concretes. When the Container encounters such scenarios, it skips the provision and creates a fresh concrete
-
-## Namespace Rewriting
+### Namespace Rewriting
 
 - `whenSpace`
 An incorrect use of interfaces is for converting all injectable services into contracts. This method is not intended for such purpose.
@@ -137,31 +471,6 @@ Combining A cocktail of decorators with handlers that trigger underlying concret
 Careful to decouple dependencies during binding. Starting a bind call within another will confuse the outer one
 // example
 
-describe the three kinds of interfaces we have
-Config are simple: extend configMarker and live on method x
+## Testing
 
-Talk about precedence if necessary
-
-## Interface loaders
-
-While they may seem related to [contextual-binding](/docs/v1/container/#contextual-binding), they offer a very different kind of functionality. Maybe by comparison, we can clearly distinguish their differences. If contextual-binding is a way to supply a multitude of callers with applicable concretes, service provision can only be used to provide just one concrete. However, it centralizes this concrete to a point where:
-- It can be easily replaced
-- The concretes booting phase can be edited
-
-Both can't be combined since consumers are not meant to be aware or coupled to the underlying concrete. In addition, if this were possible, it would permit diverse callers to receive differing states of the same concrete, which would in turn lead to programs difficult to reason about. ((review))
-
-The perfect use-case for service providers is when a group of callers require some kind of adapter. In an ideal world where library authors all fashion their packages after a common interface, with the aid of service providers, consumers can effortlessly swap out a payment or share link generation concrete by updating its initialization logic.
-
-/// Note 1
-If the concrete returned from the service provider refuses to match the interface by which it was provided, the container will not budge when asked to hydrate that interface.
-
-/// creating a new provider, registering the provider
-
-What methods do they contain?
-
-- `bindArguments`
-We use this method to obscure away instantiation details from an interface's consumer -- which they shouldn't be bound to. Any arguments required by the given constructor are described here.
-
-Of course, when providing interfaces, there are no constructor methods to fill. The key/value expected to populate this array is a blank cheque matching whatever parameters are required to instantiate the concrete being supplied
-///
-Show example
+telescope
