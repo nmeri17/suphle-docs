@@ -203,7 +203,7 @@ That's all there is to the login flow. Deep customization may seem like a lot bu
 
 # Authentication in the application
 
-The following sections cover how to protect our routes from unauthenticated access, how to retrieve an instance of the currently user and how to impersonate users using privileged access.
+The following sections cover how to protect our routes from unauthenticated access, how to retrieve an instance of the current user and how to impersonate users using privileged access.
 
 ## Securing routes
 

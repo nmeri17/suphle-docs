@@ -9,3 +9,5 @@ While TDD advocates may attempt to downplay the tedium of tests, in sincerity, i
 Now that we have a solid grasp of the gravity of tests, we may move on to what techniques Suphle provides to aid its developers on this voyage.
 
 It mostly works under the premise that the developer adheres to immediate implementation of business requirements rather than TDD.
+
+Assuming program may work in their absence is analogous to an actor's absurd assumption that they'll get the stunt right in one take

@@ -391,86 +391,606 @@ class CProvider extends BaseInterfaceLoader {
 
 #### Entry point arguments
 
-These are analogous to providing the [arguments context](#All-method-arguments-context)
+```php
+
+class CProvider extends BaseInterfaceLoader {
+
     public function bindArguments ():array {
 
         return ["value" => 10];
     }
-We use this method to obscure away instantiation details from an interface's consumer -- which they shouldn't be bound to. Any arguments required by the given constructor are described here.
+}
+```
 
-Of course, when providing interfaces, there are no constructor methods to fill. The key/value expected to populate this array is a blank cheque matching whatever parameters are required to instantiate the concrete being supplied
-///
-Show example
+We use `BaseInterfaceLoader::bindArguments()` to obscure away instantiation details from an interface's consumer -- which they shouldn't be bound to. Any arguments required by the given constructor are described here. They are analogous to providing the [arguments context](#All-method-arguments-context), but specifically for the entry class.
 
 
-public function simpleBinds():array;
+### Binding regular interfaces
+
+This refers to every other interface that doesn't fall into the categories listed above. They are stored as a key-value pair of interface-concrete in `Suphle\Contracts\Hydration\InterfaceCollection::simpleBinds()`. The typical usage is expected to override or include entries into `Suphle\Hydration\Structures\BaseInterfaceCollection`.
+
+```php
+
+class CustomInterfaceCollection extends BaseInterfaceCollection {
+
+    public function simpleBinds ():array {
+
+        return array_merge(parent::simpleBinds(), [
+
+            MyInterface::class => ItsConcrete::class
+        ]);
+    }
+}
+```
 
 ### Namespace Rewriting
 
-- `whenSpace`
-An incorrect use of interfaces is for converting all injectable services into contracts. This method is not intended for such purpose.
-An indication that an interface is ripe for creation is when more than one concrete implementations are available to consume it. A good rule (///link) says three. This situation could arise during a refactor. Refactoring occurs in various forms, one of which this method is primarily for
+An incorrect use of interfaces is for converting all injectable services into contracts. An indication that an interface is ripe for creation is when more than one concrete will or does implement it.
 
-Suppose a new business requirement affecting a number of our services is presented, as has been encouraged several times in this documentation, one should retain old implementations while developing the new. Taking that a step further, multiple services may be in the same situation, perhaps during a refactor to classes affected by a cross-cutting concern. Rather than individually bind each concrete to its desired consumer, we use `whenSpace` to consistently point them
+Suppose a new business requirement affecting a number of our services is presented, as has been encouraged several times in this documentation, one should retain old implementations while developing the new. Taking that a step further, multiple services may be in the same situation, perhaps during a refactor to classes affected by a cross-cutting concern. Rather than individually bind each concrete to its desired consumer, we use `Container::whenSpace()` method to redirect interfaces under one namespace to concretes in another.
 
-Modules\CartModule\Controllers\CarController
-Modules\CartModule\Contracts\ICarService // or CarService
-Modules\CartModule\Services\CarServiceImpl //
+```php
+
+use Suphle\Hydration\Structures\NamespaceUnit;
+
+protected function registerConcreteBindings ():void {
+
+    parent::registerConcreteBindings();
+
+    $modulePath = "Modules\CartModule\\";
+
+    $this->container->whenSpace($modulePath . "Concretes")
+
+    ->renameServiceSpace(new NamespaceUnit(
+
+        $modulePath . "Interfaces", $modulePath . "Concretes\V2",
+
+        function (string $contract) {
+
+            return $contract . "Impl";
+        }
+    ));
+}
+```
+
+With the above configuration, whenever a class resident within `Modules\CartModule\Concretes` namespace attempts to load interfaces originating from `Modules\CartModule\Interfaces`, the container will attempt to find the matching concrete using the value returned from the callback; in this case, translating to the namespace `Modules\CartModule\Concretes\V2`.
+
+In the example given above, it's expected that concrete names mirror their interface names, along with the suffix "Impl". Other common patterns that work as suffixes are trimming off a preceding *I* or *Interface* such as from *ICarService* or *CarServiceInterface* respectively.
 
 
-## Circular dependencies
-These are usually a code smell; which is why most containers crumble when these are thrown at them. Logical flow ought to be composed in a hierarchical manner that expresses the lower level elements as entirely oblivious of their higher level counterparts. Service return values should be collated at a central point such as the controller and sent to evaluating service. Such situations are usually an indication that some part of those services should exist on their own. This enriches the application with a decoupled dependency chain, and by extension, testability.
+## Dealing with circular dependencies
 
-That said, "tell, don't ask" principle may appeal to some, and services can wind up in the constructor of their own dependencies. For instance, it may be undesirable to retrieve values from service x and plug into y
+These are usually a code smell; which is why most containers crumble when these are thrown at them. Logical flow ought to be composed in a hierarchical manner that expresses the lower level elements as entirely oblivious of their higher level counterparts. Service return values should be collated at a central point such as the controller and sent to evaluating service. Circular dependencies is a predicament indicating that some part of those services should exist on their own. This enriches the application with a decoupled dependency chain.
 
-// show example of chatty controller vs passing the entire service to that guy for it to select the properties/methods it wants
-
-In such cases, Suphle's container handles it by proxying calls to the first consumed of both classes. But not without raising a `E_USER_WARNING` that will be caught by your logger if you have any listening
+In some cases beyond our control, services can wind up in the constructor of their own dependencies. In such cases, Suphle's container will hydrate it without additional configuration. But not without raising a `E_USER_WARNING` that will be caught by your logger if you have any listening.
 
 ```php
 
 class A {
 
-    function __construct(B $foo) {
-        dump($foo);
-        // $this->foo = $foo;
+    private $classB;
+
+    public function __construct(B $classB) {
+
+        $this->classB = $classB;
     }
+}
+
+class B {
+
+    private $classA;
+
+    public function __construct(A $classA) {
+
+        $this->classA = $classA;
+    }
+}
+```
+
+### Caveat
+
+The fact that concretes are decoupled from their interfaces makes the likelihood of one concrete unwittingly referring to an interface whose concrete, in turn, refers to it high. Bear in mind that proxying interfaces is different from concretes since it has methods that need implementations.
+
+When this is the case, the container won't proxy calls to the interface. Even though it's possible to extract and wrap their concrete on the fly, the overhead and sheer *sorcery* of such an implementation deviate too far away from the language's expected behaviour, for very little benefit, as such, going against one of Suphle's core principles. That said, when Container encounters such concretes, it will throw a `Suphle\Exception\Explosives\Generic\HydrationException`.
+
+As with all problems in this category, the solution is to breakdown the intertwining bits either into a third, decoupled entity; or, to defer evaluation of the *lesser* of both dependencies. One surprising situation where this problem arises is during the use of interface loaders. While working with them, there are a few advice that may be helpful:
+
+- You have two interfaces; their respective concretes are prohibited from depending on the other's interface.
+
+- Circular dependencies is not a phenomena limited to constructor. It can be witnessed anywhere from method signatures to `Suphle\Hydration\BaseInterfaceLoader::afterBind()`. Be on the lookout for locations involving hydrating things. If one of the dependencies contains a reference to the caller, it requires our attention.
+
+## Removing things from the container
+
+Objects put into the container can grow stale in-between reads. When this happens, not only should the object be wiped from memory, but every other consumer holding those deprecated instances should equally be evacuated otherwise, we'll be working with outdated data. We use the `Container::refreshClass($className)` method for this.
+
+It will recursively wipe all objects where given target was injected by container along with all of their provisions. This effect is rarely intended in user-land, so you may want to double-check there's no better alternative to what you're trying to achieve before using it.
+
+When evicting multiple classes at the same time, their names can be passed to `Container::refreshMany`.
+
+```php
+
+$container->refreshMany([ClassA::class, classB::class]);
+```
+
+### Stickying objects
+
+Some class instances contain vital references or data whose eviction would cause more harm than good. For such classes, we'll want to protect them by implementing `ClassHydrationBehavior`.
+
+```php
+use Suphle\Contracts\Hydration\ClassHydrationBehavior;
+
+class AbsolutelyCritical implements ClassHydrationBehavior {
+
+    public function protectRefreshPurge ():bool {
+
+        return true;
+    }
+}
+```
+
+Above we use `protectRefreshPurge()` as contraceptive against recursive sanitation.
+
+## Decorators
+
+Decorators are classes used for either augmenting how the container hydrates an object or wrapping the class as a whole with additional behavior not relevant to its actual functionality. Decorators are implemented in 3 parts we'll look at below.
+
+One of these parts is consuming an existing decorator. All that is required to achieve this is to implement the specific decorator interface. Often, this decorator would provide a method with which to receive relevant information to be applied for the consuming class. If you're not rolling out custom decorators, this is all you need to know.
+
+### Writing your own decorators
+
+A decorator definition consists of:
+
+1. The decorator itself, as an interface
+1. A decorator handler conforming to the motive of the decoration
+
+Decorators themselves are simple interfaces for collecting instructions about the consuming class, to give the handler. For example, the `OnlyLoadedBy` looks like this:
+
+```php
+
+interface OnlyLoadedBy {
+
+    public function allowedConsumers ():array;
+}
+
+class DecoratedClass implements OnlyLoadedBy {
+
+    public function allowedConsumers ():array {
+
+        return [LoadablesChosenOne::class];
+    }
+}
+```
+
+#### Decorator handlers
+
+This is where the decorator logic is defined. There are two broad categories of things we'll want to do with our decorators. These categories determine what type the decorator handler will be implemented. A decorator can either want to inspect argument is passed to a class or method, or it can act as a modifier of hydrated instances. Argument-based handlers are required to implement `Suphle\Contracts\Hydration\ScopeHandlers\ModifiesArguments`, while those working with instances should implement `Suphle\Contracts\Hydration\ScopeHandlers\ModifyInjected`.
+
+##### Decorating arguments
+
+In practise, you're more likely to extend `Suphle\Services\DecoratorHandlers\BaseArgumentModifier` rather than implementing the underlying interface. It currently doesn't provide much functionality except preventing you from implementing boilerplate.
+
+```php
+interface ModifiesArguments {
+
+    /**
+     * @param {arguments} mixed[]. Method argument list
+    */
+    public function transformConstructor (object $dummyInstance, array $arguments):array;
+
+    /**
+     * @param {arguments} mixed[]. Method argument list
+    */
+    public function transformMethods (object $concreteInstance, array $arguments, string $methodName):array;
+}
+```
+
+`transformConstructor` is a construct that enables us receive a random object of the class before instantiation, without triggering its constructor, thus making it favorable for transforming those arguments before their injection into the hydrated instance. Implementations are contractually required to return a list of arguments for injection into the constructor.
+
+`transformMethods` behaves similar to `transformConstructor` but for every other method. In this case, the decoration is applied to the class itself, while the handler is responsible for determining the method to run logic on.
+
+```php
+class ServiceCoordinator implements ValidatesActionArguments {
+
+    final public function permittedArguments ():array {
+
+        return [
+
+            ModelfulPayload::class, ModellessPayload::class
+        ];
+    }
+}
+```
+
+Above, we have a snippet from `ServiceCoordinator` that is decorated with the `ValidatesActionArguments` decorator. It passes information to the handler through the `permittedArguments` method, which then decides to evaluate its logic against arguments passed to all methods. The handler is free to either limit access to relevant methods or receive this information from decorated class.
+
+##### Decorating instances
+
+Instance handlers can further be distilled into two kinds:
+
+- Those that modify decorated instance without calling it
+- Those that call decorated instance
+
+Handlers that don't mutate given instance can simply implement `ModifyInjected`.
+
+```php
+interface ModifyInjected {
+
+    /**
+     * @return object to the caller
+    */
+    public function examineInstance (object $concrete, string $caller):object;
+}
+```
+
+Handlers mutating given instance are provided with a rich base class, `Suphle\Services\DecoratorHandlers\BaseInjectionModifier`. *Mutation* in this sense, refers to wrapping said object in a proxy that runs before the method's contents. This is sometimes known as AOP.
+
+`BaseInjectionModifier::getMethodHooks()` is used to instruct this base on what methods to mutate.
+
+```php
+
+public function getMethodHooks ():array {
+
+    return [
+
+        "updateResource" => [$this, "wrapUpdateResource"]
+    ];
+}
+```
+
+It's expected to return a key-value pair of object method to handler callable. Combined with `ModifyInjected::examineInstance`, we'll then arrive at the following handler:
+
+```php
+
+class FancyHandler extends BaseInjectionModifier {
+
+    public function examineInstance (object $concrete, string $caller):object {
+
+        return $this->getProxy($concrete);
+    }
+
+    public function getMethodHooks ():array {
+
+        return [
+
+            "updateResource" => [$this, "wrapUpdateResource"]
+        ];
+    }
+}
+```
+
+In `FancyHandler::examineInstance` above, the decorated object itself is passed to the helper method `getProxy`, which we're delegating proxying to, as dictated by `getMethodHooks`.
+
+However, this can get unwieldy considering a class method can balloon into a large number, not to mention maintaining a hard-coded list of methods. For this purpose, we can use the `BaseInjectionModifier::allMethodAction` method to provide a callable applicable to all methods on the received object.
+
+```php
+
+public function examineInstance (object $concrete, string $caller):object {
+
+    return $this->allMethodAction($concrete,
+
+        [$this, "safeCallMethod"]
+    );
+}
+```
+
+Each of the callbacks given through `getMethodHooks`, `allMethodAction`, have the following signature:
+
+```php
+
+use ProxyManager\Proxy\AccessInterceptorInterface;
+
+public function safeCallMethod (
+    AccessInterceptorInterface $proxy, object $concrete,
+
+    string $methodName, array $argumentList
+) {
+
+    try {
+
+        return $this->triggerOrigin($concrete, $methodName, $argumentList);
+    }
+    catch (Throwable $exception) {
+
+        //
+    }
+}
+```
+
+When practicing AOP, the proxy wrapper becomes responsible for either calling or terminating calls to target object. In the above example, we use the helper method `BaseInjectionModifier::triggerOrigin` to invoke the target. We receive the proxy itself as first argument, but it's merely for auditing purposes. On no account whatsoever should it be invoked from the handler, otherwise, it will result in an infinite loop.
+
+Combining a cocktail of decorators with handlers invoking the same class can lead to both cognitive and execution disasters. When this occurs, ambiguity should be removed by converging the cross-cutting functionality into a unified handler and composing its implementation details with the various handlers required.
+
+## Augmenting with 3rd-party containers
+
+Suphle recognizes that just as it has its own semantics for hydrating objects, Containers written for other libraries or frameworks may require a level of autonomy over the manner in which objects are retrieved from it. Projects where this is applicable would want to notify `Suphle\Hydration\Container` about supplementary containers, using the `Suphle\Contracts\Config\ContainerConfig::getExternalHydrators()` config method. Container config defaults to `Suphle\Config\ContainerConfig`. 
+
+```php
+use Suphle\Config\ContainerConfig as BaseContainerConfig;
+
+class ContainerConfig extends BaseContainerConfig {
+
+    /**
+     * {@inheritdoc}
+    */
+    public function getExternalHydrators ():array {
+
+        return [$containerInstance];
+    }
+}
+```
+
+When this method returns a non-empty list of containers, and a hydration call to `Suphle\Hydration\Container` is unable to find a provision for this call, we will cycle through each given container in search of one capable of returning a valid object for the call. Foreign containers are required to implement the `Suphle\Contracts\Hydration\ExternalPackageManager` interface:
+
+```php
+interface ExternalPackageManager {
+
+    public function canProvide (string $fullName):bool;
+
+    /**
+     * @return Instance of requested argument
+    */
+    public function manageService (string $fullName);
+}
+```
+
+### Reducing 3rd-party scope
+
+We use `ExternalPackageManager::canProvide` to avoid throwing foreign containers into a state of confusion by asking them to hydrate objects for classes they shouldn't be responsible for.
+
+### Returning 3rd-party hydrations
+
+Suphle expects to retrieve an instance of the delegated call from the `ExternalPackageManager::manageService` method. As with all hydrations, returned instance must conform to fully-qualified class requested.
+
+## Testing the container
+
+This section is intended for Suphle contributors and end-users looking to debug their provisions and bindings. It provides a programmatic, assertable interface instead of your possible IDE debugger which may be difficult to make sense of in the recursive settings that object hydration entails.
+
+### Direct debugging
+
+Much as Suphle frowns upon `var_dump`ing things, we can't shy away from it in contexts such as while debugging a faulty container before long running workers come alive. This is the reason Suphle provides the `Container::inProcessFileLogger` method. It takes an array of variables, but rather than writing them to `STDOUT`, they're written to a file returned by `Suphle\Contracts\Config\ContainerConfig::containerLogFile()`.
+
+### Inspecting container activity
+
+All the test-types contain a property, `monitorContainer`, that when set to `true`, activates inspection on all containers available within that test-type. Subsequently, assertions can be made against the observer as follows:
+
+```php
+
+protected $monitorContainer = true;
+
+public function test_expected_container_behavior () {
+
+    // given
+
+    // when // either bind here or in the appropriate initialization method
+
+    $this->assertTrue($this->containerTelescope->missedArgumentFor(
+            
+        ClassA::class, "requestDetails"
+    ));
+
+    // then
+}
+```
+
+When using `ModuleLevelTest`, all containers receive the same telescope. If you wish to monitor activities on a select number of containers, you should manually set a telescope on the target container:
+
+```php
+
+use Suphle\Hydration\{Container, Structures\ContainerTelescope};
+
+use Suphle\Testing\TestTypes\ModuleLevelTest;
+
+class DebugContainerTest extends ModuleLevelTest {
+        
+    public function getModules ():array {
+
+        $moduleOneContainer = new Container;
+
+        $this->containerTelescope = new ContainerTelescope;
+
+        $moduleOneContainer->setTelescope($this->containerTelescope);
+
+        return [
+        
+            new ModuleOneDescriptor($moduleOneContainer),
+
+            new ModuleTwoDescriptor(new Container)
+        ];
+    }
+}
+```
+
+#### Telescope methods
+
+The telescope contains methods that hook into observable functionality on the container. These are meta-test methods i.e. just as test code is separate from production code, telescope observations are for debugging and shouldn't be pushed along with test code, except you're contributing to the container itself.
+
+##### Selective monitoring
+
+Regardless of environment, before a container gets the opportunity to record relevant details, it's bound to hydrate other objects irrelevant to examined event. We need to use the `setNoiseFilter` method to approve when recording is appropriate.
+
+```php
+
+public function test_expected_container_behavior () {
+
+    // given
+
+    // when // currently unexpected outcome
+
+    $consumerList = $this->containerTelescope->setNoiseFilter(function ($telescope) {
+
+        return $this->containerTelescope->missedArgumentFor(
+            
+            ClassA::class, "requestDetails"
+        );
+    })
+    ->getConsumersFor(ClassB::class);
+
+    $this->assertContains(ClassC::class, $consumerList);
+
+    // then
+}
+```
+
+##### Read-based observations
+
+This is a suite of methods for gathering details regarding sources an object or its arguments were derived from.
+
+To confirm arguments for an object used a given or expected provision, we use the `readArgumentFor` method.
+
+```php
+
+$bCounter = new BCounter;
+
+$container->whenType($this->aRequires)->needsAny([ // given
+
+    BCounter::class => $bCounter
+])
+->getClass($this->aRequires); // when
+
+$this->assertTrue($this->containerTelescope->readArgumentFor(
+
+    $this->aRequires, [
+
+        "b1" => $bCounter
+    ]
+));
+```
+
+The complementary method for bound concretes/service locators is `readConcreteFor`. `readArgumentFor` uses an identical comparison for the provisions, although the instance may not always be accessible or convenient to use within the test. In such case, verifying the argument name alone will be satisafactory. For this, we use the `readArgumentWithName` method.
+
+```php
+
+$this->assertTrue($this->containerTelescope->readArgumentWithName(
+
+    $this->aRequires, "b1"
+));
+```
+
+To do a lookup for all objects that read provisions for an argument type, we use the `allReadArgument` method.
+
+```php
+
+$allConsumers = $this->containerTelescope->allReadArgument("container");
+```
+
+All concretes supplied from a prior provision is stored and can be read from the `getReadConcretes` method. Beware that object referencing lots of other objects with huge details can be overwhelming to output.
+
+##### Write-based observations
+
+We use this set of methods for confirming bindings were attached to intended entities.
+
+The mutative methods `needs` and `needsArguments` correspond to `getWrittenConcretes` and `getWrittenArguments` methods on the telescope, respectively. Both methods will return all relevant provisions. To drill down to the specifics, we'll use the `wroteArgumentFor` method:
+
+```php
+
+$this->assertTrue($this->containerTelescope->wroteArgumentFor(
+
+    $this->aRequires, "b1"
+));
+```
+
+##### Refresh state observations
+
+```php
+
+
+public function getConsumerList ():array {
+
+    return $this->consumerList;
+}
+
+public function hasConsumers (string $dependency):bool {
+
+    return array_key_exists($dependency, $this->consumerList);
+}
+
+public function getConsumersFor (string $dependency):array {
+
+    if (!$this->hasConsumers($dependency)) return [];
+
+    return $this->consumerList[$dependency];
+}
+
+public function getRefreshedEntities ():array {
+
+    return $this->refreshedEntities;
+}
+
+public function didRefreshEntity (string $entityName):bool {
+
+    return in_array($entityName, $this->refreshedEntities);
+}
+
+public function getConsumerParents ():array {
+
+    return $this->consumerParents;
+}
+
+public function hasConsumerParent (string $dependent, $dependency):bool {
+
+    return $this->didPopulate(
+
+        $this->consumerParents, $dependent, $dependency
+    );
 }
 ```
 
 ```php
 
-class B {
-
-    function __construct(A $foo) {
-        dump($foo);
-        // $this->foo = $foo;
-    }
+public function allMatchingValue (array $context, $value):array {
 }
+
+public function getMissingArguments ():array {
+
+    return $this->missingArguments;
+}
+
+public function missedArgumentFor (string $contentOwner, $argumentName):bool {
+
+    return $this->didPopulate(
+
+        $this->missingArguments, $contentOwner, $argumentName
+    );
+}
+
+public function allMissedArgument ( $argumentName):array {
+
+    return $this->allMatchingValue(
+
+        $this->missingArguments, $argumentName
+    );
+}
+
+public function getMissingConcretes ():array {
+
+    return $this->missingConcretes;
+}
+
+public function missedConcreteFor (string $contentOwner, $argumentName):bool {
+
+    return $this->didPopulate(
+
+        $this->missingConcretes, $contentOwner, $argumentName
+    );
+}
+
+public function getMissingContexts ():array {
+
+    return $this->missingContexts;
+}
+
+public function allMissedConcrete ( $argumentName):array {
+
+    return $this->allMatchingValue(
+
+        $this->missingConcretes, $argumentName
+    );
+}
+
+public function getStoredConcretes ():array {
+
+    return $this->storedConcretes;
+}
+
+public function storedConcreteFor (string $contentOwner, $className):bool
 ```
-
-## Caveat
-The fact that concretes are decoupled from their interfaces makes the likelihood of one concrete unwittingly referring to an interface whose concrete, in turn, refers to it high. Bear in mind that proxying interfaces is different from concretes since it has methods that need implementations.
-
-When this is the case, the container won't proxy calls to the interface. Even though it's possible to extract and wrap their concrete on the fly, the overhead and sheer *sorcery* of such an implementation deviate too far away from the language's expected behaviour, for very little benefit, as such, going against one of Suphle's core principles. That said, when Container encounters such concretes, it will throw a `HydrationException`
-
-As with all problems in this category, the solution is to breakdown the intertwining bits either into a third, decoupled entity; or, to defer evaluation of the *lesser* of both dependencies
-
-***
-Ensure you know what you're doing when using `refreshClass`. It will recursively wipe all objects where given target was injected by container. This includes all of their provisions. Mention the caveat of using `ClassHydrationBehavior`
-
-(can't depend on dependency's concrete) it may be lurking in afterBind, not just in the constructor
-
-ModifyInjected is subdivided into two handler kinds:
-- Those that modify decorated instance without calling it
-- Those that call decorated instance
-
-Combining A cocktail of decorators with handlers that trigger underlying concrete will result in a disaster. In such cases, ambiguity will be removed by executing the cross-cutting method in a converging handler
-
-(module class binding method)
-Careful to decouple dependencies during binding. Starting a bind call within another will confuse the outer one
-// example
-
-## Testing
-
-telescope

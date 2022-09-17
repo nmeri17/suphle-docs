@@ -5,7 +5,9 @@ Events are a direct precursor to queues. Think of them as deferred events. If ev
 
 While it may be tempting to defer events and functionality, beware of business requirements making it unrealistic to dispense value without awaiting completion of an orderly sequence of activities
 
-The task classes have to conform to whatever adapter is active
+The task classes have to conform to whatever adapter is active ((still true))
 
+// manual flow-starter
 Make it a point of duty to have the queueing server running after each deployment. This allows us push tasks to it
+
 The runner wants to receive whatever module our desired adapter is bound

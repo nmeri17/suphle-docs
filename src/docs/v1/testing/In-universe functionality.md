@@ -57,24 +57,7 @@ The purpose of using `dataProvider` is in order to have access to objects availa
 
 // example @see IntraModuleTest->test_stores_correct_data_in_cache, makeRouteBranches
 
-```php
-public function test_successLogin () {
-			$this->containerTelescope->setNoiseFilter(function ($telescope) {
-
-				$result = $telescope->missedArgumentFor(
-					\Suphle\Contracts\Bridge\LaravelContainer::class,
-
-					"requestDetails"
-				);
-if ($result) var_dump(22222222);
-				return $result;
-			});
-var_dump("before updating url");
-			$this->sendCorrectRequest(self::LOGIN_PATH); // given
-```
-Note that with the above, you don't need to manually set telescope on containers even if you're using moduleLevelTest. All you need is the property, unless you want to monitor activities on a select number of containers
-
-There is an emargo imposed on OrmDialect that may trip you up: whenever it's reset or refreshed, it reads the database state as it was when the test began-- or more specifically, as it was before transaction commenced--not as it is at present. What this implies is that if any modifications are made within the test, and a connection reset action occurs, the subsequent part of the test cannot expect to find inserted data
+There is an embargo imposed on OrmDialect that may trip you up: whenever it's reset or refreshed, it reads the database state as it was when the test began-- or more specifically, as it was before transaction commenced--not as it is at present. What this implies is that if any modifications are made within the test, and a connection reset action occurs, the subsequent part of the test cannot expect to find inserted data
 
 ```php
 public function test_successLogin () {
