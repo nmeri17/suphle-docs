@@ -1,2 +1,2 @@
-# suphple-docs
-Documentation for https://github.com/nmeri17/Tilwa/
+# suphle-docs
+Documentation for https://github.com/nmeri17/suphle 
