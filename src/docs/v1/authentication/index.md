@@ -216,7 +216,7 @@ In Suphle, we use `Suphle\Contracts\Auth\AuthStorage` to represent the mechanism
 ```php
 use Suphle\Routing\BaseCollection;
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\Controllers\BaseController;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Controllers\BaseCoordinator;
 
 use Suphle\Response\Format\Json;
 
@@ -243,13 +243,13 @@ As route patterns cascade, protection applied to a prefixed pattern or method ap
 ```php
 use Suphle\Routing\BaseCollection;
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Prefix\UnchainParentSecurity, Controllers\BaseController};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Prefix\UnchainParentSecurity, Controllers\BaseCoordinator};
 
 class UpperCollection extends BaseCollection {
 
 	public function _handlingClass ():string {
 
-		BaseController::class;
+		BaseCoordinator::class;
 	}
 
 	public function _authenticatedPaths():array {

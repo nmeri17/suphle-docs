@@ -113,21 +113,11 @@ The specifics of how each object is bound within this method depends on the cont
 
 #### All method arguments context
 
-Suppose two class signatures define a dependency on a third class in their constructor.
+Suppose a class defines a dependency on another class in its constructor:
 
 ```php
 
 class A {
-
-    private $c;
-
-    public function __construct (C $c) {
-
-        $this->c = $c;
-    }
-}
-
-class B {
 
     private $c;
 
@@ -148,7 +138,7 @@ class C {
 }
 ```
 
-We can instruct the container to provide the same instance of class C to both consumers using a combination of `whenTypeAny()` and `needsArguments()` methods.
+We can instruct the container to provide the same instance of class `C` to every consumer who requests for it, using a combination of `whenTypeAny()` and `needsArguments()` methods.
 
 ```php
 
@@ -171,7 +161,7 @@ protected function registerConcreteBindings ():void {
 
 #### Explicit method arguments context
 
-When we want class `A` to get a separate instance of `C`, we provide that argument like so,
+We my also want to limit access of a class instance to one consumer. Say, we want only class `A` to get this specific instance of `C`; all other consumers should hydrate `A` afresh. That binding can be provided as follows:
 
 ```php
 
@@ -216,6 +206,43 @@ protected function registerConcreteBindings ():void {
 These methods return a fluent interface but it may be safer to terminate the end of each entity provision to avoid ambiguity. Any attempt to define a provision without first declaring its context will raise a `Suphle\Exception\Explosives\Generic\HydrationException`. Avoid nesting provisions so as not to encounter unpleasant scenario of outer provision using the inner one.
 
 All provisions are required to be compatible with hydrated type; otherwise, an `Suphle\Exception\Explosives\Generic\InvalidImplementor` exception is thrown.
+
+#### Global singletons
+
+When objects are being hydrated, the container will find an available provision for the context it's hydrating for, and will latch onto one when found. Along recursive or lengthy dependency chains, this means some dependencies will be hydrated afresh since they weren't explicitly provided for that consumer. This can become a problem when dependency has been booted to a state that should be visible across its consumers.
+
+In such case, we want all consumers to receive the same instance regardless of their position during a hydration sequence. An app-wide instance of an dependency can be created by decorating it with `Suphle\Contracts\Services\Decorators\BindsAsSingleton`.
+
+```php
+use Suphle\Contracts\Services\Decorators\BindsAsSingleton;
+
+class C implements BindsAsSingleton {
+
+    private $value;
+
+    public function setValue (int $value):void {
+
+        $this->value = $value;
+    }
+
+    public function entityIdentity ():string {
+
+        return static::class;
+    }
+}
+
+class B {
+
+    private $a;
+
+    public function __construct (A $a) {
+
+        $this->a = $a;
+    }
+}
+```
+
+Now, no matter how deep the nesting the dependency on `C` is, an identical instance will be given since it's only hydrated once. `BindsAsSingleton::entityIdentity` is used to indicate what capacity this object should be applied to. Objects [implementing interfaces](#providing-interfaces) will be more inclined to return the primary interface for which they were written, while classes can merely return their own names.
 
 ## Getting objects from the container
 
@@ -802,7 +829,7 @@ class DebugContainerTest extends ModuleLevelTest {
 
 #### Telescope methods
 
-The telescope contains methods that hook into observable functionality on the container. These are meta-test methods i.e. just as test code is separate from production code, telescope observations are for debugging and shouldn't be pushed along with test code, except you're contributing to the container itself.
+The telescope contains methods that hook into observable functionality on the container. These are meta-test methods i.e. just as test code is separate from production code, telescope observations are for debugging and shouldn't be pushed along with test code, except you're contributing to the container itself. When this is the case, our objective is to make the container's labyrinthine operations as transparent as possible.
 
 ##### Selective monitoring
 
@@ -889,108 +916,59 @@ $this->assertTrue($this->containerTelescope->wroteArgumentFor(
 ));
 ```
 
-##### Refresh state observations
+Note that argument name is used here rather than its type.
+
+##### Observing refresh state
+
+This observation equips us with methods required to verify what was refreshed, objects it dragged along with it, object parents and interfaces references or provisions that were wiped as a result. These objects are known as *consumers* to the telescope.
+
+In order to access the full list of consumers or their possible parents affected by a call to `refreshClass`, we use the methods `getConsumerList` and `getConsumerParents` respectively. Refreshed entities are read from `getRefreshedEntities`. Of course, these lists can further be narrowed to their more specific details and is more likely to be your method of choice to understand what's going on.
+
+Suppose we wish to confirm that `ClassB` dependency on `ClassA` will make it prone to be wiped when `ClassA` is departing the container, we'll use `getConsumersFor` method to pool all objects with a dependency on `ClassA`
 
 ```php
 
+$consumerList = $this->containerTelescope->getConsumersFor(ClassA::class);
 
-public function getConsumerList ():array {
+$this->assertContains(ClassB::class, $consumerList);
+```
 
-    return $this->consumerList;
-}
+To scrutinize whether a target is included in the list of refreshed entities, the method `didRefreshEntity` can be helpful:
 
-public function hasConsumers (string $dependency):bool {
+```php
 
-    return array_key_exists($dependency, $this->consumerList);
-}
+$this->assertTrue($this->containerTelescope->didRefreshEntity($this->aRequires));
+```
 
-public function getConsumersFor (string $dependency):array {
+To verify a certain parent or interface part of a provision was removed as expected when its sub class got refreshed, we use `hasConsumerParent`like so:
 
-    if (!$this->hasConsumers($dependency)) return [];
+```php
 
-    return $this->consumerList[$dependency];
-}
+$this->assertTrue($this->containerTelescope->hasConsumerParent($dependent, $dependency
+));
+```
 
-public function getRefreshedEntities ():array {
+##### Monitor provision misses
 
-    return $this->refreshedEntities;
-}
+This refers to recordings noted each time container attempts to pull arguments or concretes that are unavailable at the evaluated contexts. We may want to verify what these contexts are or debug what was missed.
 
-public function didRefreshEntity (string $entityName):bool {
+To fetch all missed arguments or concretes in one go, we use `getMissingArguments` and `getMissingConcretes` respectively. Other lists we can fetch include `getMissingContexts` and `getStoredConcretes`.
 
-    return in_array($entityName, $this->refreshedEntities);
-}
+The methods `allMissedArgument` and `allMissedConcrete` can be used to determine all callers who tried but were unable to read either arguments or concretes from the active provision.
 
-public function getConsumerParents ():array {
+For specifics, we use the methods `missedArgumentFor`, `storedConcreteFor` and `missedConcreteFor`.
 
-    return $this->consumerParents;
-}
+```php
 
-public function hasConsumerParent (string $dependent, $dependency):bool {
+$this->assertTrue($this->containerTelescope->missedArgumentFor(
 
-    return $this->didPopulate(
-
-        $this->consumerParents, $dependent, $dependency
-    );
-}
+    $this->aRequires, "b1"
+));
 ```
 
 ```php
+$this->assertTrue($this->containerTelescope->storedConcreteFor(
 
-public function allMatchingValue (array $context, $value):array {
-}
-
-public function getMissingArguments ():array {
-
-    return $this->missingArguments;
-}
-
-public function missedArgumentFor (string $contentOwner, $argumentName):bool {
-
-    return $this->didPopulate(
-
-        $this->missingArguments, $contentOwner, $argumentName
-    );
-}
-
-public function allMissedArgument ( $argumentName):array {
-
-    return $this->allMatchingValue(
-
-        $this->missingArguments, $argumentName
-    );
-}
-
-public function getMissingConcretes ():array {
-
-    return $this->missingConcretes;
-}
-
-public function missedConcreteFor (string $contentOwner, $argumentName):bool {
-
-    return $this->didPopulate(
-
-        $this->missingConcretes, $contentOwner, $argumentName
-    );
-}
-
-public function getMissingContexts ():array {
-
-    return $this->missingContexts;
-}
-
-public function allMissedConcrete ( $argumentName):array {
-
-    return $this->allMatchingValue(
-
-        $this->missingConcretes, $argumentName
-    );
-}
-
-public function getStoredConcretes ():array {
-
-    return $this->storedConcretes;
-}
-
-public function storedConcreteFor (string $contentOwner, $className):bool
+    $this->aRequires, BCounter::class
+));
 ```
