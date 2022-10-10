@@ -409,7 +409,33 @@ public function test_cant_resume_auth_session_after_logout () {
 ```
 
 When the `storageName` argument is provided, it will replace whatever mechanism was bound since it doesn't make sense for developer to authenticate to one mechanism while app is running on another.
-The method returns a string, which is crucial for token-based tests that require a token with which to make subsequent authenticated requests.
+
+The call to `actingAs` should come before any subsequent session related functions since it restarts underlying session. An example is when combined with a HTTP test sending a CSRF token. The correct way to do that would be:
+
+```php
+
+public function test_authorized_user_can_perform_operation () {
+
+	$this->actingAs($this->lastInserted->employer->user); // given
+
+	$csrfToken = $this->getContainer()->getClass(CsrfGenerator::class)
+	->newToken();
+
+	$this->putJson( // when
+
+		$urlPattern . $this->lastInserted->id,
+
+		array_merge($this->updatePayload, [
+
+			CsrfGenerator::TOKEN_FIELD => $csrfToken
+		])
+	);
+
+	// then
+}
+```
+
+`actingAs` returns a string, which is crucial for token-based tests that require a token with which to make subsequent authenticated requests.
 
 ```php
 

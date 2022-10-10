@@ -14,6 +14,8 @@ This refers to a form of authorization on the DAL directly. It's powerful for th
 
 In Suphle, this kind of authorization is applied at one central class and propagates wherever the model is used. Collocation has the additional advantage of discoverability of available permissions for each resource. Model-based authorization is defined on classes implementing `Suphle\Contracts\Auth\ModelAuthorities`. Since we'll be working with models, our implementation must be coupled with the underlying ORM. The Eloquent adapter that comes with Suphle provides a base implementation of this interface for you to extend -- `Suphle\Adapters\Orms\Eloquent\Condiments\BaseEloquentAuthorizer`. As authorization requirements differ from software to software and model to model, `BaseEloquentAuthorizer` doesn't implement `ModelAuthorities` methods in itself, but offers an initial platform to streamline our experience properly authorizing Eloquent models.
 
+### Writing model authorizers
+
 Suppose we have an Employment model, we would go about securing it using the following authorizer:
 
 ```php
@@ -85,7 +87,7 @@ The generic authorization exception is `Suphle\Exception\Explosives\Unauthorized
 
 These methods represent important milestones in the lifetime of a model. Each of them will almost always be populated with domain barriers dictated by the product owner. When a barrier is not immediately apparent, the developer and PO should prevent unforeseen accidents by listing invariants of each entity. This task can be made easier by examining model columns and the contents of a relationship model that would translate into an invalid system state.
 
-Authorization primarily relies on `Suphle\Contracts\Auth\AuthStorage` to function. However, you will observe that our invariant is made up of
+Authorization primarily relies on `Suphle\Contracts\Auth\AuthStorage` to function. However, you will observe that our invariant is made up of,
 
 ```php
 
@@ -111,7 +113,29 @@ protected function isEmployer ($model):bool {
 
 This is because authentication identifiers are unavailable in authorizer constructors. All model authorizers are hydrated and sent to the `Suphle\Contracts\Database\OrmDialect` before commencing any database operation. `Suphle\Contracts\Auth\UserContract`, the bedrock of authentication, happens to be one of models, which precludes those authorizers from potential knowledge of who authorized user is until at that point in time. This compromise is acceptable since we don't require any retrieval impositions on `Suphle\Contracts\Auth\UserContract` before authentication occurs.
 
+### Connecting model authorizers
+
+Each authorizer has to be paired with the model it authorizes on `AuthStorage::getModelObservers()` config method. Our `EmploymentAuthorizer` above will be paired as follows:
+
+```php
+
+use Suphle\Config\Auth as DefaultAuthConfig;
+
+class CustomAuthConfig extends DefaultAuthConfig {
+
+	public function getModelObservers ():array {
+
+		return [
+
+			Employment::class => EmploymentAuthorizer::class
+		];
+	}
+}
+```
+
 ### Eloquent authorization adapter
+
+#### Cascade on delete
 
 The `deleting` method of our authorizer features a call to `getChildrenMethods`. This is used to lift related models that shoudln't exist in the absence of the currently deleted models. By default, this covers those relationships defined using `hasOne` or `hasMany`, but you can update it to reflect any additional relationships applicable to your software.
 
@@ -123,7 +147,13 @@ protected $childrenTypes = [
 ];
 ```
 
-Permissions aren't contagious. You'll have to protect the models in those relationships themselves from any form of undesirable access.
+There are a few other ways to have gone about this, one of which is the use of model factories. This method deletes it at the database level, but isn't quite supported on all database engines. It equally implies sacrificing soft deletes since that's an application-based concept. Model-based authorizers are a safe location to gather child relations and mark them as deleted.
+
+However, for any generic solution to this problem to bear fruit, you must promise not to delete any models using shortcuts such as a DBMS.
+
+#### Authorization through relationships
+
+Permissions aren't contagious. You'd have to protect the models in those relationships themselves from any form of undesirable access.
 
 
 ## Route-based authorization
@@ -217,12 +247,12 @@ class UnlocksAuthorization1 extends BaseCollection {
 
 	public function GMULTI__EDITh_id () {
 
-		$this->_get(new Json("getEditableResource"));
+		$this->_get(new Json("getEmploymentDetails"));
 	}
 
 	public function GMULTI__EDIT__UNAUTHh () {
 
-		$this->_get(new Json("getEditableResource"));
+		$this->_get(new Json("getEmploymentDetails"));
 	}
 
 	public function _authorizePaths (PathAuthorizer $pathAuthorizer):void {

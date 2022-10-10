@@ -557,11 +557,13 @@ class AbsolutelyCritical implements ClassHydrationBehavior {
 
 Above we use `protectRefreshPurge()` as contraceptive against recursive sanitation.
 
-## Decorators
+## Object decoration
 
-Decorators are classes used for either augmenting how the container hydrates an object or wrapping the class as a whole with additional behavior not relevant to its actual functionality. Decorators are implemented in 3 parts we'll look at below.
+This refers to a process of either augmenting how the container hydrates an object or wrapping the class as a whole with additional behavior not relevant to its actual functionality. While using them may sound like a whole lot of fun, try not to outsource what should be responsibility of a single manager class to decorators. The decorator itself is an interface, and like all interfaces in general, its worth is proven when it has more than one implementation. You will equally appreciate it better if it isn't simply a marker interface, but returns information to its decorator handler using methods on the interface. One helpful endorsement for whether functionality belongs in a decorator is whether it can only be covered or accessed through [decorator scopes](#Decorator-handlers).
 
-One of these parts is consuming an existing decorator. All that is required to achieve this is to implement the specific decorator interface. Often, this decorator would provide a method with which to receive relevant information to be applied for the consuming class. If you're not rolling out custom decorators, this is all you need to know.
+### Consuming a decorator
+
+All that is required for this is to implement the decorator's interface. Often, this interface would provide a method with which to receive relevant information to be applied for the consuming class. If you're not rolling out custom decorators, this is all you need to know.
 
 ### Writing your own decorators
 
@@ -726,6 +728,8 @@ public function safeCallMethod (
 When practicing AOP, the proxy wrapper becomes responsible for either calling or terminating calls to target object. In the above example, we use the helper method `BaseInjectionModifier::triggerOrigin` to invoke the target. We receive the proxy itself as first argument, but it's merely for auditing purposes. On no account whatsoever should it be invoked from the handler, otherwise, it will result in an infinite loop.
 
 Combining a cocktail of decorators with handlers invoking the same class can lead to both cognitive and execution disasters. When this occurs, ambiguity should be removed by converging the cross-cutting functionality into a unified handler and composing its implementation details with the various handlers required.
+
+Decorator handlers must exercise caution if they have the need to use the container, since doing so can lead to the same action that warranted decoration; and although object exists, the container is waiting for its decorators to approve it for release. This confusion will result in a memory leak, inevitably crashing execution.
 
 ## Augmenting with 3rd-party containers
 

@@ -6,7 +6,7 @@ Probably the most common theme of this component is to centralize things as much
 
 The caller shouldn't be responsible for that check, as it's easy to forget. This isn't limited to conditionals. It equally applies to adding a clause to a query. These points are raised here since there's a limit to how much Suphle can interfer with the domain layer.
 
-To summarize, any action expected to precede another should be abstracted as high as realistically required business wise, without callers concerning themselves with it. Candidates for centralization are validation, model hydration, conditionals, business logic. The solitary purpose of a service coordinator is to serve as fuselage between these central points.
+To summarize, any action expected to precede another should be abstracted as high as realistically required business wise, without callers concerning themselves with it. Candidates for centralization are validation, model hydration, conditionals, business logic. Actions preceding model operations should be hook into its [lifecycle methods](/docs/v1/authorization#Model-based-authorization). The solitary purpose of a service coordinator is to serve as conduit or juncture between these central points.
 
 ## Creating a service coordinator
 
@@ -417,7 +417,7 @@ class BaseCoordinator extends ServiceCoordinator {
 
 ## Service decorators
 
-Service [decorators](/docs/v1/container#decorators) are utilities applied either to Coordinators or available for the developer to apply to their own services. Their purpose is to promote diverse practises, from better object design to intuitive UX with lowered developer friction.
+Service [decorators](/docs/v1/container#object-decoration) are utilities applied either to Coordinators or available for the developer to apply to their own services. Their purpose is to promote diverse practises, from better object design to intuitive UX with lowered developer friction.
 
 ### Auto service error handling
 
@@ -622,27 +622,21 @@ This refers to updates directly influenced by user input. Resources maintained b
 
 ```php
 
-use Suphle\Contracts\Services\{Decorators\MultiUserModelEdit, Models\IntegrityModel};
+use Suphle\Contracts\Services\Decorators\{MultiUserModelEdit, VariableDependencies};
+
+use Suphle\Contracts\Services\Models\IntegrityModel;
 
 use Suphle\Services\{UpdatefulService, Structures\BaseErrorCatcherService};
 
-use Suphle\Routing\PathPlaceholders;
-
-use Suphle\Request\PayloadStorage;
-
 use Suphle\Tests\Mocks\Models\Eloquent\Employment;
 
-class EmploymentEditMock extends UpdatefulService implements MultiUserModelEdit {
+class EmploymentEditMock extends UpdatefulService implements MultiUserModelEdit, VariableDependencies {
 
 	use BaseErrorCatcherService;
 
-	private $payloadStorage, $placeholderStorage, $blankModel;
+	private $blankModel;
 
-	public function __construct (PathPlaceholders $placeholderStorage, PayloadStorage $payloadStorage, Employment $blankModel) {
-
-		$this->placeholderStorage = $placeholderStorage;
-
-		$this->payloadStorage = $payloadStorage;
+	public function __construct ( Employment $blankModel) {
 
 		$this->blankModel = $blankModel;
 	}
@@ -659,7 +653,7 @@ class EmploymentEditMock extends UpdatefulService implements MultiUserModelEdit 
 
 		$this->model->where([
 
-			"id" => $this->payloadStorage->getKey("id")
+			"id" => $this->placeholderStorage->getSegmentValue("id")
 		])
 		->update($this->payloadStorage->only(["salary"]));
 	}
@@ -732,7 +726,10 @@ What `IntegrityModel` does is:
 
 They are constants that can be read for custom error display using the `EditIntegrityException::getIntegrityType()` method.
 
-- It records each update to a resource, provided the `IntegrityModel::enableAudit` method returns true. Default implementation on `EditIntegrity` returns true, and expects shema relevant for record-keeping to be present. For Eloquent, this is among migrations on its component template. For this feature to function properly, intending models are urged to [include it](/docs/v1/database#eloquent-migrations) among their migration list.
+- It records each update to a resource, provided the `IntegrityModel::enableAudit` method returns `true`. Default implementation on `EditIntegrity` returns true, and expects shema relevant for record-keeping to be present. For Eloquent, this is among migrations on its component template. For this feature to function properly:
+
+	- Intending models are urged to [include it](/docs/v1/database#eloquent-migrations) among their migration list.
+	- Within test environments and otherwise, one of the storage mechanisms should be populated as it will be used to indicate user responsible for incoming change. This behavior can be replaced by overriding `EditIntegrity::makeHistory` and modifying the migration as desired.
 
 This update is then ran within a transaction for you, with idempotent elements returned from `MultiUserModelEdit::getResource` hard-locked under the same safety net as `ServiceErrorCatcher::failureState`. It doesn't matter whether `updateResource` triggers an event laden with database calls to module-related tables -- they will all be tucked safely into the transaction.
 
@@ -774,6 +771,49 @@ if ($this->remoteConfig->hasErrors())
 ```
 
 Unless you're receiving data from a source not covered under `Suphle\Services\Structures\ModellessPayload`, `Suphle\IO\Http\BaseHttpRequest`, you have no need to directly extend this class.
+
+### Conducting basic search
+
+Suphle offers a class, `Suphle\Services\Search\SimpleSearch`, for elegant manipulation of search parameters, especially targeted at software with a relatively small number of records. It's more pragmatic to offload the search feature on larger databases to more robust platforms such as [ Typesense](typesense.org).
+
+`SimpleSearch` is most useful for search requests containing paramters that rather than directly correspond to database columns, require clauses further filtration. These clauses are expected to assemble at the class extending `SimpleSearch`.
+
+```php
+use Suphle\Services\Search\SimpleSearch;
+
+class SimpleSearchService extends SimpleSearch {
+
+	public function better_than ($model, $value) {
+
+		return $model->where([
+
+			"complex_join" => $value
+		]);
+	}	
+}
+
+class BaseCoordinator extends ServiceCoordinator {
+
+	public function searchProducts (SearchProductBuilder $searchBuilder):iterable {
+
+		return [
+
+			"results" => $this->searchService->convertToQuery(
+
+				$searchBuilder, ["q"]
+			)->get();
+		];
+	}
+}
+```
+
+`SimpleSearch` will cycle through incoming query parameters for one matching a method defined on `SimpleSearchService`. On encountering such method, it will delegate the model for it to apply relevant customization. Each parameter not matching a method is assumed to correspond to a column on the model and added as a `WHERE` clause automatically.
+
+The caller uses `convertToQuery` to either retrieve a loaded builder and apply its own queries, or fetch right away. The 2nd argument to this method is a list of parameters not falling into either columns or method categories. At the very least, you'll want to omit the query key itself since it's expected to be set on the builder in `SearchProductBuilder`.
+
+Now, we can send a search request with parameters `/search/?q=ogbogu&better_than=nmeri`.
+
+`SimpleSearch` contains the protected properties `payloadStorage`, `ormDialect`.
 
 ### Variadic setters
 
