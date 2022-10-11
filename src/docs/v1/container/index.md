@@ -594,6 +594,8 @@ class DecoratedClass implements OnlyLoadedBy {
 
 This is where the decorator logic is defined. There are two broad categories of things we'll want to do with our decorators. These categories determine what type the decorator handler will be implemented. A decorator can either want to inspect argument is passed to a class or method, or it can act as a modifier of hydrated instances. Argument-based handlers are required to implement `Suphle\Contracts\Hydration\ScopeHandlers\ModifiesArguments`, while those working with instances should implement `Suphle\Contracts\Hydration\ScopeHandlers\ModifyInjected`.
 
+Decorator handlers must exercise caution if they have the need to use the container, since doing so can lead to the same action that warranted decoration; and although object exists, the container is waiting for its decorators to approve it for release. This confusion will result in a memory leak, inevitably crashing execution.
+
 ##### Decorating arguments
 
 In practise, you're more likely to extend `Suphle\Services\DecoratorHandlers\BaseArgumentModifier` rather than implementing the underlying interface. It currently doesn't provide much functionality except preventing you from implementing boilerplate.
@@ -727,9 +729,22 @@ public function safeCallMethod (
 
 When practicing AOP, the proxy wrapper becomes responsible for either calling or terminating calls to target object. In the above example, we use the helper method `BaseInjectionModifier::triggerOrigin` to invoke the target. We receive the proxy itself as first argument, but it's merely for auditing purposes. On no account whatsoever should it be invoked from the handler, otherwise, it will result in an infinite loop.
 
+### Multiple decorators on a class
+
 Combining a cocktail of decorators with handlers invoking the same class can lead to both cognitive and execution disasters. When this occurs, ambiguity should be removed by converging the cross-cutting functionality into a unified handler and composing its implementation details with the various handlers required.
 
-Decorator handlers must exercise caution if they have the need to use the container, since doing so can lead to the same action that warranted decoration; and although object exists, the container is waiting for its decorators to approve it for release. This confusion will result in a memory leak, inevitably crashing execution.
+Decorators undergo a parent-shedding process to prevent handlers for lower-level decorators from running when combined with high-level ones. Consider the following decoration hierarchy:
+
+```php
+
+interface DecoratorA {}
+
+interface DecoratorB extends DecoratorA {}
+
+class DecoratedClass implements DecoratorB {}
+```
+
+Suppose `DecoratorA` and `DecoratorB` both have handlers connected, only that of `DecoratorB` will run. `DecoratorClass` has essentially relinquished the decoration, `DecoratorA`. The evaluator will interpret `DecoratorB` as an override that customizes behavior of `DecoratorA`.
 
 ## Augmenting with 3rd-party containers
 
