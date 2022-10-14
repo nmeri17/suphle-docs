@@ -58,6 +58,47 @@ Majority of your interaction with an ORM will be done against methods on its par
 
 This class is known as `Suphle\Adapters\Orms\Eloquent\Models\BaseModel` and all models are expected to extend it. Specifics regarding factories are described in greater detail on [their documentation page](laravel.com/docs/8.x/database-testing#defining-model-factories), although you may want to look at off the shelf [solutions at automating](github.com/mpociot/laravel-test-factory-helper) this task.
 
+#### Configuring the database
+
+Before any operation can be run against the database, it must be created and its server details surrendered to Suphle. The config interface used for this is `Suphle\Contracts\Config\Database`, through its `getCredentials` method. The array returned is expected to fit whatever shape required by the underlying ORM.
+
+```php
+
+use Suphle\Contracts\{Config\Database, IO\EnvAccessor};
+
+class PDOMysqlKeys implements DatabaseContract {
+
+	private $envAccessor;
+
+	public function __construct (EnvAccessor $envAccessor) {
+
+		$this->envAccessor = $envAccessor;
+	}
+
+	public function getCredentials ():array {
+
+		return [
+			"default" => [
+
+				"host" => $this->envAccessor->getField("DATABASE_HOST"),
+
+				"database" => $this->envAccessor->getField("DATABASE_NAME"),
+
+				"username" => $this->envAccessor->getField("DATABASE_USER"),
+
+				"password" => $this->envAccessor->getField("DATABASE_PASS"),
+
+				"driver" => "mysql",
+
+				"engine" => "InnoDB"
+			]
+		];
+	}
+}
+```
+
+#### Configuring table structure
+
 In order to encourage a feature-based, incremental approach toward development, models are required to list all migrations pertaining to them, using the `BaseModel::migrationFolders` method.
 
 ```php
@@ -140,36 +181,36 @@ Whenever a URL change occurs, the container is ridded of all objects that intera
 For each test, associated migrations are ran and data is seeded even before your test method runs. But if a request is sent within the test, connection used for migration and seeding is being reset. When this occurs, subsequent database calls would see an empty database. In order to avoid this, we'll use the `preDatabaseFreeze` hook for all insertions expected to survive in-between connection resets:
 
 ```php
-	class EmploymentServiceTest extends IsolatedComponentTest {
 
-		use BaseDatabasePopulator;
+class EmploymentServiceTest extends IsolatedComponentTest {
 
-		protected function preDatabaseFreeze ():void {
+	use BaseDatabasePopulator;
 
-			$this->replicator->modifyInsertion(50, [
+	protected function preDatabaseFreeze ():void {
 
-				"customize" => "to_taste"
-			]); // given
-		}
+		$this->replicator->modifyInsertion(50, [
 
-		public function test_http_endpoint () {
-
-			$this->get("/segment") // when
-
-			->assertJsonStructure(["data" => [
-
-				"id", "name", "quantity"
-			]]); // then
-		}
+			"customize" => "to_taste"
+		]); // given
 	}
+
+	public function test_http_endpoint () {
+
+		$this->get("/segment") // when
+
+		->assertJsonStructure(["data" => [
+
+			"id", "name", "quantity"
+		]]); // then
+	}
+}
 ```
 
-Since `PHPUnit\Framework\TestCase` prevents any functionality from running only once after its `setUp` method, using this hook means that more than one test on the same class will incrementally see data pre-seeded for the previous test. Modifications to database rows will neither be reset nor removed in-between tests. This shouldn't be a problem for classes with just one test or tests not expecting a fixed set of elements.
+Since `PHPUnit\Framework\TestCase` prevents any functionality from running only once after its `setUp` method, using this hook means that more than one test on the same class will incrementally see data pre-seeded for the previous test. Modifications to database rows made after connection-resetting actions like an HTTP request, will neither be reset nor removed in-between tests. This shouldn't be a problem for database classes with:
 
-If this experience proves to be an encumberance, available alternatives include:
-
-- Moving test case to its own class.
-- Testing the services directly i.e. without HTTP.
+- Just one test.
+- Tests not expecting a fixed set of elements.
+- Database assertions without HTTP requests.
 
 ### Asserting database state
 
@@ -196,4 +237,99 @@ An exhaustive list of [available database assertions](laravel.com/docs/8.x/datab
 
 ### Accessing test models
 
-replicator (list methods),  ()
+`BaseDatabasePopulator` provides handles for manipulating the connected model created during and in the aftermath of the seeding phase. These handles are abstracted to be ORM adapter-agnostic and stored on its `replicator` property. Below, we'll look at some of its methods.
+
+#### Inserting new models
+
+Additional data can be created on the table before performing the subject action, usually to insert data more custom than the base factory. For this, we use `modifyInsertion` method. For basic cases, it'll simply take the number of entries to insert for connected model,
+
+```php
+
+$this->replicator->modifyInsertion(10);
+```
+
+The above will return an iterable of all inserted models. Its 2nd argument takes an array of data to apply to the table.
+
+```php
+
+protected function preDatabaseFreeze ():void {
+
+	$this->employment = $this->replicator->modifyInsertion(
+
+		1, ["salary" => 850_000]
+	)[0];
+}
+```
+
+For more complex needs beyond the table's columns, a callback can be provided as 3rd argument, that would enable the models to be built as much as underlying ORM permits:
+
+```php
+
+protected function preDatabaseFreeze ():void {
+
+	$this->employment = $this->replicator->modifyInsertion(
+
+		1, [], function ($builder) {
+
+			$employer = Employer::factory()
+
+			->for(EloquentUser::factory()->state([
+
+				"is_admin" => true
+			]))->create();
+
+			return $builder->for($employer);
+		}
+	)[0];
+}
+```
+
+Examples above use this method within `preDatabaseFreeze` since that's where insertions will survive HTTP requests. When not writing such tests, `modifyInsertion` is callable from any scope.
+
+#### Retrieving inserted models
+
+Models can be obtained in a few ways, depending on your needs. If there's no constraint on model properties, a random instance can serve. We get them using either `getRandomEntity` or `getRandomEntities` method for one or more entries, respectively.
+
+```php
+
+public function test_unauthorized_user_cant_perform_operation () {
+
+	[$employment1, $employment2] = $this->replicator->getRandomEntities(2); // OR 
+
+	$employment = $this->replicator->getRandomEntity();
+
+	// do thing with these entities
+}
+```
+
+Tests verifying behavior for a specific user should use the `getSpecificEntities` method to apply column clauses like so:
+
+```php
+
+public function test_modified_expected_rows () {
+
+	$clauses = ["where" => "foo"];// given
+
+	$this->getContainer()->getClass(DatabaseService::class)
+
+	->someOperation($clauses); // when
+	
+	$numFieldsToReturn = 100;
+
+	$modifiedRows = $this->replicator->getSpecificEntities(
+
+		$numFieldsToReturn, $clauses
+	);
+
+	// then
+}
+```
+
+#### Count test data
+
+In the above test, we can either assert the contents of the rows retrieved or simply verify that number of modified rows matches expectations using the `getCount` method. At every point, this method returns number of entries on the table.
+
+```php
+
+$this->assertSame($numFieldsToReturn, $this->replicator->getCount());
+```

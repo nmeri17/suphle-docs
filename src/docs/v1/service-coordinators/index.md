@@ -533,32 +533,33 @@ By using them, authorization level challenges common among user created resource
 This refers to system-managed updates. Any update where the application is responsible for variables involved in database modification, or where it's not explicitly received from the user should be regarded as a programmatic update. Alterations in this category should decorate the service with `Suphle\Contracts\Services\Decorators\SystemModelEdit`. A decorated service will have the following signature:
 
 ```php
-use Suphle\Services\{UpdatefulService, Structures\BaseErrorCatcherService};
 
-use Suphle\Contracts\Auth\AuthStorage;
+use Suphle\Services\{UpdatefulService, Structures\BaseErrorCatcherService};
 
 use Suphle\Contracts\Services\Decorators\{SystemModelEdit, VariableDependencies};
 
+use Suphle\Events\EmitProxy;
+
+use Suphle\Tests\Mocks\Modules\ModuleOne\Events\AssignListeners;
+
 class CheckoutCart extends UpdatefulService implements SystemModelEdit, VariableDependencies {
 
-	use BaseErrorCatcherService;
+	use BaseErrorCatcherService, EmitProxy;
 
-	private $cartBuilder, $authStorage;
+	const EMPTIED_CART = "cart_empty";
 
-	public function __construct (AuthStorage $authStorage) {
+	private $cartBuilder;
 
-		$this->authStorage = $authStorage;
+	public function __construct ( AssignListeners $eventManager) {
+
+		$this->eventManager = $eventManager;
 	}
 
 	public function updateModels () {
 
 		$this->cartBuilder->products()->update(["sold" => true]);
 
-		$user = $this->authStorage->getUser();
-
-		foreach ($this->cartBuilder->products as $product)
-
-			$user->orders()->create(["product_id" => $product->id]); // or delegate to module using events if it involves additional computation
+		$this->emitHelper (self::EMPTIED_CART, $this->cartBuilder); // received by payment, order modules etc
 
 		return $this->cartBuilder->delete();
 	}
@@ -695,7 +696,10 @@ The setup above looks similar to `Suphle\Contracts\Services\Decorators\SystemMod
 
 - The call to `Suphle\Contracts\Services\Decorators\MultiUserModelEdit::getResource` will throw a `Suphle\Exception\Explosives\EditIntegrityException` if no [path authorization](/docs/v1/authorization#Route-based-authorization) is found. This method doesn't enjoy the protection of automatic error handling.
 
-- Update requests must be accompanied by a field indicating resource matches its last edited state, otherwise, a `Suphle\Exception\Explosives\EditIntegrityException` will be thrown. For this field to be active, the resource in question ought to be defined as update-protected.
+- Update requests must be accompanied by a field indicating resource matches its last edited state, otherwise, a `Suphle\Exception\Explosives\EditIntegrityException` will be thrown. For this field to be active, the resource in question ought to be defined as update-protected. This exception's [default diffuser](/docs/v1/exceptions#Exception-diffusers) is `Suphle\Exception\Diffusers\StaleEditDiffuser`. It responds with received JSON payload or re-renders the previous markup and loaded fields, along with error indicators:
+
+	- Status code: 400
+	- Additional payload path: errors.0.message
 
 ##### Update-protected models
 
