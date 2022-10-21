@@ -436,7 +436,7 @@ To solve these problems, Suphle provides the `Suphle\Contracts\Services\Decorato
 
 #### Substituting call result
 
-When decorator handler encounters an error during execution of decorated service, instead of terminating request or responding to caller with empty hands, it first [forwards the exception](/docs/v1/exceptions#manually-broadcasting-exceptions), before deriving a value to resolve the original call with.
+When decorator handler encounters an error during execution of decorated service, instead of terminating request or responding to caller with empty hands, it first [forwards the exception](/docs/v1/exceptions#Broadcasting-exception-details), before deriving a value to resolve the original call with.
 
 Fallback values for each method can be defined on `ServiceErrorCatcher::failureState` like so,
 

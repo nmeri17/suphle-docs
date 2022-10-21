@@ -1,11 +1,11 @@
 ## Introduction
 
-Routing is one of most frameworks' strongest focal points. It's the location from which core components such as authentication, authorization, controllers and middleware are exposed by developer. It'll otherwise be duplicitous to introduce those components elsewhere and apply relevant routes to them.
+Routing is one of most frameworks' strongest focal points. It's the location from which core components such as authentication, authorization, service-coordinators and middleware are exposed by developer. It'll otherwise be duplicitous to introduce those components elsewhere and apply relevant routes to them.
 
-That being the case, Suphle takes them a step further as the location for defining [flows](/docs/v1/flows) and response types. However, we won't examine all of that in this chapter. This one will only equip you with all you need to translate user requests to their controllers
+That being the case, Suphle takes them a step further as the location for defining [flows](/docs/v1/flows) and response types. However, we won't examine all of that in this chapter. This one will only equip you with all you need to translate user requests to their service-coordinators
 
 ---
-Routing consists of defining [controller](/docs/v1/controllers) adapters i.e. portals between an incoming request and its execution. This means that for all the power controllers are known to wield, they are answerable to what is being dictated from route definitions. As will soon be seen with route collections, one can plug in various co-existing controller implementations as the need may be.
+Routing consists of defining [service-coordinator](/docs/v1/service-coordinators) adapters i.e. portals between an incoming request and its execution. This means that for all the power service-coordinators are known to wield, they are answerable to what is being dictated from route definitions. As will soon be seen with route collections, one can plug in various co-existing service-coordinator implementations as the need may be.
 
 ## Route collections
 These are classes where routes/paths are defined. Route collections can either implement the `Suphle\Contracts\RouteCollection` or preferably, extend `Suphle\Routing\BaseCollection` which should be the base class for your lower level collections. 
@@ -170,7 +170,7 @@ Subsequent solutions to be examined are familiar to those who have dabbled in de
 
 ## Canaries And Feature Toggling
 
-Whether we're developing short lived features or internally demoing a permanent one to a subset of the userbase, that which is under review had preferably not leak out to the general public. As such we want to keep them decoupled from permanent routes. This allows them exist in their own little world, likely having their own controllers. The standard term for this is canary releases.
+Whether we're developing short lived features or internally demoing a permanent one to a subset of the userbase, that which is under review had preferably not leak out to the general public. As such we want to keep them decoupled from permanent routes. This allows them exist in their own little world, likely having their own service-coordinators. The standard term for this is canary releases.
 
 You usually want to read the availability of such feature from its config, a .env, or database
 
@@ -180,7 +180,7 @@ We're using this in combination with extension instead of conditionals in the ex
 
 Note: When serving to a group of users, use a concrete auth implementation, not the interface
 
-/// show how to point to a collection with more routes then that guy's controller is the extended one injecting relevant entities
+/// show how to point to a collection with more routes then that guy's service-coordinator is the extended one injecting relevant entities
 
 Authentication resumption happens before canary routing. Or, better put, authentication is evaluated for canaries attempting to read user status, before the app-wide one that terminates on user absence
 
@@ -226,3 +226,9 @@ Seamless integration
 If you don't have the luxury of developing at your pace, you will greatly benefit from design first tools like API blueprint. It's important to not work under pressure of delivering endpoints to kick off API consumption. Aside from this, APIs should be rapidly prototyped. And the first step in doing so would be setting up the routes and returning dummy responses. That's the bare minimum promise of what is to come
 
 If you don't care much about using an API design tool, it is assumed you have an alternative or intuitive means of arriving at a decent design your consumers will consent to. Should this be the case, after implementation, suphle solves the documentation problem by generating openAPI schemas from your routes and their associated responses
+
+---
+probably an odd location and would require a requests page
+
+talk about these methods
+		$this->pathPlaceholders->allNumericToPositive();
