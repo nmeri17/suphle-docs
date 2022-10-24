@@ -217,7 +217,7 @@ For more stringent fetching, model relationships should not be exempt from trimm
 
 ### Non-model-based request type
 
-Every other incoming payload not interacting with a model falls into this bracket. Specialized services for handling these are treated in greater detail in their respective chapters. But the base payload reader is `Suphle\Services\Structures\ModellessPayload`. The domain services shouldn't be dragged into extracting relevant information from the payload. Thus, we use this class as crutch for creating objects matching our DSL.
+Almost every other incoming payload not interacting with a model falls into this bracket. Specialized services for handling these are treated in greater detail in their respective chapters. But the base payload reader is `Suphle\Services\Structures\ModellessPayload`. The domain services shouldn't be dragged into extracting relevant information from the payload. Thus, we use this class as crutch for creating objects matching our DSL.
 
 ```php
 
@@ -252,6 +252,8 @@ class BaseCoordinator extends ServiceCoordinator {
 In practise, you'll likely require mapping to more fields than one, and would require a more robust mapping library such as [Valinor](https://github.com/cuyz/valinor).
 
 Aside handling requests that don't map to models/entities, `ModellessPayload` is useful for things like callback endpoints where a user is waiting for feedback on our end, but obviously not on the automated, calling service's end. In such cases, mere validation errors won't cut it. We need to respond to the waiting services with something to complete user flow. For this reason, it requires safe and [user friendly data conversion](#normalizing-incoming-data).
+
+Do be aware that this input reader type doesn't cover image upload. For that sort of payload, please see [its designated chapter](/docs/v1/image-upload). 
 
 ## Permitted dependencies
 

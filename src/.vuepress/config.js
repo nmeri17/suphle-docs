@@ -21,7 +21,7 @@ module.exports = {
     ["meta", { name: "apple-mobile-web-app-status-bar-style", content: "black" }]
   ],
 
-  theme: "antdocs",
+  // theme: "antdocs",
 
   /**
    * Theme configuration, here is the default theme configuration for VuePress.
@@ -29,8 +29,8 @@ module.exports = {
    * ref：https://v1.vuepress.vuejs.org/theme/default-theme-config.html
    */
   themeConfig: {
-    repo: "https://github.com/nmeri17/tilwa",
-    docsRepo: "https://github.com/nmeri17/suphple-docs",
+    repo: "https://github.com/nmeri17/suphle",
+    docsRepo: "https://github.com/nmeri17/suphle-docs",
     editLinks: false,
     docsDir: "",
     editLinkText: "",
@@ -45,12 +45,12 @@ module.exports = {
       {
         text: "Quick Start",
         link: "/docs/v1/quick-start/",
-      },
+      }/*,
       {
         text: "Suphle on Github",
-        link: "https://github.com/nmeri17/tilwa"
+        link: "https://github.com/nmeri17/suphle"
       },
-      /*{
+      {
         text: 'Languages',
         ariaLabel: 'Language Menu',
         items: [
@@ -64,13 +64,13 @@ module.exports = {
 
       ["/docs/v1/modules/", "Modules"], ["/docs/v1/container/", "Container"],
 
-      ["/docs/v1/testing/Achieving test automation through alternative means.md", "Achieving test automation through alternative means"], // interlude
+      ["/docs/v1/testing/", "Testing"], // interlude
 
       ["/docs/v1/routing/", "Routing"], ["/docs/v1/service-coordinators/", "Service Coordinators"],
 
       ["/docs/v1/events/", "Events"], ["/docs/v1/queues/", "Queues"], ["/docs/v1/environment/", "Environment"],
 
-      ["/docs/v1/authentication/", "Authentication"], ["/docs/v1/authorization/", "Authorization"], ["/docs/v1/database/", "Database"],
+      ["/docs/v1/authentication/", "Authentication"], ["/docs/v1/authorization/", "Authorization"], ["/docs/v1/database/", "Database"], ["/docs/v1/image-upload/", "Image upload"],
 
       ["/docs/v1/middleware/", "Middleware"], ["/docs/v1/exceptions/", "Exceptions"],
       ["/docs/v1/templating/", "Templating"],
@@ -80,7 +80,7 @@ module.exports = {
 
       ["/docs/v1/component-templates/", "Component-templates"], ["/docs/v1/credits/", "Credits"],
 
-      ["/docs/v1/testing/Testing index", "Testing index"]
+      ["/docs/v1/appendix/", "Appendix"]
     ]
   },
 

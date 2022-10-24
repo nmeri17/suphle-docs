@@ -514,7 +514,7 @@ class B {
 }
 ```
 
-### Caveat
+### Circular-dependencies caveat
 
 The fact that concretes are decoupled from their interfaces makes the likelihood of one concrete unwittingly referring to an interface whose concrete, in turn, refers to it high. Bear in mind that proxying interfaces is different from concretes since it has methods that need implementations.
 
