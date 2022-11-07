@@ -254,7 +254,7 @@ class WatermarkHandler extends BaseOptimizeOperation {
 				
 				$newPath, $this->textToFade, $this->fadePercent
 			);
-		}, $this->files);
+		}, $this->imageObjects);
 	}
 }
 ```

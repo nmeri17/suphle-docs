@@ -31,7 +31,7 @@ class CarRoutes extends BaseCollection {
 	
 	public function SALES() {
 		
-		return $this->_get(new Markup("salesHandler", "show-sales"));
+		$this->_get(new Markup("salesHandler", "show-sales"));
 	}
 }
 ```
@@ -48,7 +48,7 @@ class MusicRoutes extends BaseCollection {
 	
 	public function ARTISES_id() {
 		
-		return $this->_get(new Markup("artistesHandler", "show-artistes"));
+		$this->_get(new Markup("artistesHandler", "show-artistes"));
 	}
 }
 ```
@@ -67,12 +67,12 @@ class EmployeeRoutes extends BaseCollection {
 	
 	public function FIELD__AGENTSh_id() {
 		
-		return $this->_get(new Markup("agentsHandler", "show-agents"));
+		$this->_get(new Markup("agentsHandler", "show-agents"));
 	}
 	
 	public function OTHER__STAFFu_id() {
 		
-		return $this->_get(new Markup("staffHandler", "show-staff"));
+		$this->_get(new Markup("staffHandler", "show-staff"));
 	}
 }
 ```
@@ -90,7 +90,7 @@ class TownRoutes extends BaseCollection {
 	
 	public function TOWNS_name0() {
 		
-		return $this->_get(new Markup("townsHandler", "show-towns"));
+		$this->_get(new Markup("townsHandler", "show-towns"));
 	}
 }
 ```
@@ -118,7 +118,7 @@ class AnimalRoutes extends BaseCollection {
 	
 	public function dragons() {
 			
-		return $this->_prefixFor(DragonCollection::class);
+		$this->_prefixFor(DragonCollection::class);
 	}
 }
 ```
@@ -143,7 +143,7 @@ class AnimalRoutes extends BaseCollection {
 	
 	public function dragons() {
 			
-		return $this->_prefixFor(DragonCollection::class);
+		$this->_prefixFor(DragonCollection::class);
 	}
 }
 
@@ -151,7 +151,7 @@ class DragonCollection extends BaseCollection {
 	
 	public function FIGHTS() {
 			
-		return $this->_get(new Markup("fightsHandler", "fights-page"));
+		$this->_get(new Markup("fightsHandler", "fights-page"));
 	}
 }
 ```

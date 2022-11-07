@@ -1,31 +1,135 @@
 ## Introduction
 
-##projecting against foreign processes
-Any operation dependent with external systems should be wrapped in a try catch. Its location means its response is beyond our control and subject to failure. The objective is for service methods to never contain code reaching out to external platforms; be it emails, file generation, API calls – whatever involves a process whose code we don't have should be abstracted to a common layer where:
+This chapter refers to outward HTTP calls made by our application, whose response is required for satisfying user request. Some old applications use native APIs like bare-bones `file_get_contents` or cURL. The problem with these methods is that they don't offer modern facilities such as concurrent, successive requests. But more importantly, most solutions available don't assist with solving the following goals:
 
-1) it can be stubbed out
+1. Object structures that enable request senders to react in an elegant manner to the response. For example, a service vending API would likely respond with codes indicating status of the initiated action. A robust structure ought to account for:
 
-2) we can gracefully recover from its failure
+	1. Situations where the response you receive is outside what was promised by the authors of that API
+	1. Error/unsuccessful status codes. If the API doesn't make explicit provision for these, the developers are suspect. Guard yourself with a custom else block.
 
-We want to separate our business logic from the point where the mail is eventually fired off into oblivion. Because we have no programmatic way of knowing whether mail delivery was successful, the most we can do is hope for the best when running the mailer's send function. If that function is our last hope, it had best run in an environment where failures trigger recursion
+1. Ideally, this plumbing should occur away from the domain layer, who is only interested in an object satisfying its DSL. The application isn't concerned about managing clumsy URLs, filtering through to relevant nodes on the payload, etc.
 
-The nature of task queues make them suitable for such architectural requirement
+1. By separating request-response from the caller, we gain the ability to test these parts of our program using whatever data we please, simulating errors, etc.
 
-* working with API calls
-This section refers to synchronous http calls whose response is required for computing our own request. We simply can't ship the call to a queue and forget about it.
-Vending apis commonly respond with codes indicating the status of the initiated action. You want your code paths to account for
+## Writing request objects
 
-1) situations where the response you receive is outside what was promised by the authors of that api
-2) error/unsuccessful status codes. If the API doesn't make explicit provision for these, the developers are suspect. Guard yourself with a custom else block
+The goals listed above are met by the `Suphle\IO\Http\BaseHttpRequest` class that all outgoing requests are recommended to be wrapped it. It doesn't compete with libraries like Guzzle or HttPlug, rather it collaborates with them to achieve those objectives. It also isn't a platform for writing SDKs.
 
-Bearing this in mind, we'll be looking at the base http request class recommended for making http calls in suphle. It is a cross between intercepts external and service error catcher decorator. base http request doesn't terminate the request. However, on translationFailure, it forwards the exception to alert adapter and returns an optionalDto informing the caller that operation was unsuccessful. This is sufficient if no custom exception was thrown inside translate, otherwise, you'll have to check for that before bubbling to alert adapter
-//example
+The simplest request class fetching data over the wire would look like so:
 
-As can be seen above, base http request makes use of psr18 compliant http client, of which suphle injects the guzzle library. This means that while it may not be visible on the interface, the client can do impressive feats such as async and concurrent requests that guzzle is known for
+```php
 
-For making HTTP requests, Suphle provides the `BaseHttpRequest` class. It doesn't compete with libraries like Guzzle or HttPlug for functionality regarding outgoing requests. It also isn't a platform for writing SDKs. It's primary objective is to sequester:
+use Suphle\IO\Http\BaseHttpRequest;
 
-1. The application/domain from the clumsiness of outgoing links, payloads etc
-1. The request itself from data relevant to the application/consumer. Aside distilling data, this gives the additional advantage of testing these parts of our program using whatever data we please, simulating errors, etc.
+use Psr\Http\Message\ResponseInterface;
 
-We may have other needs that intersect with those listed earlier under [ModellessPayload](controllers/services/section)s. For this reason, they both implement the same interfaces but with slightly diverging implementations
+class VisitSegment extends BaseHttpRequest {
+
+	public function getRequestUrl ():string {
+
+		return "http://example.com/segment";
+	}
+
+	protected function getHttpResponse ():ResponseInterface {
+
+		return $this->requestClient->request(
+		
+			"get", $this->getRequestUrl()/*, $options*/
+		);
+	}
+
+	protected function convertToDomainObject (ResponseInterface $response) {
+
+		return $response; // filter to taste or cast to DSL
+	}
+}
+```
+
+It can then be consumed in a `getFromApi` coordinator handler as follows:
+
+```php
+
+class HttpCoordinator extends ServiceCoordinator {
+
+	protected $httpService;
+
+	public function __construct (VisitSegment $httpService) {
+
+		$this->httpService = $httpService;
+	}
+
+	public function getFromApi ():iterable {
+
+		$dslObject = $this->httpService->getDomainObject();
+
+		if ($this->httpService->hasErrors()) {
+
+			// derive $dslObject some other way
+		}
+
+		return ["data" => $dslObject];
+}
+```
+
+If the presence of `convertToDomainObject` and `getDomainObject` ring a bell, that is because [the same over-arching theme](/docs/v1/service-coordinators#Normalizing-incoming-data) is shared by `ModellessPayload`. Where underlying client throws an exception due to response code 500, or where DSL creation throws an exception, or where response fails to contain expected content, the program doesn't terminate. Application will elegantly recover from any internal conflict in outgoing request handling.
+
+The default implementation of `BaseHttpRequest::translationFailure` is such that when any of the above situations occur, the exception is forwarded to [exception broadcaster](/docs/v1/exceptions#Broadcasting-exception-details), along with response received after sending the request. `getDomainObject` will return null, as discretion on what to do next would be unique from caller to caller, thus flow control should be returned to them.
+
+## Testing outgoing HTTP requests
+
+There's no restriction to what test-type outgoing HTTP requests should be made from. There also is no special trait to enable this.
+
+### Simulating request states
+
+URL or response can be replaced by stubbing the `getRequestUrl` or `getHttpResponse` methods of the request object respectively.
+
+```php
+
+public function test_outgoing_request () {
+
+	$sutName = VisitSegment::class;
+
+	$parameters = $this->getContainer()
+
+	->getMethodParameters(Container::CLASS_CONSTRUCTOR, $sutName);
+
+	$httpService = $this->replaceConstructorArguments(
+
+		$sutName, $parameters, [
+
+			"getRequestUrl" => "demo.example.com/segment" // given
+		]
+	);
+
+	$response = $httpService->getDomainObject(); // when
+
+	// then => verify expectations on $response
+}
+```
+
+### Debugging HTTP requests
+
+Since the internal workings of the request object are obscured away, exceptions for failing tests have be explicitly extracted using its `getException` method. To have a more thorough test, we'll modify it as follows:
+
+```php
+
+$response = $httpService->getDomainObject(); // when
+
+if ($httpService->hasErrors()) {
+
+	$exception = $httpService->getException();
+
+	var_dump($exception);
+
+	$this->fail($exception);
+}
+
+// continuation of then assertion
+```
+
+It's important to call `fail` as a sanity check. Note that if request itself failed i.e. exception doesn't originate from the domain and is as a result of a bad request, `getException` will return the entire `Psr\Http\Message\ResponseInterface` payload. We'll then drill down to the actual body of the response like so:
+
+```php
+
+var_dump($exception->getResponse()->getBody()->getContents());
+```

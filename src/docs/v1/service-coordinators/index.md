@@ -473,7 +473,7 @@ class DatalessErrorThrower extends UpdatelessService implements ServiceErrorCatc
 
 Decorator handler will consult `ServiceErrorCatcher::failureState` on failure, requesting a return value for the original call to user-defined method. When no value is returned from this method, the handler will attempt to construct one for the caller, using method's type-hint as guide.
 
-Since PHP doesn't have generics yet, return value for `ServiceErrorCatcher::failureState` is untyped. But for consistency, it should correspond to whatever type the erring method would've return on successful execution.
+Since PHP doesn't have generics yet, return value for `ServiceErrorCatcher::failureState` is untyped. But for consistency, it should correspond to whatever type the erring method would've return on successful execution. This means such methods are prohibited from having `void` or PHP 8's `never` return type, as they will interfer with an alternate result being returned on its behalf.
 
 #### Identifying failed calls
 

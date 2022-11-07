@@ -63,4 +63,8 @@ Don't change numerous parts of the system haphazardly so as not to destabilize i
 After it's all complete, the updated portion can be connected to the main application
 
 **
+
+When a codebase has tests, leverage it during a major refactor. Instead of running tests after making all changes, favor running them after each small change. It's easier to decipher why they've broken and triangulate from there
+
+**
 Features are created as sub-folders within each relevant module

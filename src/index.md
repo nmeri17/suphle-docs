@@ -39,8 +39,8 @@ Thankfully, PHP's ecosystem has matured enough to boast of  static type-checking
 ## How it's similar
 In a broader sense, if you're coming from a framework written in another language, some features there parallel what is obtainable in Suphle:
 
-- *NestJS:* Modules
-- *Spring Boot:* Circular dependencies, decorators, interface auto-wiring, component/service-specific classes
+- *NestJS:* Modules, @Transaction
+- *Spring Boot:* Circular dependencies, decorators, interface auto-wiring, component/service-specific classes, @Transactional
 - *Rust:* Macros, Result
 - *Phoenix:* Livewire
 
