@@ -65,7 +65,9 @@ class CatalogCoordinator extends ServiceCoordinator {
 }
 ```
 
-While serving the current request, the Flow definition above will be sent to the queue. When the task runs, it'll lift each of the IDs in the dataset returned by `getCatalog()["data"]`. A special instance of your application is spun up and on it, the route definition designated to handle "books/id" is found, substitute each ID, storing the response in a cache such as Redis. When a request for a Flow-handled resource comes in, Suphle will skip routing, database querying, etc. The only *expensive* process that may occur is for user authentication.
+While serving the current request, the Flow definition above will be sent to the queue. When the task runs, it'll lift each of the IDs in the dataset returned by `getCatalog()["data"]`. A special instance of your application is spun up and on it, the route definition designated to handle "books/id" is found, substitute each ID, storing the response in a cache such as Redis. In this state, everything you expect to be executed for an organic request will run. That includes authentication, authorization, middleware and validation, for each unique identifier described during Flow definition.
+
+When an actual request for a Flow-handled resource comes in (otherwise called the subsequent request), Suphle will skip routing, database querying, those other protocols listed above, etc. The only *expensive* process that may occur is for user authentication.
 
 Flow descriptions can point to other Flow descriptions. Suphle will bounce through each of them as they're visited.
 
@@ -262,7 +264,7 @@ class FlowService {
 
 ## Activating flows
 
-Flows are not implemented as [middleware](/docs/v1/middleware), so we can short-circuit routing altogether, which middleware depends on. Suphle determines whether requests should be evaluated for Flow eligibility using the `Suphle\Contracts\Config\Flows` config interface. Since no Flow definitions are present on module installation, this feature is turned off. To enable it, the `isEnabled` method of this [config's implementation](/docs/v1/container#Config-interfaces) is expected to return true.
+Flows are not implemented as [middleware](/docs/v1/middleware) so we can short-circuit routing altogether (during the subsequent request), which middleware depends on. Suphle determines whether requests should be evaluated for Flow eligibility using the `Suphle\Contracts\Config\Flows` config interface. Since no Flow definitions are present on module installation, this feature is turned off. To enable it, the `isEnabled` method of this [config's implementation](/docs/v1/container#Config-interfaces) is expected to return true.
 
 ```php
 
