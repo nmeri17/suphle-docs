@@ -452,7 +452,7 @@ The API for `assertSavedFileNames` is slightly different: It doesn't accept wild
 
 public function test_modified_module_path () {
 
-	$somePath = $this->getModulePath(); // given
+	$somePath = $this->fileSystemReader->getImagePath(); // given
 
 	// when => Do something with $somePath
 

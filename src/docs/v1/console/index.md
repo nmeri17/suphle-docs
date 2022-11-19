@@ -148,9 +148,8 @@ class AltersConcreteTest extends CommandLineTest {
 				$container->replaceWithMock($consoleConfig, $consoleConfig, [
 
 					"commandsList" => [$this->sutName]
-				]);
-
-				$container->replaceWithConcrete($this->sutName, $this->mockCommand());
+				])
+				->replaceWithConcrete($this->sutName, $this->mockCommand());
 			})
 		];
 	}
