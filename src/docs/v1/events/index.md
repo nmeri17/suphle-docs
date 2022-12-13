@@ -52,11 +52,9 @@ class CheckoutCart extends UpdatefulService implements SystemModelEdit, Variable
 
 	const EMPTIED_CART = "cart_empty";
 
-	private $eventManager;
+	public function __construct (private readonly AssignListeners $eventManager) {
 
-	public function __construct ( AssignListeners $eventManager) {
-
-		$this->eventManager = $eventManager;
+		//
 	}
 
 	public function updateModels () {
@@ -65,7 +63,7 @@ class CheckoutCart extends UpdatefulService implements SystemModelEdit, Variable
 
 		$this->eventManager->emit(
 
-			get_class(), self::EMPTIED_CART, $this->cartBuilder
+			self::class, self::EMPTIED_CART, $this->cartBuilder
 		); // received by payment, order modules etc
 
 		return $this->cartBuilder->delete();
@@ -77,29 +75,31 @@ class CheckoutCart extends UpdatefulService implements SystemModelEdit, Variable
 
 Managers can be called from most scopes, although it's likely only service classes will be necessary to emit from. However, service coordinators are explicitly prohibited from importing event managers or emission. Doing so will throw an `Suphle\Exception\Explosives\Generic\UnacceptableDependency` exception. The reason for this is to dissuade any form of logic or computation that would distract us from the primary assignment within coordinators. Coordinators are simply not classes to be relied on by anyone except the framework.
 
-There is trait recommended to be combined with the manager during emissions. It's known as `Suphle\Events\EmitProxy` and is used as follows:
+There is a trait recommended to be combined with the manager during emissions. It's known as `Suphle\Events\EmitProxy`, and is used as follows:
 
 ```php
 
-class CheckoutCart extends UpdatefulService implements SystemModelEdit, VariableDependencies {
+#[InterceptsCalls(SystemModelEdit::class)]
+#[VariableDependencies([
+
+	"setPayloadStorage", "setPlaceholderStorage"
+])]
+class CheckoutCart extends UpdatefulService implements SystemModelEdit {
 
 	use BaseErrorCatcherService, EmitProxy;
 
 	const EMPTIED_CART = "cart_empty";
 
-	public function __construct ( AssignListeners $eventManager) {
+	public function __construct (private readonly AssignListeners $eventManager) {
 
-		$this->eventManager = $eventManager; //
+		//
 	}
 
 	public function updateModels () {
 
 		$this->cartBuilder->products()->update(["sold" => true]);
 
-		$this->emitHelper(
-
-			self::EMPTIED_CART, $this->cartBuilder
-		);
+		$this->emitHelper(self::EMPTIED_CART, $this->cartBuilder);
 
 		return $this->cartBuilder->delete();
 	}
@@ -111,6 +111,8 @@ Aside from shortening the emission call, it acts as a safety net preventing emit
 ## Listening to events
 
 Event listeners can be POPOs or anything you want them to be. All that needs to be done is to plant them in the module's event manager, pairing them to an emittor and the event they're expected to handle. Event handlers receive emitted payload as-is, without meta information such as the emitting instance, etc. For this reason, Suphle doesn't interfere by enforcing a payload type. The emitter must document what type its consumers are expected to adhere to.
+
+Event binding is one of the earliest events that occurs during the application's lifetime, even before descriptor booting.
 
 ### Binding to single events
 
@@ -125,10 +127,7 @@ class AssignListeners extends EventManager {
 		
 		$this->local(CheckoutCart::class, CartReactor::class)
 			
-		->on(
-			
-			CheckoutCart::EMPTIED_CART, "handleEmptied"
-		);
+		->on( CheckoutCart::EMPTIED_CART, "handleEmptied" );
 	}
 }
 ```
@@ -164,9 +163,9 @@ class LocalSender {
 
 	public const SOME_EVENT = "event_name";
 
-	public function __construct (AssignListeners $eventManager) {
+	public function __construct (private readonly AssignListeners $eventManager) {
 
-		$this->eventManager = $eventManager;
+		//
 	}
 
 	public function sendLocalEvent ($payload):void {
@@ -241,9 +240,9 @@ class SplitEventService extends UpdatelessService {
 
 	const CASCADE_BEGIN_EVENT = "cascading";
 
-	public function __construct (AssignListeners $eventManager) {
+	public function __construct (private readonly AssignListeners $eventManager) {
 
-		$this->eventManager = $eventManager;
+		//
 	}
 
 	public function cascadingEntry ($payload):void {
@@ -260,9 +259,9 @@ class MediatingReceptor extends UpdatelessService {
 
 	const CASCADE_REBOUND_EVENT = "rebounding";
 
-	public function __construct (EventManager $eventManager) {
+	public function __construct (private readonly EventManager $eventManager) {
 
-		$this->eventManager = $eventManager;
+		//
 	}
 
 	public function reboundsNewEvent ($payload):void {

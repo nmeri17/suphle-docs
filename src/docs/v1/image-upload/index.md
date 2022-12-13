@@ -230,9 +230,11 @@ class WatermarkHandler extends BaseOptimizeOperation {
 
 	private $textToFade, $fadePercent;
 
-	public function __construct (WatermarkClient $client, ImageLocator $imageLocator, FileSystemReader $fileSystemReader) {
+	public function __construct (
+		private readonly WatermarkClient $client,
 
-		$this->client = $client;
+		ImageLocator $imageLocator, FileSystemReader $fileSystemReader
+	) {
 
 		parent::__construct($imageLocator, $fileSystemReader);
 	}
@@ -402,11 +404,9 @@ Since image name generation is delegated to other collaborators, testers can eit
 
 class ProductImageService extends UpdatelessService {
 
-	private $reader;
+	public function __construct (private readonly ImagePayloadReader $reader) {
 
-	public function __construct (ImagePayloadReader $reader) {
-
-		$this->reader = $reader;
+		//
 	}
 
 	public function saveColorSlides ():array {

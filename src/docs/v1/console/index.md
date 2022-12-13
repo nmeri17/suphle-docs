@@ -130,7 +130,7 @@ class AltersConcreteTest extends CommandLineTest {
 
 Short and simple. A few things to observe from this test's contents:
 
-- We didn't clutter it with verifications about behavior of the underlying service. Just as we prevent the dichotomy between API and web routes by keeping decoupling business logic from client medium or input source, we relegate command classes to consumers of service classes containing logic. When not extensive, this test can be responsible for testing that service's side effect. Otherwise, we take of advantage of abstracting the logic by extracting the logic's test to its own method or class.
+- We didn't clutter it with verifications about behavior of the underlying service. Just as we prevent the dichotomy between API and web routes by decoupling business logic from client medium or input source, we relegate command classes to consumers of service classes containing logic. When not extensive, this test can be responsible for verifying that service's side effect. Otherwise, we take of advantage of abstracting the logic by extracting the logic's test to its own method or class.
 
 - The class above affirms command executed properly; it doesn't test the command itself. If you have any need to test the command, trying to provide a double to your modules within your test method, the double will not be acknowledged. In such cases, you want to inject your doubles from `getModules`.
 
@@ -149,7 +149,11 @@ class AltersConcreteTest extends CommandLineTest {
 
 					"commandsList" => [$this->sutName]
 				])
-				->replaceWithConcrete($this->sutName, $this->mockCommand());
+				->replaceWithConcrete(
+					$this->sutName,
+					
+					$this->replaceConstructorArguments($this->sutName, [])
+				);
 			})
 		];
 	}
@@ -161,4 +165,4 @@ class AltersConcreteTest extends CommandLineTest {
 }
 ```
 
-This is the recommended way to inject things within module-based tests, but occassionally, this isn't convenient so we get away with doing it within the test. However, the limit is with the commands themselves.
+This is the recommended way to inject things within module-based tests. Notice the use of `replaceConstructorArguments` over other doubling variants. Symfony commands will not run if their constructor is not invoked. Unlike other objects, we can get away with doubling commands in this manner since their constructor has no parameters.

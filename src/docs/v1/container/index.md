@@ -119,11 +119,9 @@ Suppose a class defines a dependency on another class in its constructor:
 
 class A {
 
-    private $c;
+    public function __construct (private readonly C $c) {
 
-    public function __construct (C $c) {
-
-        $this->c = $c;
+        //
     }
 }
 
@@ -233,11 +231,9 @@ class C implements BindsAsSingleton {
 
 class B {
 
-    private $a;
+    public function __construct (private readonly A $a) {
 
-    public function __construct (A $a) {
-
-        $this->a = $a;
+        //
     }
 }
 ```
@@ -274,11 +270,9 @@ Super classes aren't returned when consumers try to pull their sub classes becau
 
 class HydratorConsumer {
 
-    protected $container;
+    public function __construct (protected readonly  Container $container) {
 
-    public function __construct (Container $container) {
-
-        $this->container = $container;
+        //
     }
 }
 
@@ -355,6 +349,10 @@ class UnknownUserLandHydrator extends HydratorConsumer {
     }
 }
 ```
+
+### PHP 8 new types
+
+This version of the language introduced union and intersection types. Unfortunately, they are unsupported by Suphle's Container type reader. The sort of ambiguity they come with encourages equivocal APIs which isn't in line with our objectives. PHP 8 equally introduced enums. As they're not instantiable, consumers ought to bind a default enum entry for each object where it's typed and expected to be hydrated by the Container.
 
 ## Working with interfaces
 
@@ -495,30 +493,28 @@ In some cases beyond our control, services can wind up in the constructor of the
 
 class A {
 
-    private $classB;
+    public function __construct(private readonly B $classB) {
 
-    public function __construct(B $classB) {
-
-        $this->classB = $classB;
+        //
     }
 }
 
 class B {
 
-    private $classA;
+    public function __construct(private readonly A $classA) {
 
-    public function __construct(A $classA) {
-
-        $this->classA = $classA;
+        //
     }
 }
 ```
+
+Aside from loggers, ny environment with `strict_type=1` would halt on encountering this warning.
 
 ### Circular-dependencies caveat
 
 The fact that concretes are decoupled from their interfaces makes the likelihood of one concrete unwittingly referring to an interface whose concrete, in turn, refers to it high. Bear in mind that proxying interfaces is different from concretes since it has methods that need implementations.
 
-When this is the case, the container won't proxy calls to the interface. Even though it's possible to extract and wrap their concrete on the fly, the overhead and sheer *sorcery* of such an implementation deviate too far away from the language's expected behaviour, for very little benefit, as such, going against one of Suphle's core principles. That said, when Container encounters such concretes, it will throw a `Suphle\Exception\Explosives\Generic\HydrationException`.
+When this is the case, the container won't proxy calls to the interface. Even though it's possible to extract and wrap their concrete on the fly, the overhead and sheer *sorcery* of such an implementation deviate too far away from the language's expected behaviour, for very little benefit. Doing so goes against one of Suphle's core principles. That said, when Container encounters such concretes, it will throw a `Suphle\Exception\Explosives\Generic\HydrationException`.
 
 As with all problems in this category, the solution is to breakdown the intertwining bits either into a third, decoupled entity; or, to defer evaluation of the *lesser* of both dependencies. One surprising situation where this problem arises is during the use of interface loaders. While working with them, there are a few advice that may be helpful:
 
@@ -559,42 +555,110 @@ Above we use `protectRefreshPurge()` as contraceptive against recursive sanitati
 
 ## Object decoration
 
-This refers to a process of either augmenting how the container hydrates an object or wrapping the class as a whole with additional behavior not relevant to its actual functionality. While using them may sound like a whole lot of fun, try not to outsource what should be responsibility of a single manager class to decorators. The decorator itself is an interface, and like all interfaces in general, its worth is proven when it has more than one implementation. You will equally appreciate it better if it isn't simply a marker interface, but returns information to its decorator handler using methods on the interface. One helpful endorsement for whether functionality belongs in a decorator is whether it can only be covered or accessed through [decorator scopes](#Decorator-handlers).
+This refers to a process of either augmenting how the container hydrates an object or wrapping the class as a whole with additional behavior not relevant to its actual functionality, as it relates to request handling. It's a distant relative to middlewares but gives more granular control.
 
 ### Consuming a decorator
 
-All that is required for this is to implement the decorator's interface. Often, this interface would provide a method with which to receive relevant information to be applied for the consuming class. If you're not rolling out custom decorators, this is all you need to know.
-
-### Writing your own decorators
-
-A decorator definition consists of:
-
-1. The decorator itself, as an interface
-1. A decorator handler conforming to the motive of the decoration
-
-Decorators themselves are simple interfaces for collecting instructions about the consuming class, to give the handler. For example, the `OnlyLoadedBy` looks like this:
+All that is required for this is to apply the decorator as a PHP 8 attribute.
 
 ```php
 
-interface OnlyLoadedBy {
+#[SomeDecorator]
+class ConsumingClass {
 
-    public function allowedConsumers ():array;
+    //
 }
+```
 
-class DecoratedClass implements OnlyLoadedBy {
+Often, this decorator would receive relevant information to be applied for the consuming class from its definition.
 
-    public function allowedConsumers ():array {
+```php
 
-        return [LoadablesChosenOne::class];
+#[SomeDecorator("itsArgument")]
+class ConsumingClass {
+
+    //
+}
+```
+
+If you're not rolling out custom decorators, this is all you need to know.
+
+### Writing your own decorators
+
+While writing custom decorators may sound like a whole lot of fun, do take note of the following words of advice:
+
+- A decorator should not be useful to only one type. In such case, outsource that functionality to a single manager class, inject your target/pre-known type, and work with that.
+
+- Consider whether the functionality you're trying to implement can be evaluated outside the context of a user-initiated request. When this is the case, consider delegating it to compile-time activities run during server start-up. 
+
+If indeed, target functionality is destined for a decorator, we would have to define its components. A decorator definition consists of:
+
+1. The decorator itself, as an an attribute.
+1. A decorator handler conforming to the motive of the decoration.
+1. Connecting decorators to their handlers.
+
+#### The decorator
+
+Decorators are [simple classes](https://php.net/manual/en/language.attributes.overview.php) for collecting instructions about the consuming class, to give its handler. Unlike in native PHP, Suphle decorators cascade to class descendants, compounding rather than overriding or getting lost altogether. Each decorator handler will receive all relevant attributes, from where it can decide to discard all, apply behavior to only the first or for each one.
+
+#### Connecting decorator handlers
+
+This is done using the `Suphle\Contracts\Hydration\DecoratorChain::allScopes` method. Intending customizers are advised to extend the `Suphle\Hydration\Structures\BaseDecorators` class already implementing that interface.
+
+```php
+
+use Suphle\Hydration\Structures\BaseDecorators;
+
+class CustomDecoratorCollectors extends BaseDecorators {
+
+    public function allScopes ():array {
+
+        return array_merge(parent::allScopes(), [
+
+            SomeDecorator::class => SomeDecoratorHandler::class
+        ]);
+    }
+}
+```
+
+```php
+
+use Suphle\Contracts\Hydration\DecoratorChain;
+
+use Suphle\Hydration\Structures\BaseInterfaceCollection;
+
+class CustomInterfaceCollection extends BaseInterfaceCollection {
+
+    public function simpleBinds ():array {
+
+        return array_merge(parent::simpleBinds(), [
+
+            DecoratorChain::class => CustomDecoratorCollectors::class
+        ]);
     }
 }
 ```
 
 #### Decorator handlers
 
-This is where the decorator logic is defined. There are two broad categories of things we'll want to do with our decorators. These categories determine what type the decorator handler will be implemented. A decorator can either want to inspect argument is passed to a class or method, or it can act as a modifier of hydrated instances. Argument-based handlers are required to implement `Suphle\Contracts\Hydration\ScopeHandlers\ModifiesArguments`, while those working with instances should implement `Suphle\Contracts\Hydration\ScopeHandlers\ModifyInjected`.
+This is where the decorator logic is defined. There are two broad categories of things we'll want to do with our decorators. These categories determine what type the decorator handler will implement. A decorator can either want to inspect arguments passed to a class or method, or it can act as a modifier of hydrated instances. Argument-based handlers are required to implement `Suphle\Contracts\Hydration\ScopeHandlers\ModifiesArguments`, while those working with instances should implement `Suphle\Contracts\Hydration\ScopeHandlers\ModifyInjected`.
 
 Decorator handlers must exercise caution if they have the need to use the container, since doing so can lead to the same action that warranted decoration; and although object exists, the container is waiting for its decorators to approve it for release. This confusion will result in a memory leak, inevitably crashing execution.
+
+For instance, when using the `Container::getMethodParameters` method within a handler, its 3rd argument should be used as a circuit-breaker to ward off argument-based decoration for the given types during the ensuing hydration sequence.
+
+```php
+
+// within a handler
+$concreteName = $concrete::class;
+
+$parameters = $this->container->getMethodParameters(
+                    
+    $methodName, $concreteName,
+
+    [$concreteName]
+);
+```
 
 ##### Decorating arguments
 
@@ -612,27 +676,14 @@ interface ModifiesArguments {
      * @param {arguments} mixed[]. Method argument list
     */
     public function transformMethods (object $concreteInstance, array $arguments, string $methodName):array;
+
+    public function setAttributesList (array $attributes):void;
 }
 ```
 
 `transformConstructor` is a construct that enables us receive a random object of the class before instantiation, without triggering its constructor, thus making it favorable for transforming those arguments before their injection into the hydrated instance. Implementations are contractually required to return a list of arguments for injection into the constructor.
 
 `transformMethods` behaves similar to `transformConstructor` but for every other method. In this case, the decoration is applied to the class itself, while the handler is responsible for determining the method to run logic on.
-
-```php
-class ServiceCoordinator implements ValidatesActionArguments {
-
-    final public function permittedArguments ():array {
-
-        return [
-
-            ModelfulPayload::class, ModellessPayload::class
-        ];
-    }
-}
-```
-
-Above, we have a snippet from `ServiceCoordinator` that is decorated with the `ValidatesActionArguments` decorator. It passes information to the handler through the `permittedArguments` method, which then decides to evaluate its logic against arguments passed to all methods. The handler is free to either limit access to relevant methods or receive this information from decorated class.
 
 ##### Decorating instances
 
@@ -644,6 +695,7 @@ Instance handlers can further be distilled into two kinds:
 Handlers that don't mutate given instance can simply implement `ModifyInjected`.
 
 ```php
+
 interface ModifyInjected {
 
     /**
@@ -653,7 +705,7 @@ interface ModifyInjected {
 }
 ```
 
-Handlers mutating given instance are provided with a rich base class, `Suphle\Services\DecoratorHandlers\BaseInjectionModifier`. *Mutation* in this sense, refers to wrapping said object in a proxy that runs before the method's contents. This is sometimes known as AOP.
+On the other hand, handlers mutating given instance are provided with a rich base class, `Suphle\Services\DecoratorHandlers\BaseInjectionModifier`. *Mutation* in this sense, refers to wrapping said object in a proxy that runs before the method's contents. This is sometimes known as AOP.
 
 `BaseInjectionModifier::getMethodHooks()` is used to instruct this base on what methods to mutate.
 
@@ -668,7 +720,7 @@ public function getMethodHooks ():array {
 }
 ```
 
-It's expected to return a key-value pair of object method to handler callable. Combined with `ModifyInjected::examineInstance`, we'll then arrive at the following handler:
+It's expected to return a key-value pair of object method-to-handler callable. Combined with `ModifyInjected::examineInstance`, we'll then arrive at the following handler:
 
 ```php
 
@@ -683,7 +735,7 @@ class FancyHandler extends BaseInjectionModifier {
 
         return [
 
-            "updateResource" => [$this, "wrapUpdateResource"]
+            "methodOnConcrete" => $this->wrapMethodOnConcrete(...)
         ];
     }
 }
@@ -697,10 +749,7 @@ However, this can get unwieldy considering a class method can balloon into a lar
 
 public function examineInstance (object $concrete, string $caller):object {
 
-    return $this->allMethodAction($concrete,
-
-        [$this, "safeCallMethod"]
-    );
+    return $this->allMethodAction($concrete, $this->examineAllMethods(...));
 }
 ```
 
@@ -710,13 +759,18 @@ Each of the callbacks given through `getMethodHooks`, `allMethodAction`, have th
 
 use ProxyManager\Proxy\AccessInterceptorInterface;
 
-public function safeCallMethod (
-    AccessInterceptorInterface $proxy, object $concrete,
+/**
+ * @param {concrete} You're at liberty to type it to something more specific
+ * @return type as underlying method necessitates
+*/
+public function wrapMethodOnConcrete (
+        AccessInterceptorInterface $proxy, object $concrete,
 
-    string $methodName, array $argumentList
-) {
+        string $methodName, array $argumentList
+    ) {
 
     try {
+        // perform preliminary activity before or after
 
         return $this->triggerOrigin($concrete, $methodName, $argumentList);
     }
@@ -727,24 +781,11 @@ public function safeCallMethod (
 }
 ```
 
-When practicing AOP, the proxy wrapper becomes responsible for either calling or terminating calls to target object. In the above example, we use the helper method `BaseInjectionModifier::triggerOrigin` to invoke the target. We receive the proxy itself as first argument, but it's merely for auditing purposes. On no account whatsoever should it be invoked from the handler, otherwise, it will result in an infinite loop.
+When practicing AOP, the proxy wrapper becomes responsible for either calling or terminating calls to target object. In the above example, we use the helper method `BaseInjectionModifier::triggerOrigin` to invoke the target. We receive the proxy itself as first argument, but it's merely for auditing purposes. On **no account whatsoever** should it be invoked from the handler; otherwise, it will result in an infinite loop!
 
-### Multiple decorators on a class
+###### Multiple injection-based decorators
 
-Combining a cocktail of decorators with handlers invoking the same class can lead to both cognitive and execution disasters. When this occurs, ambiguity should be removed by converging the cross-cutting functionality into a unified handler and composing its implementation details with the various handlers required.
-
-Decorators undergo a parent-shedding process to prevent handlers for lower-level decorators from running when combined with high-level ones. Consider the following decoration hierarchy:
-
-```php
-
-interface DecoratorA {}
-
-interface DecoratorB extends DecoratorA {}
-
-class DecoratedClass implements DecoratorB {}
-```
-
-Suppose `DecoratorA` and `DecoratorB` both have handlers connected, only that of `DecoratorB` will run. `DecoratorClass` has essentially relinquished the decoration, `DecoratorA`. The evaluator will interpret `DecoratorB` as an override that customizes behavior of `DecoratorA`.
+Combining a cocktail of injection-based decorators with handlers invoking the same class may lead to both cognitive and execution mishaps. The same way they're stacked on the object, their respective handlers will receive instances wrapped by the preceding handler. When this is not the intended effect, ambiguity should be removed by converging the cross-cutting functionality at a unified handler, and composing its implementation details with the various collaborators required.
 
 ## Augmenting with 3rd-party containers
 

@@ -58,11 +58,9 @@ use Suphle\Auth\Repositories\ApiAuthRepo;
 
 class ApiLoginMediator implements LoginFlowMediator {
 
-	private $authService;
+	public function __construct (private readonly ApiAuthRepo $authService) {
 
-	public function __construct (ApiAuthRepo $authService) {
-
-		$this->authService = $authService;
+		//
 	}
 
 	public function successRenderer ():BaseRenderer {

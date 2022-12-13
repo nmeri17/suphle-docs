@@ -74,11 +74,11 @@ module.exports = {
 
       ["/docs/v1/middleware/", "Middleware"], ["/docs/v1/exceptions/", "Exceptions"],
       ["/docs/v1/templating/", "Templating"],
-      ["/docs/v1/sessions/", "Sessions"],
+      ["/docs/v1/io/", "IO"],
 
       ["/docs/v1/flows/", "Flows"], ["/docs/v1/bridges/", "Framework Bridge"], ["/docs/v1/console/", "Console Commands"],
 
-      ["/docs/v1/component-templates/", "Component-templates"], ["/docs/v1/credits/", "Credits"],
+      ["/docs/v1/component-templates/", "Component-templates"], ["/docs/v1/application-server/", "Application-server"], ["/docs/v1/credits/", "Credits"],
 
       ["/docs/v1/appendix/", "Appendix"]
     ]

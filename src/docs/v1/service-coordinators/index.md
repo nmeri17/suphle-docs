@@ -92,7 +92,7 @@ On the surface, `ValidatorOne` is a POPO housing methods that define rules. But 
 
 ### Validator adapters
 
-Suphle employs an agnostic approach to underlying validator. This means the rules are merely expected to conform to whatever active validation library is connected under the hood. The default library in use is that of Illuminate. This makes all rules defined on [that doc](https://laravel.com/docs/8.x/validation#available-validation-rules) are equally applicable in Suphle. To gain access to rules you're more conversant it, you want to replace this default with another library by implementing the `Suphle\Contracts\Requests\RequestValidator` interface and connecting it as an [interface loader](/docs/v1/container/#interface-loaders).
+Suphle employs an agnostic approach to underlying validator. This means the rules are merely expected to conform to whatever active validation library is connected under the hood. The default library in use is that of Illuminate. This makes all rules defined on [that doc](https://laravel.com/docs/8.x/validation#available-validation-rules) equally applicable in Suphle. To gain access to a rule collection you're more conversant with, you want to replace this default with another library by implementing the `Suphle\Contracts\Requests\RequestValidator` interface and connecting it as an [interface loader](/docs/v1/container/#interface-loaders).
 
 ```php
 namespace Suphle\Contracts\Requests;
@@ -121,7 +121,7 @@ Suphle provides strongly typed objects, namely, `Suphle\Services\Structures\Mode
 
 ### Model-based request type
 
-We use this whenever there's direct corelation between segments on the URL or incoming payload, and database models. The objective is not to ostracize model hydration or represent request fields with object properties, but to centralize the location for optimizing model queries according to controller constraints at each endpoint.
+We use this whenever there's direct correlation between segments on the URL or incoming payload, and database models. The objective is not to ostracize model hydration or represent request fields with object properties, but to centralize the location for optimizing model queries according to controller constraints at each endpoint.
 
 ```php
 
@@ -143,11 +143,9 @@ use Suphle\Services\Structures\ModelfulPayload;
 
 class BaseProductBuilder extends ModelfulPayload {
 
-	private $blankProduct;
+	public function __construct (private readonly Product $blankProduct) {
 
-	public function __construct (Product $blankProduct) {
-
-		$this->blankProduct = $blankProduct;
+		//
 	}
 
 	protected function getBaseCriteria ():object {
@@ -191,11 +189,9 @@ Segregating base builders from the Coordinator is great, but mostly gets rid of 
 
 class BaseProductBuilder extends ModelfulPayload {
 
-	private $blankProduct;
+	public function __construct (private readonly Product $blankProduct) {
 
-	public function __construct (Product $blankProduct) {
-
-		$this->blankProduct = $blankProduct;
+		//
 	}
 
 	protected function getBaseCriteria ():object {
@@ -269,24 +265,24 @@ In order to keep our Coordinators lean, cohesive and disciplined, they have a na
 
 - `Suphle\Services\UpdatefulService` and `Suphle\Services\UpdatelessService`
 
-Attempting to inject a dependency outside this list will throw a `Suphle\Exception\Explosives\Generic\UnacceptableDependency` exception. Details about each class is treated in its appropriate section.
+Attempting to inject a dependency outside this list will throw a `Suphle\Exception\Explosives\Generic\UnacceptableDependency` exception and prevent app server from being built. Details about each class is treated in its appropriate section.
 
-Action methods can only type-hint arguments extending `Suphle\Services\Structures\ModelfulPayload` and `Suphle\Services\Structures\ModellessPayload`. This is because any other service we want to inject will likely be applicable to other endpoints on this coordinator and should be injected through the constructor. Violating this rule will throw an `InvalidArgumentsException`.
+Action methods can only type-hint arguments extending `Suphle\Services\Structures\ModelfulPayload` and `Suphle\Services\Structures\ModellessPayload`. This is because any other service we want to inject will likely be applicable to other endpoints on this coordinator and should be injected through the constructor. Violating this rule will throw an `InvalidArgumentsException while equally preventing app server from being built`.
 
 ## Securing POST requests
 
-You may already be aware of the famous CSRF [middleware](/docs/v1/middlewares) customary for non-GET requests. In Suphle, this alone is not enough -- it's mandatory for such endpoints to use services that [facilitate such operations](#mutative-database-decorators), by injecting at least one service decorated with either `Suphle\Contracts\Services\Decorators\SystemModelEdit` or `Suphle\Contracts\Services\Decorators\MultiUserModelEdit`. Failure to adhere to this will throw a `Suphle\Exception\Explosives\Generic\MissingPostDecorator` exception.
+You may already be aware of the famous CSRF [middleware](/docs/v1/middlewares) customary for non-GET requests. In Suphle, this alone is not enough -- it's mandatory for such endpoints to use services that [facilitate such operations](#mutative-database-decorators), by injecting at least one service decorated with either `Suphle\Contracts\Services\Decorators\SystemModelEdit` or `Suphle\Contracts\Services\Decorators\MultiUserModelEdit`. Failure to adhere to this will throw a `Suphle\Exception\Explosives\Generic\MissingPostDecorator` runtime exception.
 
 ## Coordinator services
 
 When we advocate extraction of endpoint behaviour into service classes, what is our end goal? The Coordinators are themselves, classes. Why are they restricted from housing logic?
 
-You may expect to see testability leading the pack as one of the reasons. In traditional controllers, action methods return full blown response objects. You will hardly test the methods without constructing a request and testing response object returned. This problem doesn't exist in Suphle. Some argue that it's difficult to IO operations with doubles. Fair enough; although stubbing database calls out is unnecessary.
+You may expect to see testability leading the pack as one of the reasons. In traditional controllers, action methods return full blown response objects. You will hardly test the methods without constructing a request and testing response object returned. This problem doesn't exist in Suphle. Some argue that it's difficult to test IO operations with doubles. Fair enough; although stubbing database calls out is unnecessary.
 
 However, there are other concerns that make it imperative for logic to be abstracted away:
 
 1. **Reuse:**
-Your logic may be used by other endpoints, services, modules. You want them to exist in a fluid, atomic state free of unwanted dependencies. You want to reliably test the individual nodes your response payloads aggregate. Bear in mind that prioritising the service layer is not an invitation to delegate your entire calls to them. That way, we will still end up with fat services, essentially repeating the same structure we claim to run away from by converting what should be value pipes into bloated controllers. The ideology here is to recognize and extract recurring patterns or behaviour into atomic methods. This makes them flexible for reuse and testing. The onus of achieving this recognition ultimately lies in developer's hands.
+Your logic may be used by other endpoints, services, modules. You want them to exist in a fluid, atomic state, free of unwanted dependencies. You want to reliably test the individual nodes your response payloads aggregate. Bear in mind that prioritising the service layer is not an invitation to delegate your entire calls to them. That way, we will still end up with fat services, essentially repeating the same structure we claim to run away from by converting what should be value pipes into bloated controllers. The ideology here is to recognize and extract recurring patterns or behaviour into atomic methods. This makes them flexible for reuse and testing. The onus of achieving this recognition ultimately lies in developer's hands.
 
 1. **Replaceablility:**
 Arguably the most important. Applications evolve. And when they do, you don't want to stand the [risk of breaking things](/docs/v1/testing/confidently-integrating-upgrades.md). You want to develop and test the next step of the evolution before it's connected through the Coordinator.
@@ -311,7 +307,7 @@ Services causing database side-effects should extend `Suphle\Services\UpdatefulS
 1. All its public methods should be run within database transactions.
 1. It shouldn't be invoked directly unless it returns a value that should be used within calling scope. Otherwise, it should be triggered as an [event handler](/docs/v1/events).
 
-Suphle provides decorators that make light work of the common kinds of database transactions, to avoid continuous boilerplate of manual implementation. The decorators are `Suphle\Contracts\Services\Decorators\SystemModelEdit` and `Suphle\Contracts\Services\Decorators\MultiUserModelEdit`, both of which will be looked at [later in this](#mutative-database-decorators) chapter.
+Suphle provides sub-decorators that make light work of the common kinds of database transactions, to avoid continuous boilerplate of manual implementation. The sub-decorators are `Suphle\Contracts\Services\Decorators\SystemModelEdit` and `Suphle\Contracts\Services\Decorators\MultiUserModelEdit`, both of which will be looked at [later in this](#mutative-database-decorators) chapter.
 
 ## Condition factories
 
@@ -336,9 +332,9 @@ class ConditionalFactoryMock extends ConditionalFactory {
 
 	protected function greatestFields (int $fieldA, int $fieldB, int $fieldC):void {
 
-		$this->whenCase([$this, "caseACondition"], FieldAGreater::class, $fieldA, $fieldB)
+		$this->whenCase($this->caseACondition(...), FieldAGreater::class, $fieldA, $fieldB)
 
-		->whenCase([$this, "caseBCondition"], FieldBGreater::class, $fieldB, $fieldA)
+		->whenCase($this->caseBCondition(...), FieldBGreater::class, $fieldB, $fieldA)
 
 		->finally( BothFieldsEqual::class, $fieldC);
 	}
@@ -394,13 +390,13 @@ use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\ConditionalFactoryMo
 
 class BaseCoordinator extends ServiceCoordinator {
 
-	private $greaterFieldFactory, $payloadStorage;
+	public function __construct (
+		private readonly ConditionalFactoryMock $factory,
 
-	public function __construct (ConditionalFactoryMock $factory, PayloadStorage $payloadStorage) {
+		private readonly PayloadStorage $payloadStorage
+	) {
 
-		$this->greaterFieldFactory = $factory;
-
-		$this->payloadStorage = $payloadStorage;
+		//
 	}
 
 	public function doGreaterThing () {
@@ -434,7 +430,9 @@ Some drawbacks with these options are:
 - Service consumers have to consciously check for errors.
 - In the event of an error to a single data source, the rest of the response is terminated.
 
-To solve these problems, Suphle provides the `Suphle\Contracts\Services\Decorators\ServiceErrorCatcher` decorator. To help with some boilerplate during use of this decorator, Suphle provides the trait `Suphle\Services\Structures\BaseErrorCatcherService`.
+To solve these problems, Suphle provides a meta decorator `Suphle\Services\Decorators\InterceptsCalls`, that leads to more specific sub-decorators. Without additional arguments, this decorator will lead to the `Suphle\Contracts\Services\CallInterceptors\ServiceErrorCatcher` sub-decorator, and expects the decorated class to implement it. Among sub-decorators available, it's only necessary to implement one, as each higher-level sub-decorator relies on the handler for `ServiceErrorCatcher` to carry out its more streamlined duties.
+
+In order to help with some boilerplate on consumers of this decorator, Suphle provides the trait `Suphle\Services\Structures\BaseErrorCatcherService`.
 
 #### Substituting call result
 
@@ -444,10 +442,11 @@ Fallback values for each method can be defined on `ServiceErrorCatcher::failureS
 
 ```php
 
-use Suphle\Contracts\Services\Decorators\ServiceErrorCatcher;
+use Suphle\Contracts\Services\CallInterceptors\ServiceErrorCatcher;
 
-use Suphle\Services\{UpdatelessService, Structures\BaseErrorCatcherService};
+use Suphle\Services\{UpdatelessService, Structures\BaseErrorCatcherService, Decorators\InterceptsCalls};
 
+#[InterceptsCalls]
 class DatalessErrorThrower extends UpdatelessService implements ServiceErrorCatcher {
 
 	use BaseErrorCatcherService;
@@ -517,14 +516,14 @@ class DatalessErrorThrower implements ServiceErrorCatcher {
 }
 ```
 
-You can summarize `Suphle\Contracts\Services\Decorators\ServiceErrorCatcher` as an OOP wrapper for the classic `try-catch` programming construct, but with lesser keystrokes, actual error reporting, not having to thing about or enforce wrapping all calls to such services in a try-catch.
+`Suphle\Contracts\Services\CallInterceptors\ServiceErrorCatcher` can be summarized as an OOP wrapper for the classic `try-catch` programming construct but with lesser keystrokes, actual error reporting, not having to think about or enforce wrapping all calls to such services in a try-catch, etc.
 
 ### Mutative database decorators
 
-You're unlikely to use `Suphle\Contracts\Services\Decorators\ServiceErrorCatcher` decorator directly, since it's implemented on some higher level decorators e.g. side-effect causing database services. There are two users who can possibly be authorized to update a database resource:
+There is a narrow list of users authorized to update a database resource:
 
-- The resource's owner(s)
-- The software's developer
+- The resource's owner(s).
+- The software's developer.
 
 Accordingly, all update queries must first confirm the updater matches resource owner. The service call (possibly housing multiple queries) ought to lock active rows accordingly, run under a database transaction, alert developer on error before rolling back the transaction. Remembering to do all this manually for each mutative service will quickly deteriorate into a nightmare. In order to avoid this conscious effort or boilerplate on the part of developer, Suphle provides decorators from which one must be applied on each `Suphle\Services\UpdatefulService`.
 
@@ -538,13 +537,20 @@ This refers to system-managed updates. Any update where the application is respo
 
 use Suphle\Services\{UpdatefulService, Structures\BaseErrorCatcherService};
 
-use Suphle\Contracts\Services\Decorators\{SystemModelEdit, VariableDependencies};
+use Suphle\Services\Decorators\{InterceptsCalls, VariableDependencies};
+
+use Suphle\Contracts\Services\CallInterceptors\SystemModelEdit;
 
 use Suphle\Events\EmitProxy;
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\Events\AssignListeners;
 
-class CheckoutCart extends UpdatefulService implements SystemModelEdit, VariableDependencies {
+#[InterceptsCalls(SystemModelEdit::class)]
+#[VariableDependencies([
+
+	"setPayloadStorage", "setPlaceholderStorage"
+])]
+class CheckoutCart extends UpdatefulService implements SystemModelEdit {
 
 	use BaseErrorCatcherService, EmitProxy;
 
@@ -552,9 +558,9 @@ class CheckoutCart extends UpdatefulService implements SystemModelEdit, Variable
 
 	private $cartBuilder;
 
-	public function __construct ( AssignListeners $eventManager) {
+	public function __construct (private readonly AssignListeners $eventManager) {
 
-		$this->eventManager = $eventManager;
+		//
 	}
 
 	public function updateModels () {
@@ -584,11 +590,9 @@ class CheckoutCart extends UpdatefulService implements SystemModelEdit, Variable
 
 class CheckoutCoordinator extends ServiceCoordinator {
 
-	private $cartService;
+	public function __construct (private readonly CheckoutCart $cartService) {
 
-	public function __construct (CheckoutCart $cartService) {
-
-		$this->cartService = $cartService;
+		//
 	}
 
 	public function previewCartProducts (CartBuilder $cartBuilder):array {
@@ -613,35 +617,38 @@ class CheckoutCoordinator extends ServiceCoordinator {
 }
 ```
 
-We use the call to `Suphle\Contracts\Services\Decorators\SystemModelEdit::initializeUpdateModels` to keep the service idempotent in-between both calls.
+We use the `Suphle\Contracts\Services\CallInterceptors\SystemModelEdit::initializeUpdateModels` method to keep the service idempotent in-between both requests.
 
-In addition to cohesion, co-locating update subjects beside the data source affords us the advantage of using a soft-lock on the elements from returned from `Suphle\Contracts\Services\Decorators\SystemModelEdit::modelsToUpdate` in order to guarantee their integrity during the transaction.
+In addition to cohesion, co-locating update subjects beside the data source affords us the advantage of using a soft-lock on the elements from returned from `Suphle\Contracts\Services\CallInterceptors\SystemModelEdit::modelsToUpdate` in order to guarantee their integrity during the transaction.
 
 The same options discussed in [Auto service error handling](#Auto-service-error-handling) are available for services with this decoration.
 
 #### User-induced updates
 
-This refers to updates directly influenced by user input. Resources maintained by single users don't have much to worry about, but there is a delicate collision we risk occuring when a resource is owned by multiple users: they can trigger its update within seconds of each other. Unless you're building a collaborative app, you'd want to reduce chances of this collision. For this use-case, Suphle provides the `Suphle\Contracts\Services\Decorators\MultiUserModelEdit` decorator. A service with this decoration would look like this:
+This refers to updates directly influenced by user input. Resources maintained by single users don't have much to worry about this problem, but there is a delicate collision we risk occuring when a resource is owned by multiple users: they can trigger its update within seconds of each other. Unless you're building a collaborative app, you'd want to reduce chances of this collision. For this use-case, Suphle provides the `Suphle\Contracts\Services\CallInterceptors\MultiUserModelEdit` interface. A service with this decoration would look like this:
 
 ```php
 
-use Suphle\Contracts\Services\Decorators\{MultiUserModelEdit, VariableDependencies};
-
-use Suphle\Contracts\Services\Models\IntegrityModel;
+use Suphle\Contracts\Services\{Models\IntegrityModel, CallInterceptors\MultiUserModelEdit};
 
 use Suphle\Services\{UpdatefulService, Structures\BaseErrorCatcherService};
 
+use Suphle\Services\Decorators\{InterceptsCalls, VariableDependencies};
+
 use Suphle\Tests\Mocks\Models\Eloquent\Employment;
 
-class EmploymentEditMock extends UpdatefulService implements MultiUserModelEdit, VariableDependencies {
+#[InterceptsCalls(MultiUserModelEdit::class)]
+#[VariableDependencies([
+
+	"setPayloadStorage", "setPlaceholderStorage"
+])]
+class EmploymentEditMock extends UpdatefulService implements MultiUserModelEdit {
 
 	use BaseErrorCatcherService;
 
-	private $blankModel;
+	public function __construct (private readonly Employment $blankModel) {
 
-	public function __construct ( Employment $blankModel) {
-
-		$this->blankModel = $blankModel;
+		//
 	}
 
 	public function getResource ():IntegrityModel {
@@ -669,11 +676,9 @@ The service will then be consumed in a Coordinator like so:
 
 class EmploymentCoordinator extends ServiceCoordinator {
 
-	private $employmentService;
+	public function __construct (private readonly EmploymentEditMock $employmentService) {
 
-	public function __construct (EmploymentEditMock $employmentService) {
-
-		$this->employmentService = $employmentService;
+		//
 	}
 
 	public function employmentDetails ():array {
@@ -694,9 +699,9 @@ class EmploymentCoordinator extends ServiceCoordinator {
 }
 ```
 
-The setup above looks similar to `Suphle\Contracts\Services\Decorators\SystemModelEdit`, but has some significant enforcements:
+The setup above looks similar to `Suphle\Contracts\Services\CallInterceptors\SystemModelEdit`, but has some significant enforcements:
 
-- The call to `Suphle\Contracts\Services\Decorators\MultiUserModelEdit::getResource` will throw a `Suphle\Exception\Explosives\EditIntegrityException` if no [path authorization](/docs/v1/authorization#Route-based-authorization) is found. This method doesn't enjoy the protection of automatic error handling.
+- The call to `Suphle\Contracts\Services\CallInterceptors\MultiUserModelEdit::getResource` will throw a `Suphle\Exception\Explosives\EditIntegrityException` if no [path authorization](/docs/v1/authorization#Route-based-authorization) is found. This method doesn't enjoy the protection of automatic error handling.
 
 - Update requests must be accompanied by a field indicating resource matches its last edited state, otherwise, a `Suphle\Exception\Explosives\EditIntegrityException` will be thrown. For this field to be active, the resource in question ought to be defined as update-protected. This exception's [default diffuser](/docs/v1/exceptions#Exception-diffusers) is `Suphle\Exception\Diffusers\StaleEditDiffuser`. It responds with received JSON payload or re-renders the previous markup and loaded fields, along with error indicators:
 
@@ -834,22 +839,20 @@ This problem should be solved by the base class defining setter methods for each
 1. Dependencies are still strongly-typed
 1. Argument-based decorators still work
 
-Suphle provides the decorator `Suphle\Contracts\Services\Decorators\VariableDependencies` for this purpose. It's a utility for auto-wiring arguments into methods defined under `VariableDependencies::dependencyMethods`.
+Suphle provides the decorator `Suphle\Services\Decorators\VariableDependencies` for this purpose. It's a utility for auto-wiring arguments into methods given to it.
 
 ```php
-use Suphle\Contracts\{Services\Decorators\VariableDependencies, Database\OrmDialect};
+use Suphle\Contracts\Database\OrmDialect;
 
+use Suphle\Services\Decorators\VariableDependencies;
+
+#[VariableDependencies([
+
+	"setOrmDialect"
+])]
 class MidLevelBase implements VariableDependencies {
 
 	protected $ormDialect;
-
-	public function dependencyMethods ():array {
-
-		return [
-
-			"setOrmDialect"
-		];
-	}
 
 	public function setOrmDialect (OrmDialect $ormDialect):void {
 

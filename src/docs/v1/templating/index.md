@@ -13,3 +13,4 @@ transphporm config ==> note that `inferFromViewName` can be overriden for a part
 
 ## view composition
 This refers to the practise of pulling autonomous visual snippets responsible for their data, links, behaviour, and perhaps, styling, from diverse sources by a consumer, thereby decoupling them from the larger context they are intended to constitute. That is, as opposed to collocating all visual segments of a page representing different concepts and extracting relevant data from their respective domains
+Where visual structure of the data is determined by module x instead of importing both data source and view templates

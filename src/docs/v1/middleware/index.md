@@ -78,7 +78,11 @@ class MultiTagSamePattern extends BaseCollection {
 
 `Suphle\Contracts\Routing\RouteCollection::_assignMiddleware` is a reserved method that receives the middleware builder. With it, we can bind as many URL patterns to as many middleware given in the 2nd array argument. This method returns a fluent interface for chaining as many bindings on this collection as necessary.
 
-Despite this attachment API, middleware are closer to coordinators than the routing concept, since their existence is wrapped around the lifecycle and execution of eventual coordinator. It's only more convenient to tag them on routes instead since it avails us the need to hydrate coordinators before determining participating middleware.
+##### Notes on the attachment signature
+
+1. In spite of this API, middleware are closer to coordinators than the routing concept, since their existence is wrapped around the lifecycle and execution of eventual coordinator. It's only more convenient to tag them on routes instead since it avails us the need to hydrate coordinators before determining participating middleware.
+
+1. You may be coming from a framework that permits passing arguments to middleware from the point of attachment. If you have a middleware that selectively requires flags that activate certain behavior, you are advised to extract that flag's behavior into its own middleware and attach it where applicable, perhaps in combination with the original one or composed of it.
 
 #### Detaching middleware from parent collections
 

@@ -77,18 +77,14 @@ Loaded fields can then be read within the application using the `getField` metho
 
 class ConfigDownloader extends BaseHttpRequest {
 
-	private $envAccessor;
-
 	public function __construct (
 
 		ClientInterface $requestClient, DetectedExceptionManager $exceptionDetector,
 
-		EnvAccessor $envAccessor
+		private readonly EnvAccessor $envAccessor
 	) {
 
 		parent::__construct($requestClient, $exceptionDetector);
-
-		$this->envAccessor = $envAccessor;
 	}
 
 	public function getRequestUrl ():string {

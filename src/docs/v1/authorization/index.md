@@ -282,13 +282,13 @@ $patternRules = [AdminRule::class, EmploymentEditRule::class];
 ```php
 class EmploymentEditRule extends RouteRule {
 
-	private $model, $pathPlaceholders;
+	public function __construct (
+		AuthStorage $authStorage,
 
-	public function __construct (AuthStorage $authStorage, Employment $model, PathPlaceholders $pathPlaceholders) {
+		private readonly Employment $model,
 
-		$this->model = $model;
-
-		$this->pathPlaceholders = $pathPlaceholders;
+		private readonly PathPlaceholders $pathPlaceholders
+	) {
 
 		parent::__construct($authStorage);
 	}

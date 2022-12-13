@@ -18,25 +18,41 @@ It's recommended that each module is an arrangement of classes pertaining to one
 
 // show that picture here and add credit
 
+Modules are not restricted to concepts that interact with each request but can correspond to smaller programs such as aggregation robots that occassionally perform some micro action on the main application.
+
 ## Creating a module
 
-A Suphle module is a folder with some essential classes that are eventually connected to the rest of the application through the module's descriptor. They may be created by hand, although it's more realistic to use the following command for this purpose:
+A Suphle module is a folder with some essential classes that are eventually connected to the rest of the application through the module's descriptor. They may be created by hand, although it's more realistic to use the following command for this purpose.
 
 ```bash
 
-php suphle modules:create template_source new_module_name --destination_path=some/path
+php suphle modules:create Products --module_descriptor="\AllModules\Products\Meta\ProductsModuleDescriptor"
 ```
 
-The `modules:create` command will transfer contents of `template_source` to the `destination_path`, replacing namespaces, class names and their contents, and generally mirroring source structure to appropriately match destination. When `destination_path` option is missing, the command will write to directory it's being run from, which is what you'll want in most cases.
+When run, the command above will transfer contents of the template folder, *ModuleTemplate*, to a new `Products` module, replacing namespaces, class names and their contents, generally mirroring source structure to appropriately match the newly birthed module. When present, the `module_descriptor` option causes [component templates](/docs/v1/component-templates) to be automatically installed after module creation.
 
-`template_source` expects an absolute path by default. When it's more convenient to supply a path relative to the one command is being is being run from, include the `is_relative_source` (or, the shorthand `r`) option to your recipe:
+Usually, ModuleTemplate will be customized to taste. If, however, your architecture of choice deviates from the default, your module template may reside away the Suphle executable. In this case, its new destination should be communicated to the executable through its `template_source` option:
 
 ```bash
 
-php suphle modules:create relative_source_path new_module_name --is_relative_source
+php suphle modules:create Products --module_descriptor="\AllModules\Products\Meta\ProductsModuleDescriptor" --template_source=some/path
 ```
 
-Contents of the template folder is flexible and should match whatever dominant structure your modules start out with. For instance, the default template contains a connected route collection, along with routing bits. This doesn't reflect a mandatory requirement for a valid module. The only reason for this is to facilitate bootstrapping new Suphle projects. A module that itself doesn't handle requests can afford to miss all the routing bits. But more importantly, it should not be connected to the application as a standalone module.
+`template_source` expects an absolute path by default. When it's more convenient to supply a path relative to executable location, include the `is_relative_source` (or, the shorthand `i`) option to your recipe:
+
+```bash
+
+php suphle modules:create Products --module_descriptor="\AllModules\Products\Meta\ProductsModuleDescriptor" --template_source=some/path --is_relative_source
+```
+
+In a similar vein, directory modules is created in can be changed from the executable's path to one passed in the `destination_path` option.
+
+```bash
+
+php suphle modules:create Products --module_descriptor="\AllModules\Products\Meta\ProductsModuleDescriptor" --destination_path=some/path
+```
+
+Contents of ModuleTemplate are flexible and should match whatever dominant structure your modules start out with. For instance, its default contents contains a connected route collection, along with routing bits. This doesn't reflect a mandatory requirement for a valid module. The only reason for this is to facilitate bootstrapping new Suphle projects. A module that itself doesn't handle requests can afford to miss all the routing bits. But more importantly, it should not be connected to the application as a standalone module.
 
 ## Connecting standalone modules
 
@@ -81,11 +97,11 @@ This becomes imperative when sharing data or functionality between modules withi
 
 - Modules can be tested by stubbing out the interfaces of modules they are dependent on.
 
-Suphle doesn't enforce boundaries between modules. For that, you'll need to configure a library such as [Deptrac](https://github.com/qossmic/deptrac).
+Suphle doesn't enforce boundaries between modules. For that, you'll need to write a [dependency sanitizer rule](/docs/v1/application-server) that revolts when a dependency within the root `AllModules` namespace doesn't conform to that of the penultimate parent namespace of the evaluated class.
 
 ### Defining producer modules
 
-Modules yet to contain any data or functionality worth sharing can be represented by blank interfaces. Suphle provides one of such generic interfaces, `Suphle\Contracts\App\ControllerModule`. This placeholder interface is in turn implemented by a blank class that will be received by any dependent module consuming the new one. This integration is automatically done for all new modules.
+Modules yet to contain any data or functionality worth sharing can be represented by blank interfaces. Suphle provides one of such generic interfaces, `Suphle\Contracts\Modules\ControllerModule`. This placeholder interface is in turn implemented by a blank class that will be received by any dependent module consuming the new one. This integration is automatically done for all new modules.
 
 When the new module eventually defines shareable functionality, it can then be defined on its own custom interface. The default module template will create this interface for you. So, if you intend to modify the template structure, do remember to take this detail into account.
 
@@ -258,7 +274,7 @@ use ModuleInteractions\{ModuleOne, ModuleTwo};
 
 class ModuleApi implements ModuleTwo {
 
-	public function __construct (private readonly ModuleOne $moduleOne) {
+	public function __construct (private ModuleOne $moduleOne) {
 
 		//
 	}
@@ -452,7 +468,7 @@ protected function getModules ():array {
 
 ```
 
-When this micro-app is built, the callback will be executed twice for both modules. This will lead to the surprising presence of an invisible expecting to a call to have or have not occured, in short, an expectation contrary to the single callback visible. 
+When this micro-app is built, the callback will be executed twice for both modules. This will lead to the surprising presence of phantom mocks expecting a call to have or have not occured -- in short, an expectation contrary to the single callback visible. 
 
 If you have two identical module configurations, a single mock can either be stored as an instance variable (instead of a factory producing for each module), or for the sake of clarity, duplicate the callback for both module definitions.
 

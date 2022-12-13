@@ -51,11 +51,9 @@ It can then be consumed in a `getFromApi` coordinator handler as follows:
 
 class HttpCoordinator extends ServiceCoordinator {
 
-	protected $httpService;
+	public function __construct (protected readonly VisitSegment $httpService) {
 
-	public function __construct (VisitSegment $httpService) {
-
-		$this->httpService = $httpService;
+		//
 	}
 
 	public function getFromApi ():iterable {
