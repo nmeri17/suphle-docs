@@ -70,7 +70,7 @@ class SomeService {
 }
 ```
 
-Using the `addTask` method is only required when the arguments are produced at the site where task is being pushed to the queue. In the case of `DeferSomething`, there's nothing spectacular about the instance of `ProcessingDependency` given. Thus, we can afford to omit it. Passing arguments to `addTask` is only necessary for custom instances or scalar quantities. Every other strongly-typed parameter will be auto-wired for you.
+There's nothing spectacular about the instance of `ProcessingDependency` given to `DeferSomething`. Thus, we can afford to omit it. Passing arguments to `addTask` is only necessary when the arguments are produced or customized at the site where task is being pushed to the queue, or scalar quantities. Every other strongly-typed parameter will be auto-wired for you.
 
 ```php
 
@@ -78,7 +78,7 @@ class SomeService {
 
 	public function __construct (
 
-		private AdapterManager $queueManager
+		private readonly AdapterManager $queueManager
 	) {}
 
 	public function someAction ():void {
@@ -99,40 +99,129 @@ Without activation, we'd have nowhere to push our tasks to. The manner in which 
 
 ### RoadRunner tasks
 
-When the application is published using the RoadRunner binary, the same modules [bundled](/docs/v1/modules#Connecting-standalone-modules) for routing will be passed to passed to each dedicated task worker. The number of worker is controlled from the RoadRunner congig `*-rr.yaml` file.
+When the application is published [using the RoadRunner binary](/docs/v1/application-server), the same modules [bundled for routing](/docs/v1/modules#Connecting-standalone-modules) will be passed to passed to each dedicated task worker. The number of workers is controlled from the RoadRunner congig `*-rr.yaml` file.
 
 ```yaml
 jobs:
 #   # Number of threads which will try to obtain the job from the priority queue
 #   #
 #   # Default: number of the logical CPU cores
-  num_pollers: 32
+	num_pollers: 32
 
-  # Size of the internal priority queue
-  #
-  # Default: 1_000_000
-  pipeline_size: 100000
+	# Size of the internal priority queue
+	#
+	# Default: 1_000_000
+	pipeline_size: 100000
 
-  timeout: 60
+	timeout: 60
 
-  # worker pool configuration
-  pool:
-    command: ""
-    max_jobs: 0
-    num_workers: 10
-    allocate_timeout: 60s
-    destroy_timeout: 60s
+	# worker pool configuration
+	pool:
+		command: ""
+		max_jobs: 0
+		num_workers: 10
+		allocate_timeout: 60s
+		destroy_timeout: 60s
 ```
 
-Their Jobs plugin supports amqp, beanstalk, sqs, and boltdb. If your transport mechanism of choice is outside this list, consider looking. For in-depth details on how to configure the plugin, do visit [its section on their documentation](https://roadrunner.dev/docs/plugins-jobs/2.x/en#common-configuration).
+For in-depth details on how to configure the plugin, do visit [its section on their documentation](https://roadrunner.dev/docs/plugins-jobs/2.x/en#common-configuration). Their Jobs plugin supports amqp, beanstalk, sqs, and boltdb. If your transport mechanism of choice is outside this list, consider implementing the `Suphle\Contracts\Queues\Adapter` interface for that mechanism, and connecting it as a [interface loader](/docs/v1/container#Interface-loaders). This connection should be done on the titular module, as that is what will be used by the worker accessor to hydrate adapters.
 
-// manual flow-starter
-Make it a point of duty to have the queueing server running after each deployment. This allows us push tasks to it
+```php
 
-The runner wants to receive whatever module our desired adapter is bound
+use Suphle\Queues\AdapterLoader;
 
-configuration
+class CustomQueueLoader extends AdapterLoader {
+
+		public function concreteName ():string {
+
+			return PipelineQueueAdapter::class;
+		}
+}
+```
+
+### Externally-managed activation
+
+Outside the roadrunner setting i.e. when application is served traditionally using index.php, you can either use a daemon such as supervisord or similar during each deployment cycle of the application to revive the activation script. The preset script for this is one titled "manual-flow-starter.php" residing on the project root of all Suphle installations. This script will be responsible for putting the right objects in place for [Flows](/docs/v1/flows) as well, as long the underlying servers those objects are connected to are alive at the locations given in their connection strings.
+
+## Configuring queue adapters
+
+Active adapter in use will typically determine connection parameters. The default, `Suphle\Adapters\Queues\SpiralQueue`, is connected to a bolt-db pipeline mechanism, and expects to successfully connect to the url `tcp://127.0.0.1:6001`. As with other properties for the `SpiralQueue` adapter, this value can be modified by updating relevant entries in the `*-rr.yaml` config. Connection string, for instance, is represented by the `RR_RPC` entry.
 
 ## Testing queues
 
-catchQueuedTasks in the setup
+Queue tests are only compatible with module-level tests. Suphle provides the `Suphle\Testing\Condiments\QueueInterceptor` trait for verifying status of an in-memory queue, as well as manually triggering execution of tasks pushed onto the queue and observing its side-effects afterwards.
+
+### Initializing testing queue
+
+Within the testing environment, you typically won't expect to have tasks pushed to the production level queue. For this reason, your queue adapter is replaced with a dummy that doesn't nothing. In order to make queue-based observations, this dummy must be replaced with an adapter capable of such assignment. Tests with no other trait or no trait that overwrites the `setUp` method don't have to worry about this, since `QueueInterceptor::setUp` does that for you already. Otherwise, you have to call the `QueueInterceptor::catchQueuedTasks` method manually before proceeding to run operations that push something onto a queue stack.
+
+```php
+
+class SomeQueueTest extends ModuleLevelTest {
+
+	use QueueInterceptor, BaseDatabasePopulator {
+
+		BaseDatabasePopulator::setUp as databaseAllSetup;
+	}
+
+	protected function setUp ():void {
+
+		$this->databaseAllSetup();
+
+		$this->catchQueuedTasks();
+	}
+}
+```
+
+### Trigger tasks execution
+
+Real-life tasks are executed asynchronously. However, doing so in the testing environment may preclude us from making informed decisions. When it's more desirable to execute immediately and observe side-effects of affected objects, short of hydrating the task independently and testing it as an independent class, the `catchQueuedTasks` method should be called with its first argument set to `true`.
+
+```php
+
+protected function setUp ():void {
+
+	parent::setUp();
+
+	$this->catchQueuedTasks(true);
+}
+
+public function test_queued_task_behavior () {
+
+	// when // some operation expected to push task X onto the queue
+
+	// task is automatically executed
+
+	// then // observe side effects using any suitable mediums
+}
+```
+
+Tasks executed using this method will not be recorded for later assertion.
+
+When lower-level control over when exactly tasks are executed is preferred, invoke the `QueueInterceptor::processQueuedTasks` method after the operations expected to have logged it onto the queue.
+
+```php
+
+public function test_queued_task_behavior () {
+
+	// given // some operation expected to push task X onto the queue
+
+	$this->processQueuedTasks(); // when
+
+	// then // observe side effects on collaborators
+}
+```
+
+### Verifying queue state
+
+When practising TDD, you may need to enforce that certain tasks are being pushed to the queue. We use the `assertPushed` and its inverse `assertNotPushed` for this.
+
+```php
+
+public function test_will_push_taskX_to_queue () {
+
+	// when // some operation expected to push task X onto the queue
+
+	$this->assertPushed(SomeTask::class); // then
+}
+```

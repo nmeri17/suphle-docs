@@ -3,7 +3,15 @@
 There is no gain in claiming to assist developers build better software, without guiding them on how best to progressively sustain these systems. 
 That can be likened to bringing a knife to a gunfight. As a wise friend once put it, "the devil is in the maintenance. Don't assume knowledge about the full cost of a thing until you understand what maintaining it entails,". It takes special skill to significantly increase or adjust a software's capabilities while keeping the contraption running smoothly, as though it were one uniform block
 
-In reality, replacing parts of what has been built poses the risk of the ensuing void collapsing into a pile of rubble. In this chapter, we'll be looking at strategies for the new addition to dovetail the way it would have, had it been planned along with the original structure. This chapter assumes an already [firm grasp of test automation](/docs/v1/testing/Achieving-test-automation-through-alternative-means)
+In reality, replacing parts of what has been built poses the risk of the ensuing void collapsing into a pile of rubble. In this chapter, we'll be looking at strategies for the new addition to dovetail the way it would have, had it been planned along with the original structure. This chapter assumes an already [firm grasp of test automation](/docs/v1/testing/Achieving-test-automation-through-alternative-means).
+
+## some header
+
+Suphle's default project structure is logic-driven rather than data-driven. This means our modules group related functionality together, which all operate against an omnipresent data layer surrounding them
+
+![suphle-module](/suphle-module.jpeg)
+
+The illustration above is a bird's eye-view of each module's ultimate structure, which can be imagined as a link to other modules with similar structure. They ultimately converge at your [app's entry point](/docs/v1/modules#app-entry-point), where you will have mechanisms that act as glue to hold them all together. The segments which a user's request cuts through are the ones you are ~~likely~~ expected to change frequently -- otherwise called "moving parts". They are the ones we want to get right in a way that allows them remain elegant both before and after modification.
 
 When delivering a project as a decoupled, composed tree of components, we have nothing to fear while including new features, as long as incoming modifications and the existing project are not interwoven. When they are, it becomes imperative that their **integration** is thoroughly tested. To be clear, after implementing our shiny new feature, modifying or refactoring an existing one, existing software is bound to break. Have no doubt about it. To be fair, the odds are not entirely 99:1, but they're so negligible that it's more realistic to simply round it off. Your only hope of raising that figure to anything else is by testing it
 How do you guarantee new feature functions as intended? (note that this is different from maintaining system equilibrium as was our aim in the previous paragraph). Same way -- testing. There isn't a reality in back end engineering where a developer can escape having verification in place before and after modifying an existing system. You already converted your business expectations into code. Now, you have to programmatically verify that that code indeed does what you intended it to do.

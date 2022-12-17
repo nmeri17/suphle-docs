@@ -83,7 +83,7 @@ You may have observed that the renderers are not wrapped in any HTTP method usin
 
 ## Login services
 
-These are responsible for communicating with whatever medium we intend to extract users from and authenticate against. They can be considered as [controller](/docs/v1/controllers) action methods but for login requests. The same [validator-for-POST-request rule](/docs/v1/controllers#validation) on regular controllers applies to them. Login services are classes that implement `Suphle\Contracts\Auth\LoginActions`.
+These are responsible for communicating with whatever medium we intend to extract users from and authenticate against. They can be considered as [coordinators](/docs/v1/service-coordinators) action methods but for login requests. The same [validator-for-POST-request rule](/docs/v1/service-coordinators#Validating-incoming-requests) on regular controllers applies to them. Login services are classes that implement `Suphle\Contracts\Auth\LoginActions`.
 
 Both default login mediators have complementary login services-- `Suphle\Auth\Repositories\BrowserAuthRepo`, and `Suphle\Auth\Repositories\ApiAuthRepo`. Each of them utilizes an identical identification technique but have a slight difference in their behavior on success; `BrowserAuthRepo` initializes a session for the authenticated user and outputs whatever renderer is given in `BrowserLoginMediator::successRenderer()`. `ApiAuthRepo` on the other hand, responds with a token to use in authenticating user during subsequent visits.
 

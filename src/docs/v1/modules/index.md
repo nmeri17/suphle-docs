@@ -97,7 +97,7 @@ This becomes imperative when sharing data or functionality between modules withi
 
 - Modules can be tested by stubbing out the interfaces of modules they are dependent on.
 
-Suphle doesn't enforce boundaries between modules. For that, you'll need to write a [dependency sanitizer rule](/docs/v1/application-server) that revolts when a dependency within the root `AllModules` namespace doesn't conform to that of the penultimate parent namespace of the evaluated class.
+Suphle doesn't enforce boundaries between modules. For that, you'll need to write a [startup filter](/docs/v1/application-server#Custom-startup-operations) that revolts when a dependency within the root `AllModules` namespace doesn't conform to that of the penultimate parent namespace of the evaluated class.
 
 ### Defining producer modules
 

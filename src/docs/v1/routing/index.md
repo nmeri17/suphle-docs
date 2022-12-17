@@ -1,11 +1,10 @@
 ## Introduction
 
-Routing is one of most frameworks' strongest focal points. It's the location from which core components such as authentication, authorization, service-coordinators and middleware are exposed by developer. It'll otherwise be duplicitous to introduce those components elsewhere and apply relevant routes to them.
+Routing is one of most frameworks' strongest focal points. First, all you need to translate user requests to their [service-coordinators](/docs/v1/service-coordinators). It's the location from which core components such as authentication, authorization, service-coordinators and middleware are exposed by developer. Otherwise, route patterns will be defined at one place and duplicated where they're applied to these other components.
 
-That being the case, Suphle takes them a step further as the location for defining [flows](/docs/v1/flows) and response types. However, we won't examine all of that in this chapter. This one will only equip you with all you need to translate user requests to their service-coordinators
 
----
-Routing consists of defining [service-coordinator](/docs/v1/service-coordinators) adapters i.e. portals between an incoming request and its execution. This means that for all the power service-coordinators are known to wield, they are answerable to what is being dictated from route definitions. As will soon be seen with route collections, one can plug in various co-existing service-coordinator implementations as the need may be.
+
+Routing consists of defining service-coordinator adapters i.e. portals between an incoming request and its execution. This means that for all the power service-coordinators are known to wield, they are answerable to what is being dictated from route definitions. As will soon be seen with route collections, one can plug in various co-existing service-coordinator implementations as the need may be.
 
 ## Route collections
 These are classes where routes/paths are defined. Route collections can either implement the `Suphle\Contracts\RouteCollection` or preferably, extend `Suphle\Routing\BaseCollection` which should be the base class for your lower level collections. 
@@ -232,3 +231,7 @@ probably an odd location and would require a requests page
 
 talk about these methods
 		$this->pathPlaceholders->allNumericToPositive();
+
+## mirroring
+
+see docblock on JsonNegotiator middleware
