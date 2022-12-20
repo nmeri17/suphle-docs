@@ -40,7 +40,7 @@ Before the server builds, it performs a series of checks against the codebase be
 
 - [Service class](/docs/v1/service-coordinators#Pure-services) restrictions.
 
-- Mailable restrictions.
+- [Mailable](/docs/v1/io#mailing) restrictions.
 
 ##### Custom startup operations
 
