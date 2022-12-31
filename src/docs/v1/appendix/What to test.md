@@ -14,3 +14,23 @@ What would constitute a robust testing regimen is extensive examination of all t
 ## to test presentation format or not to test
 What becomes of this mighty layer, then? Actually, It is still vital in the scheme of things. However, the controller is not the best place to situate such tests. Presentation ultimately belongs in the realm of markup for html based responses, and documentation for API based ones. Presentation shouldn't concern itself with whether the information served to it by the business layer is "correct" or not. Its sole responsibility is to layout that data it receives in a format agreed upon by the applicable consumption mechanism (html/json)
 // can you give an example of testing the "data" value goes into div id x?
+
+**
+I will say unit tests are impossible to decouple from code. Integration tests for behavior shouldn't meddle with implementation details except where unwanted io is incurred. Then it has to be replaced with appropriate doubles. I almost always prefer mocks, to avoid an imaginary fiend removing the dependency and it's not apparent that a significant change has occurred
+
+This sort of brittleness is inevitable, AFAIK
+**
+My own take for controllers:
+
+1) do the http test for endpoints. It's unfortunate that there aren't more 
+libraries available for generic http tests verifying basic status code
+
+2) don't test controllers. That's the most common candidate of brittleness
+
+3) test the underlying services used by the action methods
+
+Testing response values for coordinators reusing services leads to duplicate tests
+Api = requires validation fields, status codes, and response shape
+
+Test = requires coupling to service methods for the sake of regression. 
+This prevents status codes from verification

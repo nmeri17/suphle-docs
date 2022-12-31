@@ -151,9 +151,9 @@ class BypassExpensive extends UpdatelessService {
 
 	public function __construct(
 
-		private readonly CacheManager $cacheManager,
+		protected readonly CacheManager $cacheManager,
 
-		private readonly StocksReader $stocksReader
+		protected readonly StocksReader $stocksReader
 	) {
 
 		//
@@ -181,7 +181,7 @@ use Suphle\Contracts\{Config\CacheClient, IO\EnvAccessor};
 
 class DefaultCacheConfig implements CacheClient {
 
-	public function __construct(private readonly EnvAccessor $envAccessor) {
+	public function __construct(protected readonly EnvAccessor $envAccessor) {
 
 		//
 	}
@@ -236,9 +236,9 @@ class MailBuildAlerter extends MailBuilder {
 
 	public function __construct(
 
-		private readonly MailClient $mailClient,
+		protected readonly MailClient $mailClient,
 
-		private readonly EnvAccessor $envAccessor
+		protected readonly EnvAccessor $envAccessor
 	) {
 
 		//

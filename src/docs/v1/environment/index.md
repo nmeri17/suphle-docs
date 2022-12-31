@@ -81,7 +81,7 @@ class ConfigDownloader extends BaseHttpRequest {
 
 		ClientInterface $requestClient, DetectedExceptionManager $exceptionDetector,
 
-		private readonly EnvAccessor $envAccessor
+		protected readonly EnvAccessor $envAccessor
 	) {
 
 		parent::__construct($requestClient, $exceptionDetector);

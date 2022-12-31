@@ -163,7 +163,7 @@ class LocalSender {
 
 	public const SOME_EVENT = "event_name";
 
-	public function __construct (private readonly AssignListeners $eventManager) {
+	public function __construct (protected readonly AssignListeners $eventManager) {
 
 		//
 	}
@@ -240,7 +240,7 @@ class SplitEventService extends UpdatelessService {
 
 	const CASCADE_BEGIN_EVENT = "cascading";
 
-	public function __construct (private readonly AssignListeners $eventManager) {
+	public function __construct (protected readonly AssignListeners $eventManager) {
 
 		//
 	}
@@ -259,7 +259,7 @@ class MediatingReceptor extends UpdatelessService {
 
 	const CASCADE_REBOUND_EVENT = "rebounding";
 
-	public function __construct (private readonly EventManager $eventManager) {
+	public function __construct (protected readonly EventManager $eventManager) {
 
 		//
 	}

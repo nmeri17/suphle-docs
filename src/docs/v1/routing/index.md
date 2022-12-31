@@ -1,17 +1,34 @@
 ## Introduction
 
-Routing is one of most frameworks' strongest focal points. First, all you need to translate user requests to their [service-coordinators](/docs/v1/service-coordinators). It's the location from which core components such as authentication, authorization, service-coordinators and middleware are exposed by developer. Otherwise, route patterns will be defined at one place and duplicated where they're applied to these other components.
+At its most basic level, routing is an application layer that can be regarded as a portal between incoming requests and their execution. The application identifies what coordinator will handle an incoming request using the interchangeable terms route/path/pattern. A number of other framework components, collectively known as Pattern Indicators, are equally coupled to the routing concept. However, instead of shuttling between dedicated locations for those indicators and the route patterns, Suphle removes this duplication by offering only one place to house routes and their indicators, if any.
 
+Pattern indicators include [authentication](/docs/v1/authentication#Securing-routes), [authorization](/docs/v1/authorization#Tagging-route-authorization), [middleware](/docs/v1/middleware#Route-binding), and are all bound on what we call Route Collections. These are primarily classes where routes patterns are defined. They are sub-classes of `Suphle\Routing\BaseCollection`. There are a few surprising differences between Suphle's route collections and the way you may be used to defining your routes:
 
+- As already mentioned, collections are classes rather than a single master file. But instead of finding plain strings mutating a static, global, singleton, Suphle patterns are defined as methods on their collection.
 
-Routing consists of defining service-coordinator adapters i.e. portals between an incoming request and its execution. This means that for all the power service-coordinators are known to wield, they are answerable to what is being dictated from route definitions. As will soon be seen with route collections, one can plug in various co-existing service-coordinator implementations as the need may be.
+- Status code and response format are defined within the patterns, not in the attached coordinator.
 
-## Route collections
-These are classes where routes/paths are defined. Route collections can either implement the `Suphle\Contracts\RouteCollection` or preferably, extend `Suphle\Routing\BaseCollection` which should be the base class for your lower level collections. 
+This style isn't a vain attempt to stand out but one that happens to come with some perks:
 
-## Defining paths
+- Being classes imbues them with qualities such as the ease of replacement (while temporarily modifying features) that extension brings. 
 
-At the most basic level, paths are derived from method names:
+- Class methods give room for further activity pertaining to each pattern, without forming nasty callback hells.
+
+- API response formats can be statically documented.
+
+- The structure of collections and sub-collections allows patterns to be composed down a [trie](https://en.wikipedia.org/wiki/Trie), implying an almost instantenous failure for collections not matching incoming request.
+
+In addition to routing, sub-collections and pattern indication, route collections enable access to advanced concerns such as CRUD, canary routes and route mirroring, which will all be explored in subsequent sections.
+
+PHP 8's Attributes will never be used for route definitions, as they strongly impede route discoverability. A more feasible option for attributes would be an elegant use in pattern indicators. Unfortunately, this will not be pursued since it's faster to read those indicators from methods, where present, rather than reflecting on the collection.
+
+## Pattern syntax
+
+The `BaseCollection` interface defines reserved methods guiding it through the collection's desired behavior. Every other developer-defined method on its implementation will be treated as a route pattern.
+
+### Static pattern segments
+
+Static patterns are treated as defined (rather than as placeholders), by the routing engine. Below, one is connected to the `EntryCoordinator::salesHandler` method.
 
 ```php
 
@@ -19,13 +36,13 @@ use Suphle\Routing\BaseCollection;
 
 use Suphle\Response\Format\Markup;
 
-use Modules\CarModule\Controllers\EntryController;
+use AllModules\CarModule\Coordinators\EntryCoordinator;
 
 class CarRoutes extends BaseCollection {
 
 	public function _handlingClass ():string {
 
-		return EntryController::class;
+		return EntryCoordinator::class;
 	}
 	
 	public function SALES() {
@@ -34,129 +51,401 @@ class CarRoutes extends BaseCollection {
 	}
 }
 ```
-From the above, we've defined our route, tagged its http method, and declared what response type (otherwise known as renderers) is expected of it. The method `SALES` corresponds to the path [http://example.com/sales](http://example.com/sales). It's appropriate for methods to return fresh renderers, except in some special cases.
-While it may be neater to initialize renderers in a collection's constructor, considering methods aren't evaluated except their pattern matches, it's slightly more efficient to instantiate new ones inside their method.
 
+Upper-case method segments such as `SALES` correspond to their literal equivalents. The definition above says that GET requests to `http://example.com/sales` should execute `EntryCoordinator::salesHandler`, and use the result of that invocation to parse the HTML template at `/configured/path/show-sales.php`.
 
-## Dynamic routes
-These refer to paths with segments unknown at *compile time*. Attempting to define paths such as "/user/25", "/music/thriller" will quickly spiral out of control since we'd have to create new methods each time a new song is added to the database. Not to mention how bloated our route definitions will get.
-For our collection to catch such routes, we'll define our method like so:
+`_get` and `Markup` refer to the [HTTP method](#HTTP-request-methods) and response [content format](#Presentation-formats) respectively.
 
-```php
-class MusicRoutes extends BaseCollection {
-	
-	public function ARTISES_id() {
-		
-		$this->_get(new Markup("artistesHandler", "show-artistes"));
-	}
-}
-```
-The method above will respond to requests to [http://example.com/artistes/44](http://example.com/artistes/44)
+#### Hyphenated pattern segments
 
-::: tip
-Note the difference in capitalization: Upper cases denote static path segments, lower cases represent placeholders.
-:::
+Illegal characters in method definitions mean that static segments containing the special non-alphanumeric characters hyphens and underscores have to introduce additional letters to help signify developer's intent.
 
-## Hyphenated segments
-
-As you may have realized, path method names are delimited by underscores, which equally happens to be a valid path character. Let's look at how you'd go about defining your route to account for static segments containing hyphens
+In the collection below, we define patterns that route to `field-agents` and `other_staff`, respectively.
 
 ```php
+
 class EmployeeRoutes extends BaseCollection {
+
+	public function _handlingClass ():string {
+
+		return EntryCoordinator::class;
+	}
 	
-	public function FIELD__AGENTSh_id() {
+	public function FIELD__AGENTSh () {
 		
 		$this->_get(new Markup("agentsHandler", "show-agents"));
 	}
 	
-	public function OTHER__STAFFu_id() {
+	public function OTHER__STAFFu () {
 		
 		$this->_get(new Markup("staffHandler", "show-staff"));
 	}
 }
 ```
-The first method, `FIELD__AGENTSh_id()` corresponds to the following path [http://example.com/field-agents/15](http://example.com/field-agents/15), while the `OTHER__STAFFu_id()` responds to [http://example.com/other_staff/32](http://example.com/other_staff/32). With some vigilance, you may observe the introduction of the letters **h** and **u** just after each static segment.
 
-To recap, static segments ending with a **h** will have all their underscores replaced by a hyphen, while those ending with a **u** will be replaced with underscores.
+With some vigilance, you may observe the introduction of the letters **h** and **u** just after each static segment.
 
-Remarkable, isn't it?! We've managed to replace all the incompatible URL tokens with string equivalents to fit our every purpose. One last thing, though.
+### Dynamic pattern segments
 
-## Optional placeholders
-Say, we intend to create a path to [http://example.com/towns/venice](http://example.com/towns/venice), but we equally want the same handler to match [http://example.com/towns](http://example.com/towns), we'll need to present a method name responds when everything else matches along with the presence or absence of "venice". such method will be defined like so:
+Dynamic patterns bind placeholders to resources accessed with their identifiers. Suppose our database has a table with details about music tracks. Attempting to define static patterns for each row will quickly spiral out of control since we'd have to create new methods each time a new song is added to the database. Not to mention how bloated the collection would grow.
+
+Instead, we employ the use of dynamic segments, by defining them with lower-case characters.
 
 ```php
-class TownRoutes extends BaseCollection {
+
+class MusicRoutes extends BaseCollection {
+
+	public function _handlingClass ():string {
+
+		return EntryCoordinator::class;
+	}
 	
-	public function TOWNS_name0() {
+	public function id () {
 		
-		$this->_get(new Markup("townsHandler", "show-towns"));
+		$this->_get(new Markup("artistesHandler", "show-artistes"));
 	}
 }
 ```
-The trailing number **0** indicates that whether "name" is present or not, this method is qualified to execute request.
 
-## Request methods
-So far, we have only seen methods mapping to **GET** requests through the `_get()` method. What about the three other major HTTP request methods namely **POST**, **PUT**, and **DELETE** HTTP methods? Suphle currently makes provision for them through the `_post()`, `_put()`, and `_delete()` methods respectively.
+When the routing engine encounters this collection, the `id` method will be treated as a wildcard matching any single segment of incoming request not explicitly defined as a static pattern. This means a request to `http://example.com/44` will be sent to `EntryCoordinator::artistesHandler`, whereas a request to `http://example.com/44/something-else` will disregard this definition.
 
----
-But it's not advisable to compress all our segments into one method as we have in all the earlier examples. Ideally, each 
-method should contain either one static segment or a placeholder.
+#### Empty segments
 
-In line with the "S" part of the [SOLID](https://en.wikipedia.org/wiki/SOLID) principle, each route collection 
-should only cater to a top-level resource. Any content that doesn't directly pertain to it should exist on another collection below it, which it has no direct knowledge of. This enhances cohesion among route related functionality and co-location of related endpoints.
+We use the reserved method `_index` to define a pattern that matches requests without an additional segment after its [prefix](#Route-prefixing). The collection below will direct requests to `http://example.com/` to `EntryCoordinator::musicHome`.
+
+```php
+
+class MusicRoutes extends BaseCollection {
+
+	public function _handlingClass ():string {
+
+		return EntryCoordinator::class;
+	}
+	
+	public function _index () {
+		
+		$this->_get(new Markup("musicHome", "show-homepage"));
+	}
+}
+```
+
+#### Optional placeholder segments
+
+Optional placeholders were part of earlier drafts of the routing component, but was ultimately deprecated. If you find yourself caught in the extremely rare case where it's needed, you can escape by representing the optional segment with any of the following options:
+
+- Using query parameters.
+- As standalone route patterns.
+- As a [sub-collection prefix](#High-level-prefixes).
 
 ## Route prefixing
 
-The common term for describing grouping sub-patterns is route prefixes. In light of the dividends of grouping our patterns into as many collections as required, let's look at the way to make that possible.
+Each route collection should only cater to a top-level resource. Patterns pertaining to resources not directly related to the main theme on a collection, e.g. a product resource succeeding a parent resource such as `http://example.com/store/19/products/14`, should be moved to a separate collection. This enhances cohesion among route related functionality and co-location of related patterns.
+
+Sometimes, resources breaking off into sub-collections are exhibiting a potential to exist in their own [modules](/docs/v1/modules). However, do not force it. It's not always reasonable for parts of the application to exist independent of a given parent.
+
+Breaking the route collections to match the URL `http://example.com/store/19/products/14`, we'll define them as follows:
 
 ```php
 
-namespace Modules\ZooModule\Collections;
+class StoreCollection extends BaseCollection {
 
-class AnimalRoutes extends BaseCollection {
+	public function _prefixCurrent ():string {
+
+		return "STORE";
+	}
 	
-	public function dragons() {
+	public function storeid_PRODUCTS () {
 			
-		$this->_prefixFor(DragonCollection::class);
+		$this->_prefixFor(ProductsCollection::class);
 	}
 }
 ```
 
-Note that the above method neither returns a renderer nor tags any http method. So what's the catch? We will find out after looking at the contents of `Modules\ZooModule\Collections`.
-
-Wrapping related endpoints under the same umbrella happens to come with some additional perks: let's take a moment to understand how routes are matched in Suphle, shall we?
-
-## Route matching: a brief history
-
-Rather than parsing each module's routes into one master list of app routes loaded into cache/memory and comparing them for every request, our patterns are sort of composed down a [trie](https://en.wikipedia.org/wiki/Trie); both the collections underneath and their patterns are as good as non existent. Each method and its pattern is pulled on demand using [generators](https://www.php.net/manual/en/language.generators.overview.php). Only when the incoming request matches the currently evaluated method is it loaded lazily and compared.
-
-In other words, irrelevant groups are spotted faster, which in turn, translates to one of the fastest pattern matching in all of PHP; all because that next segment was wrapped its own collection. If prefixes and grouping are so powerful, they may be worth giving a closer look.
-
-## Revisiting prefixes
-
 ```php
 
-namespace Modules\ZooModule\Collections;
-
-class AnimalRoutes extends BaseCollection {
+class ProductsCollection extends BaseCollection {
 	
-	public function dragons() {
+	public function productid () {
 			
-		$this->_prefixFor(DragonCollection::class);
-	}
-}
-
-class DragonCollection extends BaseCollection {
-	
-	public function FIGHTS() {
-			
-		$this->_get(new Markup("fightsHandler", "fights-page"));
+		$this->_get(new Markup("showOne", "show-product"));
 	}
 }
 ```
 
-It is apparent with the above that the lower level collection is part of a bigger puzzle collaborating in the grand scheme of things, and it doesn't even know it! For all it cares, it can exist just as independently as its host collection. As long as it either defines its group name AAA, or lets a host collection do that for it through the method name where it's defined. 
-When both are present, the outer declaration takes precedence ((still true??)). This means authors can publish modules containing route collections, which can be imported into any parent scope whatsoever
+There are a number of new introductions in the collections above:
+
+### Inline Prefixes
+
+The call to `_prefixFor` in the `StoreCollection::storeid_PRODUCTS` method is used to usher in the sub-collection. Here, the dynamic segment syntax is combined with that of static segments to match the `19/products` part of the full URL. The routing parser interprets single underscores as the forward slash in a URL. This means any length of segments can be represented with a single underscore-delimited method. However, doing this comes with a few downsides that include sacrificing readability and the ability that comes with tries.
+
+That said, when demoing/prototyping a route, it's more convenient, even forgivable, to use inline prefixes as opposed to creating and connecting a new collection altogether. The following definition will match requests to `http://example.com/store/19`.
+
+```php
+
+class StoreCollection extends BaseCollection {
+	
+	public function STORE_id () {
+			
+		$this->_get(new Markup("showOne", "show-store"));
+	}
+}
+```
+
+All other conventions discussed in preceding sections of this chapter remain valid.
+
+### Prefixing dynamic segments
+
+The only caution to be advised while working with dynamic prefixes in general, not just inline ones, is to endeavor to use unique names when defining dynamic segments rather than generic ones such as `id`. Suppose the definition above is modified to match the URL path `http://example.com/store/19/14` as follows:
+
+```php
+
+class StoreCollection extends BaseCollection {
+	
+	public function STORE_id_id () {
+			
+		$this->_get(new Markup("showProduct", "show-product"));
+	}
+}
+```
+
+Or, its less obvious counterpart,
+
+```php
+
+class StoreCollection extends BaseCollection {
+	
+	public function STORE_id () {
+			
+		$this->_prefixFor(ProductsCollection::class);
+	}
+}
+```
+
+```php
+
+class ProductsCollection extends BaseCollection {
+	
+	public function PRODUCTS_id () {
+			
+		$this->_get(new Markup("showOne", "show-product"));
+	}
+}
+```
+
+When [reading incoming placeholder values](/docs/v1/service-coordinators#Builder-selects), the 2nd `id` will overwrite the first.
+
+### High-level prefixes
+
+These are prefixes that apply to the whole collection. We saw them defined using the reserved collection method `_prefixCurrent`. Using it saves us from prepending all our methods with it. In `StoreCollection::_prefixCurrent`, a static prefix is returned, although a dynamic one can equally be returned where applicable.
+
+Sub-collections wield some influence over what prefix is applied on them. For instance, a collection may want to make some adjustments to the prefix of its patterns when it's used as a sub-collection rather than a standalone one.
+
+```php
+
+class ProductsCollection extends BaseCollection {
+
+	public function _prefixCurrent ():string {
+
+		return !empty($this->parentPrefix) ? $this->parentPrefix: "PRODUCTS";
+	}
+	
+	public function productid () {
+			
+		$this->_get(new Markup("showOne", "show-product"));
+	}
+}
+```
+
+When used in isolation, patterns under this collection will all be prefixed with `PRODUCTS`, thereby resulting in paths like `http://example.com/products/14`. When this same collection is used as a sub-collection, its prefix is dictated by the parent one. The property `parentPrefix` is automatically updated for each collection consumed by another, to the value of the method/pattern that initiated it.
+
+## Connecting route collections
+
+Route collections are connected to the module containing them based on what mode we intend to use them in. Each module that performs routing duties must contain an entry collection that would lead to the high-level prefixes it serves. It is this entry collection that must be connected through its appropriate channel.
+
+Unless the module should explicitly respond to only API requests, collections should be configured to the browser channel. All configuration modes are done using methods defined on the `Suphle\Contracts\Config\Router` interface, although it's more convenient to extend its base implementation, `Suphle\Config\Router`.
+
+To activate a `Router` implementation on any channel, at least one collection must be set, otherwise its module will be inert to all routing activities.
+
+### Browser channel configuration
+
+This configuration is done when the name of the module's entry collection is returned by the `Router::browserEntryRoute` method. Suppose the highest-level collection in our module is `BrowserNoPrefix`, we'll lead the route parser into that module like so:
+
+```php
+
+namespace AllModules\ModuleOne\Config;
+
+use Suphle\Config\Router;
+
+use AllModules\ModuleOne\Routes\BrowserNoPrefix;
+
+class RouterMock extends Router {
+
+	public function browserEntryRoute ():?string {
+
+		return BrowserNoPrefix::class;
+	}
+}
+```
+
+When the incoming request doesn't match the API channel and `browserEntryRoute` returns null, route evaluator will skip this module and move on to the next one.
+
+### API channel configuration
+
+We use an explicit API-channel configuration instead of a JSON negotiator middleware so we can have a high-level affair with the API state of the request and perform [actions tailored to it](#actions-tailored-to-the-API-channel) aside content negotiation. This configuration enables us differentiate between specialized request handlers (unique content on browser vs mobile), response formats, user-accessible version-controlled API results, etc. If none of these are important to you, perhaps you're building a first-party API for an SPA, use the browser channel and return [presentation formats](#presentation-formats) that render to JSON.
+
+It takes 2 settings to complete an API-channel configuration:
+
+1. An API prefix.
+1. The route collection stack.
+
+#### API prefix
+
+This is the primary setting that is checked to determine the API status of an incoming request. Its value is set using the `apiPrefix` method. On the default config class, `Suphle\Config\Router` this method returns the ubiquitous prefix, "api".
+
+```php
+
+interface Router extends ConfigMarker {
+
+    public function apiPrefix ():string;
+}
+```
+
+#### API collection stack
+
+This allows us connect a list of route collections for each version of the application in a descending order. Each successive version inherits all route patterns on the previous one and is only required to either override these or define new ones that won't be available on earlier versions.
+
+Route collections either defined here or intended for responding to API requests in general, are advised to extend the `Suphle\Routing\BaseApiCollection` class for the more specialized utilities it provides that may be useful to them.
+
+Your modules with start out just one API version collection. Once it has been released to actual clients, that version of it should be treated as immutable, since tampering with it will adversely affect those who rely on its response structures, status codes, URLs, ACLs, or any other user-facing characteristic. Instead, new changes after each official release should be destined for a patch or minor release version.
+
+A mild collection stack introducing new updates in latter versions is shown below.
+
+```php
+
+namespace AllModules\ModuleOne\Config;
+
+use Suphle\Config\Router;
+
+use AllModules\ModuleOne\Routes\ApiRoutes\{V1\LowerMirror, V2\ApiUpdate2Entry, V3\ApiUpdate3Entry};
+
+class RouterMock extends Router {
+
+	public function apiStack ():array {
+
+		return [
+			"v3" => ApiUpdate3Entry::class,
+
+			"v2" => ApiUpdate2Entry::class,
+
+			"v1" => LowerMirror::class
+		];
+	}
+}
+```
+
+```php
+
+use AllModules\ModuleOne\Coordinators\Versions\V1\ApiEntryCoordinator;
+
+class LowerMirror extends BaseApiCollection {
+
+		public function _handlingClass ():string {
+
+			return ApiEntryCoordinator::class;
+		}
+		
+		public function API__SEGMENTh () {
+			
+			$this->_get(new Json("segmentHandler"));
+		}
+
+		public function SEGMENT_id() {
+
+			$this->_get(new Json("simplePairOverride"));
+		}
+
+		public function CASCADE () {
+
+			$this->_get(new Json("originalCascade"));
+		}
+	}
+```
+
+On version 2, a fresh handler for an existing route pattern is provided. It exists simultaneously with the first version but will only be visible on this version and those above it on the stack.
+
+In addition, one new pattern is added to this version.
+
+```php
+
+use AllModules\ModuleOne\Coordinators\Versions\V2\ApiUpdate2Coordinator;
+
+class ApiUpdate2Entry extends BaseApiCollection {
+
+	public function _handlingClass ():string {
+
+		return ApiUpdate2Coordinator::class;
+	}
+
+	public function CASCADE () {
+
+		$this->_get(new Json("secondCascade"));
+	}
+
+	public function SEGMENT__IN__SECONDh () {
+
+		$this->_get(new Json("segmentInSecond"));
+	}
+}
+```
+
+Every other pattern not explicitly defined on this collection will be delegated to version collections beneath it.
+
+In version 3, we override that pattern once again
+
+```php
+
+use AllModules\ModuleOne\Coordinators\Versions\V3\ApiUpdate3Coordinator;
+
+class ApiUpdate3Entry extends BaseApiCollection {
+
+	public function _handlingClass ():string {
+
+		return ApiUpdate3Coordinator::class;
+	}
+
+	public function CASCADE () {
+
+		$this->_get(new Json("thirdCascade"));
+	}
+}
+```
+
+When requests come in without a version matching segment, the routing parser will fallback to the topmost version on the stack.
+
+## Actions tailored to the API channel
+
+### Route mirroring
+
+see docblock on JsonNegotiator middleware
+
+propagate to 
+...after introduction
+
+talk about the config and applicable middleware if any
+
+both can be used simultaneously
+...
+It's not always that our APIs return the same response verbatim. Some developers may decide to follow one of the JSON specifications such as JSON-LD, Hapi, and what have you. In such case, we will simply plant a middleware in the stack that wraps all outgoing API response appropriately
+
+// example
+
+## HTTP request methods
+
+So far, we have only seen methods mapping to **GET** requests through the `_get()` method. What about the three other major HTTP request methods namely **POST**, **PUT**, and **DELETE** HTTP methods? Suphle currently makes provision for them through the `_post()`, `_put()`, and `_delete()` methods respectively.
+
+## Presentation formats
+
+is one of the available response formats. It's treated in greater detail [in its chapter](/docs/v1/templating)
 
 ## Selectively extending route collections
 
@@ -183,28 +472,6 @@ Note: When serving to a group of users, use a concrete auth implementation, not 
 
 Authentication resumption happens before canary routing. Or, better put, authentication is evaluated for canaries attempting to read user status, before the app-wide one that terminates on user absence
 
-## Api Versioning
-Api endpoints are backwards compatible. We need the given version of a path. If it isn't specified on this version, we look for it on the previous version, recursively Lazy loading the route classes on demand
-ApiRoutes = [V1 => this->browserRoutes(), v2 => classB ] //
-
-1) request comes in for v1, we skip v2 
-2)  v2, we slice the array from v2, and load backwards till a match is found
-
-You don't have to Extend api route collections as this would tightly couple each new collection to the previous one. Incoming collections should be able to pick up where their preceding collection left off
-
-We're not reading its parents automatically from a numerically indexed array of versions cuz it won't be immediately understood by a human reader
-
-API documentation should be cast in stone. This means that after generating documentation for a certain version of your API, once it has consumers or clients, that artifact should become immutable. New changes should be destined for a patch or minor release version
-
-## Route Inter-operability
-...after introduction
-
-talk about the config and applicable middleware if any
-...
-It's not always that our APIs return the same response verbatim. Some developers may decide to follow one of the JSON specifications such as JSON-LD, Hapi, and what have you. In such case, we will simply plant a middleware in the stack that wraps all outgoing API response appropriately
-
-// example
-
 ## CRUD routes
 CRUD are operations commonly used for managing resources or entities. Rather than defining them for each entity in our application, the collection class offers the `_crud` method. It doesn't in itself return the required method, but a `CrudBuilder` object that enables us fashion the prepared renderers to our desired tastes.
 
@@ -216,22 +483,6 @@ describe the method behaviors so they can know which ones they want overriden. d
 
 Below, you will find a table containing method, route patterns and their handlers
 
-## The three challenges of api dev
-
-Decoupled development
-Documentation
-Seamless integration
-
-If you don't have the luxury of developing at your pace, you will greatly benefit from design first tools like API blueprint. It's important to not work under pressure of delivering endpoints to kick off API consumption. Aside from this, APIs should be rapidly prototyped. And the first step in doing so would be setting up the routes and returning dummy responses. That's the bare minimum promise of what is to come
-
-If you don't care much about using an API design tool, it is assumed you have an alternative or intuitive means of arriving at a decent design your consumers will consent to. Should this be the case, after implementation, suphle solves the documentation problem by generating openAPI schemas from your routes and their associated responses
-
----
-probably an odd location and would require a requests page
 
 talk about these methods
 		$this->pathPlaceholders->allNumericToPositive();
-
-## mirroring
-
-see docblock on JsonNegotiator middleware

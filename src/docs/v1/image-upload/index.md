@@ -228,10 +228,12 @@ class WatermarkHandler extends BaseOptimizeOperation {
 
 	public const OPERATION_NAME = "watermarked";
 
-	private $textToFade, $fadePercent;
+	protected string $textToFade;
+
+	protected int $fadePercent;
 
 	public function __construct (
-		private readonly WatermarkClient $client,
+		protected readonly WatermarkClient $client,
 
 		ImageLocator $imageLocator, FileSystemReader $fileSystemReader
 	) {
@@ -404,7 +406,7 @@ Since image name generation is delegated to other collaborators, testers can eit
 
 class ProductImageService extends UpdatelessService {
 
-	public function __construct (private readonly ImagePayloadReader $reader) {
+	public function __construct (protected readonly ImagePayloadReader $reader) {
 
 		//
 	}

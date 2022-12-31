@@ -16,7 +16,7 @@ The detachable characteristic of modules means they can be developed and tested 
 
 It's recommended that each module is an arrangement of classes pertaining to one database model or entity. A portable module can be extracted from the application where it was created, and still retain enough conceptual meaning to be plugged in another application or standalone. It's usually safer for concepts/domains to start out as separate modules dependent on each other, and only get merged into one when the interactions between them becomes more than trivial. If a coordinator in ModuleA is dominated by calls to different services borrowed from ModuleB that it depends on, it could mean they belong together.
 
-// show that picture here and add credit
+![chatty-module.jpg](/chatty-module.jpg)(source: the internet)
 
 Modules are not restricted to concepts that interact with each request but can correspond to smaller programs such as aggregation robots that occassionally perform some micro action on the main application.
 
@@ -274,7 +274,7 @@ use ModuleInteractions\{ModuleOne, ModuleTwo};
 
 class ModuleApi implements ModuleTwo {
 
-	public function __construct (private ModuleOne $moduleOne) {
+	public function __construct (protected ModuleOne $moduleOne) {
 
 		//
 	}

@@ -4,7 +4,13 @@ Suphle's testing framework is a wrapper around PHPUnit, Laravel's testing librar
 
 Suphle has a number of base, low-level test types which most of your tests are expected to extend in place of `PHPUnit\Framework\TestCase` -- specifically, those interacting with modules, the Container, the command console, those fundamental components. If you're simply testing a POPO and can afford to inject its dependencies yourself, using these test types will be unnecessary.
 
-At the bottom of the hierarchy is `TestVirginContainer`. This is where all the other low-level test types extend from
+At the bottom of the hierarchy is `TestVirginContainer`. This is what all the other low-level test types extend from.
+
+Considering Suphle strong affinity for static-typing, it may come as a surprise that string-based double configuration is used. Using method names would've aided during refactorings, discovering and reading method usage, been consistent with Suphle's anti-string convention, etc. The present API gives us one advantage that makes us trade-off those earlier mentioned: brevity. The sheer amount of objects it takes both to create indirection from our end, and statically configure doubles from develper's end is enormous. Configuration objects then becomes noisy boilerplate even greater than configuration of the double itself.
+
+When using this default doubling paradigm, during your routine refactorings, method names should not only be replaced by your IDE as a class token but as a string using its "replace in files" feature. This allows the method strings in your tests to equally get caught.
+
+However, if your requirements supercede these drawbacks discussed, you are free to use something like [Prophecy](https://github.com/Phpspec/Prophecy). If you're going this route, do be aware that PHPUnit has a `prophesize` method for some slight convenience with creating new doubles
 
 You may be curious as to the reason behind ModuleLevelTest requiring explicit specification of what modules to test, as opposed to say, plugging in `MyApp` directly. What this gives us is the ability to test specific modules before even involving them in the thick of the action
 

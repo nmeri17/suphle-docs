@@ -112,3 +112,21 @@ php suphle bridge:laravel make:migration create_users_table --path=user/module/d
 ## Building new bridges
 
 Because the specifics of each framework vary, it's impossible to have a single interface all bridges can conform to. A ubiqutous concern is regarding routing. A bridge seeking to include this functionality would have to connect an implementation of `Suphle\Contracts\Routing\ExternalRouter` via `Suphle\Contracts\Config\Router::externalRouters()`.
+
+```php
+
+namespace AllModules\ModuleOne\Config;
+
+use YourFrameworkBridge\Router\ExternalConnector;
+
+class RouterMock extends Router {
+
+	public function externalRouters ():array {
+
+		return array_merge(parent::externalRouters(), [
+
+			ExternalConnector::class
+		]);
+	}
+}
+```

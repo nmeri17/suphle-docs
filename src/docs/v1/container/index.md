@@ -119,7 +119,7 @@ Suppose a class defines a dependency on another class in its constructor:
 
 class A {
 
-    public function __construct (private readonly C $c) {
+    public function __construct (protected readonly C $c) {
 
         //
     }
@@ -231,7 +231,7 @@ class C implements BindsAsSingleton {
 
 class B {
 
-    public function __construct (private readonly A $a) {
+    public function __construct (protected readonly A $a) {
 
         //
     }
@@ -370,7 +370,11 @@ interface Router extends ConfigMarker {
 }
 ```
 
-They should be predominantly used on the library developer side, but with an extendable default provided. As much as possible, endeavor to exempt logic or computation from config classes. They are a polyfill for the specification "readonly, type-safe".
+They should be predominantly used on the library developer side, but with an extendable default provided. As much as possible, endeavor to exempt logic or computation from config classes.
+
+Suphle's config interfaces describe settings as methods that return values. This style is used as a polyfill for the specification "readonly, type-safe". Although PHP 8 introduced properties matching this specification, they also came with a whole bag of headaches -- from readonly setting scope being limited to the definition class, to such signature requiring all config classes have their settings injected as constructor arguments, to issues associated with redefinition in child classes.
+
+Nevertheless, if that experience appeals to you, your config classes can make use of it.
 
 ### Interface loaders
 
@@ -493,7 +497,7 @@ In some cases beyond our control, services can wind up in the constructor of the
 
 class A {
 
-    public function __construct(private readonly B $classB) {
+    public function __construct(protected readonly B $classB) {
 
         //
     }
@@ -501,7 +505,7 @@ class A {
 
 class B {
 
-    public function __construct(private readonly A $classA) {
+    public function __construct(protected readonly A $classA) {
 
         //
     }

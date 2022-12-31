@@ -10,6 +10,7 @@ In reality, replacing parts of what has been built poses the risk of the ensuing
 Suphle's default project structure is logic-driven rather than data-driven. This means our modules group related functionality together, which all operate against an omnipresent data layer surrounding them
 
 ![suphle-module](/suphle-module.jpeg)
+<!-- note: this image has been deleted. if this section still stands, image should be recovered from media folder -->
 
 The illustration above is a bird's eye-view of each module's ultimate structure, which can be imagined as a link to other modules with similar structure. They ultimately converge at your [app's entry point](/docs/v1/modules#app-entry-point), where you will have mechanisms that act as glue to hold them all together. The segments which a user's request cuts through are the ones you are ~~likely~~ expected to change frequently -- otherwise called "moving parts". They are the ones we want to get right in a way that allows them remain elegant both before and after modification.
 
@@ -76,3 +77,12 @@ When a codebase has tests, leverage it during a major refactor. Instead of runni
 
 **
 Features are created as sub-folders within each relevant module
+
+**
+On delivery scheduling
+Implement and implement only. Avoid the stigma that comes with delivering behind schedule more than once. Don't get distracted by refactorings. Prevent the need for refactoring during upgrades by
+
+1. Designing your objects properly from the onset
+1. Having a blind eye towards your refactoring needs, only revisiting it after feature is complete, tested, delivered satisfactorily. Depending on how dire the situation you meet is, this can be quite the challenge. You may have to resort to extending involved collaborators, repurposing relevant parts without the chatter getting in your way 
+
+Ensure there are no existing errors before estimating the duration for completing your own feature. If there are any, make room in your schedule for fixing them since they may impede your work

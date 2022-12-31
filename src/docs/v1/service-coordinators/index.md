@@ -143,7 +143,7 @@ use Suphle\Services\Structures\ModelfulPayload;
 
 class BaseProductBuilder extends ModelfulPayload {
 
-	public function __construct (private readonly Product $blankProduct) {
+	public function __construct (protected readonly Product $blankProduct) {
 
 		//
 	}
@@ -189,7 +189,7 @@ Segregating base builders from the Coordinator is great, but mostly gets rid of 
 
 class BaseProductBuilder extends ModelfulPayload {
 
-	public function __construct (private readonly Product $blankProduct) {
+	public function __construct (protected readonly Product $blankProduct) {
 
 		//
 	}
@@ -391,9 +391,9 @@ use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\ConditionalFactoryMo
 class BaseCoordinator extends ServiceCoordinator {
 
 	public function __construct (
-		private readonly ConditionalFactoryMock $factory,
+		protected readonly ConditionalFactoryMock $factory,
 
-		private readonly PayloadStorage $payloadStorage
+		protected readonly PayloadStorage $payloadStorage
 	) {
 
 		//
@@ -472,8 +472,6 @@ class DatalessErrorThrower extends UpdatelessService implements ServiceErrorCatc
 
 Decorator handler will consult `ServiceErrorCatcher::failureState` on failure, requesting a return value for the original call to user-defined method. When no value is returned from this method, the handler will attempt to construct one for the caller, using method's type-hint as guide.
 
-Since PHP doesn't have generics yet, return value for `ServiceErrorCatcher::failureState` is untyped. But for consistency, it should correspond to whatever type the erring method would've return on successful execution. This means such methods are prohibited from having `void` or PHP 8's `never` return type, as they will interfer with an alternate result being returned on its behalf.
-
 #### Identifying failed calls
 
 A consumer of `DatalessErrorThrower` can comfortably call `deliberateError`. However, it may be necessary for the caller to distinguish between fallback and accurate results. For this, we can use `ServiceErrorCatcher::matchesErrorMethod` as a shorter alias for a `catch` block.
@@ -517,6 +515,16 @@ class DatalessErrorThrower implements ServiceErrorCatcher {
 ```
 
 `Suphle\Contracts\Services\CallInterceptors\ServiceErrorCatcher` can be summarized as an OOP wrapper for the classic `try-catch` programming construct but with lesser keystrokes, actual error reporting, not having to think about or enforce wrapping all calls to such services in a try-catch, etc.
+
+#### Intercepting PHP 8 classes
+
+##### Never return type
+
+Since PHP doesn't have generics yet, return value for `ServiceErrorCatcher::failureState` is untyped. But for consistency, it should correspond to whatever type the erring method would've return on successful execution. This means such methods are prohibited from having `void` or PHP 8's `never` return type, as they will interfer with an alternate result being returned on its behalf.
+
+##### Readonly modifier
+
+When using this decorator, as well as all others that extend from it, if the class has constructor promoted properties, those properties cannot use the signature `protected readonly`. They can only be `private readonly`, or the `readonly` keyword removed if the `protected` visibility must be present. This happens because the proxifier will try to reset the properties when they're protected but will be unable to do so since they're readonly. When they're private, it uses those on the original class.
 
 ### Mutative database decorators
 
@@ -590,7 +598,7 @@ class CheckoutCart extends UpdatefulService implements SystemModelEdit {
 
 class CheckoutCoordinator extends ServiceCoordinator {
 
-	public function __construct (private readonly CheckoutCart $cartService) {
+	public function __construct (protected readonly CheckoutCart $cartService) {
 
 		//
 	}
@@ -676,7 +684,7 @@ The service will then be consumed in a Coordinator like so:
 
 class EmploymentCoordinator extends ServiceCoordinator {
 
-	public function __construct (private readonly EmploymentEditMock $employmentService) {
+	public function __construct (protected readonly EmploymentEditMock $employmentService) {
 
 		//
 	}

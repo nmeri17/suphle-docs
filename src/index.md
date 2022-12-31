@@ -21,7 +21,8 @@ footer: Made with blood and tears by Nmeri Alphonsus
 Suphle is a PHP framework for enterprises and SAASes to build anything from robust APIs, to CLI programs and server rendered full-stack apps **without** compromising on the high fidelity expected of SPAs. It builds upon some of the [industry's most trusted](/docs/v1/database) components, but can equally get out of the way for you to insert libraries that make you feel more at home. Its recommended stack is STT (Suphle-Transphporm-Turbo)
 
 ## Performance
-// insert missing image icon
+
+<!-- insert missing image icon -->
 
 If you're coming from the JS ecosystem, you must be itching to see whether Suphle has the longest bar among a row of competing contenders. By now, it should be common knowledge that if you're not building one of the FAANG companies, handling hundreds of thousands of requests per second should be the least of your worries.
 

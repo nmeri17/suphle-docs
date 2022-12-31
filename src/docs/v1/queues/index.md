@@ -25,9 +25,9 @@ class DeferSomething implements Task {
 
 	public function __construct (
 
-		private ProcessingDependency $processor,
+		protected ProcessingDependency $processor,
 
-		private Predicate $toProcess
+		protected Predicate $toProcess
 	) {}
 
 	public function handle ():void {
@@ -51,9 +51,9 @@ class SomeService {
 
 	public function __construct (
 
-		private AdapterManager $queueManager,
+		protected AdapterManager $queueManager,
 
-		private ProcessingDependency $processor
+		protected ProcessingDependency $processor
 	) {}
 
 	public function someAction ():void {
@@ -78,7 +78,7 @@ class SomeService {
 
 	public function __construct (
 
-		private readonly AdapterManager $queueManager
+		protected readonly AdapterManager $queueManager
 	) {}
 
 	public function someAction ():void {

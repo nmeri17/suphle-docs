@@ -103,7 +103,7 @@ use Suphle\Server\DependencySanitizer;
 
 class BootOperations implements OnStartup {
 
-	public function __construct (private readonly DependencySanitizer $sanitizer) {
+	public function __construct (protected readonly DependencySanitizer $sanitizer) {
 
 		//
 	}

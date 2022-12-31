@@ -285,9 +285,9 @@ class EmploymentEditRule extends RouteRule {
 	public function __construct (
 		AuthStorage $authStorage,
 
-		private readonly Employment $model,
+		protected readonly Employment $model,
 
-		private readonly PathPlaceholders $pathPlaceholders
+		protected readonly PathPlaceholders $pathPlaceholders
 	) {
 
 		parent::__construct($authStorage);
