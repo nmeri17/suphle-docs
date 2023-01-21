@@ -858,6 +858,25 @@ public function PAYMENT__GATEWAYh () {
 }
 ```
 
+#### Download renderer
+
+Files stored on external servers similar to CDNs should use the `Redirect` renderer, as such service will likely set the appropriate headers to trigger a browser download dialog. However, locally hosted files are advised to be served using the `Suphle\Response\Format\LocalFileDownload` renderer.
+
+It accepts the same signature as the `Redirect` renderer. In this case, returned string is expected to be a path leading to the file.
+
+```php
+	
+public function GENERATE__PDFh () {
+	
+	$this->_get(new LocalFileDownload("handleDownloadRequuest", function () {
+
+		return $this->rawResponse["artifact"]["path"];
+	});
+}
+```
+
+Note that when using this renderer, callbacks returning dynamic paths should ensure a value is actually returned, or provide a fallback path otherwise.
+
 ## Feature toggling
 
 Whether we're releasing short-lived features or internally demo-ing a permanent one to a subset of the user-base, that which is under review had preferably not leak out to the general public. The standard term for this is canary releases.

@@ -33,3 +33,13 @@ The purpose of using `dataProvider` is in order to have access to objects availa
 // example @see IntraModuleTest->test_stores_correct_data_in_cache, makeRouteBranches
 
 ## mocking-doubles
+
+As much as possible, run tests with objects closest to the real thing. We're already doing this by default, because the entire industry is built around this understanding. Development environment variables are the closest to replicating those used in production. That is the reason we have a local database, test card pins, dev smtps, etc. But just because we can replace a live version of something doesn't mean we should. The line of whether a replacement should be done or not should be drawn at the answer to the question: does this object reach into external domain? Http request objects do, thus, are prime candidates for replacement. So are mail objects
+They can be swapped using any convenient method such as object doubling or simply running with test parameters
+
+The line blurs where database objects are involved, since the database is usually locally hosted and subject to testers whim. All other objects should only ever be doubled when we'd prefer not to incur the cost of its hydration chain or we want to observe the behaviour or response of our SUT when the doubled object is in a specific state
+
+Tests shouldn't be an exercise performed to give fake guarantees such as those gotten by removing explosive hatches with potential to fail the test. The objects their methods and collaborators should be exercised at least once in the test suite
+
+Test doubles are not evil, but are a shortcut to extending objects into sub-classes that either return a value we're absolutely sure is actually returned (also known as stubs), or to verify one or more methods are called with an expected list of arguments (also known as mocks). The idea with mocks is that the doubled/bypassed methods are either covered by some other test, relies on collaborators we will prefer not to incur, makes outbound calls, or will simply cause us to test behavior outside the scope of the current test
+

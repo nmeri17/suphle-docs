@@ -34,3 +34,7 @@ Api = requires validation fields, status codes, and response shape
 
 Test = requires coupling to service methods for the sake of regression. 
 This prevents status codes from verification
+
+**
+Inasmuch as high level tests are resilient to refactoring implementation detail, they have an assumption that the individual components all behave correctly
+Instead of unit testing each method before an all-encompassing high level test, start with the high level one, only stopping at each sufficiently complex collaborator for a 2nd look when high level expectations are not met

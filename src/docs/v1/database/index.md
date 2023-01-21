@@ -58,6 +58,14 @@ Majority of your interaction with an ORM will be done against methods on its par
 
 This class is known as `Suphle\Adapters\Orms\Eloquent\Models\BaseModel` and all models are expected to extend it. Specifics regarding factories are described in greater detail on [their documentation page](laravel.com/docs/8.x/database-testing#defining-model-factories), although you may want to look at off the shelf [solutions at automating](github.com/mpociot/laravel-test-factory-helper) this task.
 
+Within the default interface loader of `OrmDialect`, a call is placed to boot all models into their strict mode. This prevents them from:
+
+- Lazy loading relationships, which can be risky when present because they can be used within loops.
+- Assigning non-fillable columns/attributes.
+- Reading unfetched or non-existent columns/properties.
+
+These benefits work under the premise that your codebase is automatedly tested. The penalty of not doing so is that any violation of those rules in production will be penalized with a failed request.
+
 #### Configuring the database
 
 Before any operation can be run against the database, it must be created and its server details surrendered to Suphle. The config interface used for this is `Suphle\Contracts\Config\Database`, through its `getCredentials` method. The array returned is expected to fit whatever shape required by the underlying ORM.
