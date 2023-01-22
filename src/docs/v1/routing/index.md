@@ -862,20 +862,35 @@ public function PAYMENT__GATEWAYh () {
 
 Files stored on external servers similar to CDNs should use the `Redirect` renderer, as such service will likely set the appropriate headers to trigger a browser download dialog. However, locally hosted files are advised to be served using the `Suphle\Response\Format\LocalFileDownload` renderer.
 
-It accepts the same signature as the `Redirect` renderer. In this case, returned string is expected to be a path leading to the file.
+Its signature accepts a handler name, a download path generator, and an optional fallback URL generator.
 
 ```php
 	
 public function GENERATE__PDFh () {
 	
-	$this->_get(new LocalFileDownload("handleDownloadRequuest", function () {
+	$this->_get(new LocalFileDownload("getDailyReport", function (ModuleFiles $fileConfig) {
 
-		return $this->rawResponse["artifact"]["path"];
+		return $fileConfig->getModulePath() . "Files/Reports/" .
+
+		$this->rawResponse["report"]["file_path"];
 	});
 }
 ```
 
-Note that when using this renderer, callbacks returning dynamic paths should ensure a value is actually returned, or provide a fallback path otherwise.
+Being that path generation callback is expected to return dynamic paths, there's every chance that no file actually exists there. If this occurs, the renderer will throw an `Symfony\Component\HttpFoundation\File\Exception\FileException` exception that will be hijacked by the module or app-wide exception handler. However, you may want your users to receive a more graceful response to the file's absence and what to do next. This is the purpose of the 3rd parameter to `LocalFileDownload` -- a minor convenience over wrapping all your callbacks in `file_exists` conditionals, as well as a `404` status code.
+
+```php
+	
+public function GENERATE__PDFh () {
+	
+	$this->_get(new LocalFileDownload("getDailyReport", function (ModuleFiles $fileConfig) {
+
+		return $fileConfig->getModulePath() . "Files/Reports/" .
+
+		$this->rawResponse["report"]["file_path"];
+	}, fn () => "/my-reports");
+}
+```
 
 ## Feature toggling
 
