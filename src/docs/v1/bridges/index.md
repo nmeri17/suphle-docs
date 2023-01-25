@@ -99,15 +99,18 @@ While importing your existing project, it may not be necessary to bring the `art
 
 ```bash
 
-php suphle bridge:laravel your-command --hydrating_module=ModuleInterface
+php suphle bridge:laravel "your-command" --hydrating_module=ModuleInterface
 ```
 
 What this does is, it takes an optional module to determine what module to effect the command on. When absent, it simply uses defaults to titular module. It then boots Laravel instance it finds at that module accordingly before forwarding given command to it. A real life example would look like so,
 
 ```bash
 
-php suphle bridge:laravel make:migration create_users_table --path=user/module/destination
+php suphle bridge:laravel "make:migration employment_add_name --path=Migrations"
 ```
+
+The underlying command being forwarded to the Artisan runner, along with its parameters should be wrapped in double-quotes, to avoid being interpreted as arguments to the `bridge:laravel` command
+doesn't accept absolute paths.
 
 ## Building new bridges
 

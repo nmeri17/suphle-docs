@@ -731,6 +731,10 @@ $renderer->setHeaders(200, [ "X-POWERED-BY" => "Suphle" ]);
 
 ### Default renderers
 
+During browser-based request handling, renderers are stored under PHP's `$_SESSION` superglobal so the Framework can fallback to them in the event of a POST request failure. Renderers expected to be received here are serialization-friendly ones. Those with exotic properties such as callbacks will neither raise an exception nor be saved. When used for the preceding `GET` part of a `GET-POST/x` flow, exceptions such as validation failure will fallback to the last saved renderer found, which may not necessarily be the immediate preceding one.
+
+For example, when the `Redirect` renderer is used for a `GET` request, it won't be stored for fallback. The same holds true for descendants of `BaseHotwireStream`, since their shtick is replacement of segments with up-to-date page fragments using AJAX.
+
 The following renderers are available. If none of them suits your needs, you can either extend `GenericRenderer` or implement `BaseRenderer` itself.
 
 #### Json renderer
@@ -808,7 +812,7 @@ When the destination is foreknown, it can simply be returned by the callback giv
 	
 public function PAYMENT__GATEWAYh () {
 	
-	$this->_get(new Redirect("saveCartPayment", function () {
+	$this->_post(new Redirect("saveCartPayment", function () {
 
 		return "/hello";
 	}));
@@ -836,7 +840,7 @@ Assuming `updateModels` returns what amount to charge or some other information 
 	
 public function PAYMENT__GATEWAYh () {
 	
-	$this->_get(new Redirect("paymentGatewayHook", function () {
+	$this->_post(new Redirect("paymentGatewayHook", function () {
 
 		return PaymentProcessor::generateUrl($this->rawResponse["message"]);
 	}));
@@ -851,7 +855,7 @@ In the example above, the static method of a collaborator, `PaymentProcessor`, w
 	
 public function PAYMENT__GATEWAYh () {
 	
-	$this->_get(new Redirect("paymentGatewayHook", fn () => function (PaymentProcessor $processor) {
+	$this->_post(new Redirect("paymentGatewayHook", fn () => function (PaymentProcessor $processor) {
 
 		return $processor->generateUrl($this->rawResponse["resource"]->id);
 	}));
@@ -868,7 +872,7 @@ Its signature accepts a handler name, a download path generator, and an optional
 	
 public function GENERATE__PDFh () {
 	
-	$this->_get(new LocalFileDownload("getDailyReport", function (ModuleFiles $fileConfig) {
+	$this->_post(new LocalFileDownload("getDailyReport", function (ModuleFiles $fileConfig) {
 
 		return $fileConfig->getModulePath() . "Files/Reports/" .
 
@@ -883,7 +887,7 @@ Being that path generation callback is expected to return dynamic paths, there's
 	
 public function GENERATE__PDFh () {
 	
-	$this->_get(new LocalFileDownload("getDailyReport", function (ModuleFiles $fileConfig) {
+	$this->_post(new LocalFileDownload("getDailyReport", function (ModuleFiles $fileConfig) {
 
 		return $fileConfig->getModulePath() . "Files/Reports/" .
 

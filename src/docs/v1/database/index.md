@@ -135,10 +135,10 @@ While testing `Employer`, the test runner will scan specified directories in an 
 
 ```bash
 
-php suphle bridge:laravel make:migration create_employers_table
+php suphle bridge:laravel "make:migration create_employers_table --path=Migrations"
 ```
 
-Additionally, you may sprinkle the `path` option to conform with your directory structure.
+The `path` argument is relative to Laravel's base folder, which in Suphle, conforms to the component's location on the module. However, this rigid constraint conflicts with Suphle's architecture, where models reside outside the module and are expected to reference their migrations' location. To avoid coupling your models to the component class, the only choice left is to move the freshly created migration files within proximity of the models.
 
 ## Testing the data layer
 
