@@ -57,7 +57,7 @@ Before intercepting values from our users, it's important to shield the precious
 
 ### Linking validators to request handler
 
-To avoid cluttering action methods with validators, they are aggregated on one class and this class is connected to the running controller. There's no use of attributes to connect action methods to corresponding validators since they're expected to always be present. It's safe to conventionally derive validator method from the request handler, using the `ServiceCoordinator::validatorCollection` method:
+To avoid cluttering action methods with validators, they are aggregated on one class and this class is connected to the running controller. Validator methods are derived from the request handler:
 
 ```php
 use Suphle\Tests\Mocks\Modules\ModuleOne\Validators\ValidatorOne;
@@ -102,6 +102,41 @@ interface RequestValidator {
 	public function validate (array $parameters, array $rules):void;
 
 	public function getErrors ():iterable;
+}
+```
+
+### Validation failure
+
+When incoming request is unable to satisafy rules bound to a handler, the handler is not executed. As with all exceptions, the output of a validation failure is [determined by](/docs/v1/exceptions#Exception-diffusers) its diffuser. Requests matching the API configuration will parse any renderer connected to the incoming route, usually expected to be the `JSON` renderer. Other situations are anticipated to originate from the browser, however, the behavior will vary depending on the validation evaluator configured.
+
+The default evaluator will perform the equivalent of using the `Reload` renderer, but in addition, it will include two keys in your payload serialized by the preceding request being handled. This combination is then received by your presentation layer. If you want to adulterate it with extra content, the `ValidationFailureDiffuser::prepareRendererData` method is what is used as the action handler for all failed requests. You can override and bind a descendant with choice objects.
+
+#### Checking for validation errors
+
+When flow is reverted to previous renderer, you want to ascertain whether the arrival is the original `GET` request or as a result of validation failure redirect. The default evaluator adds a key corresponding to the constant `Suphle\Exception\Diffusers\ValidationFailureDiffuser::ERRORS_PRESENCE`. If you're using Transphporm's stylesheet layer, that would bear semblance to this:
+
+```css
+
+#validation-errors:data[ValidationFailureDiffuser::ERRORS_PRESENCE=null] {
+
+	display: none
+}
+```
+
+#### Restoring request data
+
+After confirming it's a re-render, it's not desirable UX to empty the form inputs altogether. Instead, it should be populated using data sent during last request. This value is to be obtained using the `ValidationFailureDiffuser::PAYLOAD_KEY` constant, like so:
+
+```css
+
+form {
+
+	repeat: data(ValidationFailureDiffuser::PAYLOAD_KEY)
+}
+
+form input[name=title] {
+
+	content: iteration(title)
 }
 ```
 

@@ -781,7 +781,7 @@ It's configuration and parser replacement are all treated in greater detail [in 
 
 #### Reload renderer
 
-The `Suphle\Response\Format\Reload` renderer causes the browser to reload the originating request. This sort of behavior is usually desirable when the originating request delivered a form and developer wants to display some alert regarding operation's success.
+The `Suphle\Response\Format\Reload` renderer causes the browser to reload the originating request. This sort of behavior is usually desirable when the originating request delivered a form and developer wants to display some alert regarding operation's success. You may be familiar with the concept in another framework using the `back` construct.
 
 Similar to the `Json` renderer, it only accepts the handler as argument, but will return a response with status code `205`.
 
@@ -798,7 +798,7 @@ public function PROCESS__FORMh () {
 }
 ```
 
-`Reload` renderer expects another renderer to have responded to a preceding request. The raw result of that preceding response is then combined with that generated while processing the current one, to form a final payload. Contents of preceding request are stored on the session, thus making this renderer type applicable only in contexts such as browser-visited routes.
+`Reload` renderer expects another renderer to have responded to a preceding request with an array of data. The raw result of that preceding response is then combined with that generated while processing the current one, to form a final payload. Contents of preceding request are stored on the session, thus making this renderer type applicable only in contexts such as browser-visited routes.
 
 The presentation template of that preceding request is equally borrowed to form a new response.
 

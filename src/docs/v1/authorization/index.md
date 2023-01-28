@@ -147,7 +147,7 @@ protected $childrenTypes = [
 ];
 ```
 
-There are a few other ways to have gone about this, one of which is the use of model factories. This method deletes it at the database level, but isn't quite supported on all database engines. It equally implies sacrificing soft deletes since that's an application-based concept. Model-based authorizers are a safe location to gather child relations and mark them as deleted.
+There are a few other ways to have gone about this, one of which is the use of model factories. This method deletes it at the database level, but isn't quite supported on all database engines. Model-based authorizers are a safe location to gather child relations and send them to any of the entity decomissioning locations we prefer. Some developers opt for the simpler soft-deletes approach, while others are convinced model archiving is a far superior paradigm.
 
 However, for any generic solution to this problem to bear fruit, you must promise not to delete any models using shortcuts such as a DBMS.
 

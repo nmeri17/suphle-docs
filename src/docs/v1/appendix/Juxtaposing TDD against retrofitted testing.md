@@ -1,6 +1,14 @@
+## Disclaimer
+
+The discussion here is not intended to stir a debate between TDD/Test-First proponents. It doesn't impose as a more superior testing paradigm. If you already comfortable with TF, this chapter may not be of benefit to you. There are some categories of engineers it will appeal to. A few that quickly come to mind are:
+
+- Younger engineers at cross-roads, stymied by an inferiority complex owing to [their exclusion](/docs/v1/appendix/Transition-from-visual-to-automated-testing#Actual-reasons-tests-are-not-automated) from the TDD band wagon. My mantra is for them to move onto test automation by any means possible. Once conversant with that, they're more learned to decide on what paradigm suits them better.
+
+- Older developers who are interested in ensuring younger ones are not misled by dangerous heuristics. These are expected to approach document with an unbiased mind. If any of the expressed here are wrong, you're encourage to file an issue on the [documentation repo](https://github.com/nmeri17/suphle-docs) to that effect.
+
 ## Introduction
 
-The vast majority of automated test study material subscribes to the TDD methodology. Because this paradigm is counterintuitive to learners and beginners, we refrain from promoting it here. What we will teach is an opposite methodology whose only goal is test automation and test automation only. We don't really care about 100% coverage scores, tests driving design, the test knowing code outcome beforehand, or any of the other purported benefits of TDD. In this method (hereafter referred to as test after code, or tac), we write production code and represent our expectations of it using test code. We don't believe the difference between when these artifacts are produced are as significant as whether they accurately exercise production code, offering measurable confidence to the authors before release.
+The vast majority of automated test study material subscribes to the TDD methodology. Because this paradigm is counterintuitive to learners and beginners, we refrain from promoting it in this Appendix. What is being taught is an opposite methodology whose only goal is test automation and test automation only. We don't really care about 100% coverage scores, tests driving design, the test knowing code outcome beforehand, or any of the other purported benefits of TDD. In this method (hereafter referred to as test after code, or TAC), we write production code and represent our expectations of it using test code. I don't believe the difference between when these artifacts are produced are as significant as whether they accurately exercise production code, offering measurable confidence to the authors before release.
 
 ## Relevance of retrofitted tests
 
@@ -27,3 +35,10 @@ Asserting the same behavior using lesser tests is smart but comes at the cost of
 In order to bridge this gap, the retrofitted tester should be unsatisfied with asserting their code conforms with the BRD. Since they theoretically have more time on their hands, it should be channelled at pondering what ways the current system could go wrong, and including barriers that account for such situations before a customer performs such action. You may consider consulting with a domain expert so as to avoid making provisions for realistically impossible scenarios. There is a limit to what combination of system states should validly hit your code
 
 While making adjustments to account for irregular behaviour, beware that some parts of the preceding tests may fail. The objective here is for the underlying sut to exist in a homogenous state that satisfies all the tests exercising. Modify it as required
+
+**
+How to tell the passing test strains and engages the SUT, not merely providing a false sense of security?
+
+The onus is on the TACer to prove the test won't pass in the absence of the code it's alleged to verify. One construct in place for this confirmation is PHPUnit's `@covers` annotation. Using it will lessen reported code coverage since it focuses surface area being measured to the portion of code specified. It won't throw errors if that code is not actually covered. You'd have to be on the lookout for drops in coverage reports.
+
+Something with more audible alerts is mutation testing frameworks. The concept behind it is verifying the usefulness of written tests by tweaking parts of the code expected to influence test result outcome. If the test still passes then it shows the code inadequately satisfies the test. Mutation tests are a supplement rather than an independent testing framework. The current PHP standard for this supplement is Infection and is recommended for both TFs TACs alike.
