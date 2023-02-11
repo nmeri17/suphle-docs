@@ -8,7 +8,7 @@ Whatever design decision is made based on these suggestions, events are expected
 
 ## Setting an event manager
 
-Event managers act as platform for all signal emission and reception pertaining to the module containing them. Modules aiming to perform either functionality are required to supply a sub-class of `Suphle\Events\EventManager`.
+Event managers act as platform for all signal emission and reception pertaining to the module containing them. Modules aiming to perform either functionality are required to [supply a sub-class](/docs/v1/container#Binding-regular-interfaces) of `Suphle\Events\EventManager` as the binding for the parent interface, `Suphle\Contracts\Events`.
 
 ```php
 
@@ -17,32 +17,17 @@ use Suphle\Events\EventManager;
 class AssignListeners extends EventManager {
 
 	public function registerListeners ():void {
+
+		parent::registerListeners();
 		
-		//
+		// custom event bindings
 	}
 }
 ```
-
-The simplistic manager above will suffice for modules only emitting events. Event listening will be examined in later sections. But after their definition, managers must be connected to the appropriate config interface as follows:
-
-```php
-
-use Suphle\Contracts\Config\Events;
-
-class EventsMock implements Events {
-
-	public function getManager ():string {
-
-		return AssignListeners::class;
-	}
-}
-```
-
-As with all configs, our implementation of this `Events` config should then [be linked](/docs/v1/container#Config-interfaces) through its channel.
 
 ## Emitting events
 
-Events can be emitted by calling the `EventManager::emit` method.
+Events can be emitted by calling the `Events::emit` method.
 
 ```php
 
@@ -50,9 +35,9 @@ class CheckoutCart extends UpdatefulService implements SystemModelEdit, Variable
 
 	use BaseErrorCatcherService;
 
-	const EMPTIED_CART = "cart_empty";
+	protected const EMPTIED_CART = "cart_empty";
 
-	public function __construct (private readonly AssignListeners $eventManager) {
+	public function __construct (private readonly Events $eventManager) {
 
 		//
 	}
@@ -71,11 +56,13 @@ class CheckoutCart extends UpdatefulService implements SystemModelEdit, Variable
 }
 ```
 
-**Note**: A more complete variation of the class above can be found in the [Programmatic updates](/docs/v1/service-coordinators#Programmatic-updates) chapter.
+In the example above, the `Events` interface is used, as opposed to the class, `AssignListeners`, or any other implementation you have. The concrete should be dictated by where it was bound and used no where else. The Framework is responsible for managing the concrete's life-cycle. Doing so on emitter classes will result in new instances of the implementation being created that are not booted by Suphle.
 
-Managers can be called from most scopes, although it's likely only service classes will be necessary to emit from. However, service coordinators are explicitly prohibited from importing event managers or emission. Doing so will throw an `Suphle\Exception\Explosives\Generic\UnacceptableDependency` exception. The reason for this is to dissuade any form of logic or computation that would distract us from the primary assignment within coordinators. Coordinators are simply not classes to be relied on by anyone except the framework.
+**Note**: A more complete variation of `CheckoutCart` can be found in the [Programmatic updates](/docs/v1/service-coordinators#Programmatic-updates) chapter.
 
-There is a trait recommended to be combined with the manager during emissions. It's known as `Suphle\Events\EmitProxy`, and is used as follows:
+Managers can be called from most scopes, although it's likely only service classes will be necessary to emit from. However, service coordinators are explicitly prohibited from importing event managers or emission. Doing so will throw an `Suphle\Exception\Explosives\Generic\UnacceptableDependency` exception at [compile-time](/docs/v1/application-server#Startup-operations). The reason for this is to dissuade any form of logic or computation that would distract us from the primary assignment within coordinators. Coordinators are simply not classes to be relied on by anyone except the framework.
+
+There is a trait recommended to be combined with the manager during emissions, known as `Suphle\Events\EmitProxy`. It is used as follows:
 
 ```php
 
@@ -88,9 +75,9 @@ class CheckoutCart extends UpdatefulService implements SystemModelEdit {
 
 	use BaseErrorCatcherService, EmitProxy;
 
-	const EMPTIED_CART = "cart_empty";
+	public const EMPTIED_CART = "cart_empty";
 
-	public function __construct (private readonly AssignListeners $eventManager) {
+	public function __construct (private readonly Events $eventManager) {
 
 		//
 	}
@@ -112,7 +99,7 @@ Aside from shortening the emission call, it acts as a safety net preventing emit
 
 Event listeners can be POPOs or anything you want them to be. All that needs to be done is to plant them in the module's event manager, pairing them to an emittor and the event they're expected to handle. Event handlers receive emitted payload as-is, without meta information such as the emitting instance, etc. For this reason, Suphle doesn't interfere by enforcing a payload type. The emitter must document what type its consumers are expected to adhere to.
 
-Event binding is one of the earliest events that occurs during the application's lifetime, even before descriptor booting.
+Event binding is one of the earliest events that occurs during the application's lifetime, shortly after descriptor booting.
 
 ### Binding to single events
 
@@ -124,6 +111,12 @@ use Suphle\Events\EventManager;
 class AssignListeners extends EventManager {
 
 	public function registerListeners ():void {
+
+		/**
+		 * Optional:
+		 * @see /docs/v1/database#Testing-the-data-layer
+		 */
+		parent::registerListeners();
 		
 		$this->local(CheckoutCart::class, CartReactor::class)
 			
@@ -163,7 +156,7 @@ class LocalSender {
 
 	public const SOME_EVENT = "event_name";
 
-	public function __construct (protected readonly AssignListeners $eventManager) {
+	public function __construct (protected readonly Events $eventManager) {
 
 		//
 	}
@@ -194,7 +187,7 @@ class AssignListeners extends EventManager {
 
 ### Listening to foreign events
 
-You may have observed in the previous section that we had calls to `$this->local()`. It allowed us bind events emitted by known services. When inter-module communication however, developers ought not to concern themselves with the specific emitting services. All that should matter is the module's API.
+In the previous section, the `local` method was used to initialize a subscription scope between emittors and listeners within the same module. When an emittor wishes to broadcast an event to listener's outside its module, those modules ought not to concern themselves with the specific emitting classes services. All that should matter to them is [the module's API](/docs/v1/modules#Defining-producer-modules).
 
 The beauty of utilising events to exchange commands between modules is nearly tainted by the fact that they tend to limit the amount of information one can deduce by looking at an originating action. It's difficult to assess effect of the scrutinised action, thereby making reasoning about it somewhat of an uphill task. Fortunately, interfaces (your module's API being no exception) can have constants. This implies one can simply check for all usages of the event constant, as a guiding light to locate subscribers if need be.
 
@@ -220,17 +213,25 @@ class AssignListeners extends EventManager {
 }
 ```
 
-When Suphle encounters the `external` call, it anonymizes the actual emitter. This allows us transparently carry on development of eother module, providing implementations when ready without blocking.
+When Suphle encounters the `external` call, it anonymizes the actual emitter. This allows us transparently carry on development of other modules, providing implementations when ready without blocking.
 
-Modules don't [require importation](/docs/v1/modules#Consuming-sibling-modules) before they can listen to events from their sibling modules.
+Modules don't [require importation](/docs/v1/modules#Consuming-sibling-modules) before they can listen to events from their sibling modules. In comparison with the more direct modular communication pattern, modules should only be used when:
+
+- It's imperative that the caller establishes a non-negotiable invocation sequence between itself and collaborators of intended behavior.
+
+- A value in question must be derived from the source being triggered.
+
+- The reactors to a possible emission are foreknown and immutable. If not, or if they may vary over time, warranting tampering with the event originating scope, inter-module dependency is not recommended.
+
+Every other execution flow outside these contexts should be delegated to the event manager.
 
 ## Event handling miscellania
 
-We know how to emit and receive events but there a few additional points to bear in mind, to get the most out of working with them.
+We know how to emit and react to events, but there a few additional points to bear in mind, to get the most out of working with this component.
 
 ### Cascading events
 
-The handlers are fired in the order the modules are stacked. This could result in actions dependent on completion of a prior activities, having to rely on a brittle arrangement. In such cases, rather than all interested parties listening to an event from its emitter, it would be more robust instead for the preceding listener to emit its own event onto the stack for direct dependents to listen to. In practice, that would split the main event into sub-events representing each dependent step:
+The handlers are fired in the order the modules are being stacked. This could result in actions dependent on completion of prior activities, having to rely on a brittle arrangement. In such cases, rather than all interested parties listening to an event from the originating emitter, it would be more robust for the preceding listener to emit its own event onto the stack for direct dependents to listen to. In practice, that would split the main event into sub-events representing each dependent step:
 
 ```php
 
@@ -238,9 +239,9 @@ class SplitEventService extends UpdatelessService {
 
 	use EmitProxy;
 
-	const CASCADE_BEGIN_EVENT = "cascading";
+	public const CASCADE_BEGIN_EVENT = "cascading";
 
-	public function __construct (protected readonly AssignListeners $eventManager) {
+	public function __construct (protected readonly Events $eventManager) {
 
 		//
 	}
@@ -257,9 +258,9 @@ class MediatingReceptor extends UpdatelessService {
 
 	use EmitProxy;
 
-	const CASCADE_REBOUND_EVENT = "rebounding";
+	public const CASCADE_REBOUND_EVENT = "rebounding";
 
-	public function __construct (protected readonly EventManager $eventManager) {
+	public function __construct (protected readonly Events $eventManager) {
 
 		//
 	}
@@ -310,15 +311,19 @@ public function registerListeners ():void {
 
 During the course of event emission, one or more of your listeners may modify the database using an `UpdatefulService` and any of its [recommended decorators](/docs/v1/service-coordinators#Mutative-database-decorators). As you may be aware, those decorators run your code within database transactions. The implication of this while using events is that if another service starts its own execution, it'll open another transaction independent of the original one. If an operation fails at some level, transactions already committed/completed handlers won't be rolled back like the outermost transaction.
 
-It may seem as if the independently good practice of events and database mutating decorators conflict each other when combined together. One thing to remember is that it's only necessary for only one collaborator/the outermost service to have those decorations. While following this rule of thumb, the decorated, emitting method should fire its event as early as possible so that by the time execution reaches the method's lower parts, it's apparent that preceding operations all succeeded.
+It may seem as if the independently good practices of events and database mutating decorators conflict when combined together. To get them working in unison, remember the following:
+
+- It's only necessary for one collaborator/the outermost service to have those decorations. Sub-services reacting to events by the decorated one should be POPOs and if they fail, the exception will be treated as a regular failure of that decorated service; in addition, any database mutations will be rolled back.
+
+- The originating emittor should fire the event as the method's earliest activity. This will prevent any data from being committed until all listeners return successfully.
 
 ### Overriding listener bindings
 
-The methods `local` and `external` return read-only subscription scopes locked to given emittor. Any subsequent calls to either `local` or `external` for the same emittor will override all preceding bindings to that emittor. Once a scope is opened for an emittor, bindings should be assigned to it using the `on`.
+The methods `local` and `external` return read-only subscription scopes locked to given emittor. Any subsequent calls to either `local` or `external` for the same emittor will override all preceding bindings to that emittor. Once a scope is opened for an emittor, bindings should be assigned to it using the `on` method.
 
 ## Testing events
 
-Suphle provides the `Suphle\Testing\Condiments\EmittedEventsCatcher` trait for making some assertions regarding the state of a possible emission. This trait is only applicable on module-level tests. Whlie using it, the underlying event bus will be replaced with duds preventing attached handlers from running.
+Suphle provides the `Suphle\Testing\Condiments\EmittedEventsCatcher` trait for making some assertions regarding the state of a possible emission. This trait is only applicable on module-level tests. While using it, the underlying event bus will be replaced with duds preventing attached handlers from running.
 
 ### Verifying event was handled
 

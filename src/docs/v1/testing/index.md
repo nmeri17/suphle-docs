@@ -43,3 +43,6 @@ Tests shouldn't be an exercise performed to give fake guarantees such as those g
 
 Test doubles are not evil, but are a shortcut to extending objects into sub-classes that either return a value we're absolutely sure is actually returned (also known as stubs), or to verify one or more methods are called with an expected list of arguments (also known as mocks). The idea with mocks is that the doubled/bypassed methods are either covered by some other test, relies on collaborators we will prefer not to incur, makes outbound calls, or will simply cause us to test behavior outside the scope of the current test
 
+
+
+This test type makes no guarantees regarding exception catching and broadcasting prevention. Doing so requires events, which must be initialized by binding listeners on its module. Attempting to combine it with components that interact with events will terminate outright, except an accompanying module descriptor is bound. In such cases, it's simply better to use ModuleLevelTest

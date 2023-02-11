@@ -146,7 +146,7 @@ These adapters are wrappers around the 3rd-party service involved in relaying me
 
 use Throwable;
 
-	interface AlertAdapter {
+interface AlertAdapter {
 
 	public function broadcastException (Throwable $exception, $activePayload):void;
 }

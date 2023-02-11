@@ -25,28 +25,16 @@ class ImagePayloadReader extends ImagefulPayload {
 
 class ImageUploadCoordinator extends ServiceCoordinator {
 
-	public function validatorCollection ():string {
+	#[ValidationRules([
+		"belonging_resource" => "required|string",
 
-		return ImageValidator::class;
-	}
-
+		"profile_pic" => "required|image"
+	])]
 	public function applyThumbnail (ImagePayloadReader $payload):array {
 
 		return $payload->getDomainObject()->thumbnail(50, 50)
 
 		->savedImageNames();
-	}
-}
-
-class ImageValidator {
-
-	public function applyThumbnail ():array {
-
-		return [
-			"belonging_resource" => "required|string",
-
-			"profile_pic" => "required|image"
-		];
 	}
 }
 ```

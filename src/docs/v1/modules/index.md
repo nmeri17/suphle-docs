@@ -18,7 +18,9 @@ It's recommended that each module is an arrangement of classes pertaining to one
 
 ![chatty-module.jpg](/chatty-module.jpg)(source: the internet)
 
-Modules are not restricted to concepts that interact with each request but can correspond to smaller programs such as aggregation robots that occassionally perform some micro action on the main application.
+It's a code smell not limited to modules alone but to classes as well, and is more commonly known as Inappropriate Intimacy.
+
+Modules are not restricted to concepts that interact with each request, but can correspond to smaller programs/user-defined sub-components (such as aggregation robots), requiring more than one class, that occassionally performs some micro action on the main application.
 
 ## Creating a module
 
@@ -52,7 +54,7 @@ In a similar vein, directory modules is created in can be changed from the execu
 php suphle modules:create Products --module_descriptor="\AllModules\Products\Meta\ProductsModuleDescriptor" --destination_path=some/path
 ```
 
-Contents of ModuleTemplate are flexible and should match whatever dominant structure your modules start out with. For instance, its default contents contains a connected route collection, along with routing bits. This doesn't reflect a mandatory requirement for a valid module. The only reason for this is to facilitate bootstrapping new Suphle projects. A module that itself doesn't handle requests can afford to miss all the routing bits. But more importantly, it should not be connected to the application as a standalone module.
+Contents of ModuleTemplate are flexible and should match whatever dominant structure your modules start out with. For instance, its default contents contains a connected route collection, along with routing bits. This doesn't reflect a mandatory requirement for a valid module. The only reason for this is to facilitate bootstrapping new Suphle projects. A module that itself doesn't handle requests can afford to miss all the routing-related classes. But more importantly, such module should not be connected to the application as a standalone module.
 
 ## Connecting standalone modules
 
@@ -85,7 +87,7 @@ class PublishedModules extends ModuleHandlerIdentifier {
 
 By excluding any of the descriptors, perhaps while its module is still under development, the app is blissfully oblivious of all that module's contents -- events, routes, commands, etc.
 
-The app composition above is enough for simplistic scenarios where there is no direct communication between any of the descriptors. It's also how all your modules will start out until you define their capabilities later on. As has already [been established](/docs/v1/service-coordinators#Database-mutating-services) in [several chapters](/docs/v1/events#introduction) across this documentation, direct calls should only be made to dependencies when they return a value. This allows new additions to evolve and be tested without tampering with/breaking the scope triggering their execution. It also doesn't pollute this scope with references not meaningful to it. This same rule of thumb applies to inter-dependent modules.
+The app composition above is enough for simplistic scenarios where there is no direct communication between any of the descriptors. It's also how all your modules will start out until you define their capabilities later on. As has already [been established](/docs/v1/service-coordinators#Database-mutating-services) in [several chapters](/docs/v1/events#Listening-to-foreign-events) across this documentation, direct calls should only be made to dependencies when they return a value. This allows new additions to evolve and be tested without tampering with/breaking the scope triggering their execution. It also doesn't pollute this scope with references not meaningful to it. This same rule of thumb applies to inter-dependent modules.
 
 ## Module inter-dependency
 
@@ -127,7 +129,7 @@ Usually, you'd want your module to be consumed directly from a coordinator in th
 
 #### Integrating module interfaces
 
-These are steps to be taken to ensure proper both the producer itself and its possible consumers are aware of the interface created above. 
+These are steps to be taken to ensure both the producer itself and its possible consumers are aware of the interface created above. 
 
 Internally, its interface should be bound like [other simple ones](/docs/v1/container#Binding-regular-interfaces):
 
@@ -188,7 +190,7 @@ class ModuleTwoDescriptor extends ModuleDescriptor {
 }
 ```
 
-Other modules will reference this one using this interface. If in any of those references, an incompatible implementation is given, no exception will be thrown while building the application. However, when any of the consumers eventually trigger its hydration, as expected, a `Suphle\Exception\Explosives\Generic\InvalidImplementor` exception will be thrown.
+Other modules will reference this one using this interface. If in any of those references, an incompatible implementation is given, a `Suphle\Exception\Explosives\Generic\InvalidImplementor` exception will be thrown and prevent server build.
 
 
 ### Receiving module dependencies
@@ -260,7 +262,7 @@ class PublishedModules extends ModuleHandlerIdentifier {
 
 In larger apps, some of the modules will tend to have enough dependencies to crowd the `getModules` method. In such case, don't hesitate to build them from the comfort of dedicated methods, only using instance variables on `getModules`.
 
-While building your application, a shallow verification is performed to compare implementations with the consumer's `expatriateNames`. Anyone that doesn't correspond in any way will cause an `Suphle\Exception\Explosives\Generic\UnexpectedModules` exception to be thrown, preventing app from building.
+While building your application, a verification is performed to compare implementations with the consumer's `expatriateNames`. Any one that doesn't match this list will cause an `Suphle\Exception\Explosives\Generic\UnexpectedModules` exception to be thrown, preventing app from building.
 
 #### Dependency availability
 
@@ -293,13 +295,17 @@ class ModuleApi implements ModuleTwo {
 
 The above is a contrived example used to illustrate that dependencies are ready for use as early as possible. Modules shouldn't act as proxies to other modules, except when absolutely unavoidable.
 
-Suphle app composition API is designed in a way to prohibit cyclical referencing. This sort of scenario may crop up in real life and is a legitimate one where proxy modules are inevitable. As with all issues within this category, the suggested solution is to break their hard-dependency by employing an extra module to mediate.
+Suphle app composition API is designed in a way to prohibit cyclical referencing. This sort of scenario may crop up in real life and is a legitimate one where proxy modules are inevitable. Solutions have been discussed in the [circular dependencies section](/docs/v1/container#Circular-dependencies-caveat).
+
+## Module booting
+
+`ModuleDescriptor`'s design sets it up for a sequential initialization process i.e. Container warming for basic operations such as route seeking; it's certainly more optimized to carry out those involved functionality only when a module's route collection matches incoming request. However, all modules are eagerly built immediately they're connected. Most importantly, this allows for wiring their individual event managers into the grand app scope and recursively booting module dependencies that aren't present on the outer, routable scope.
 
 ## Guidelines on data sharing
 
 ### Data sharing format
 
-The purpose of the data being shared should determine what format it is being served in. Data intended for use in the computation of a consumer can be served in its raw format, while data needed for to be plugged into a view template may benefit more from [view composition](/docs/v1/templating#view-composition) to achieve a higher degree of modularity
+The purpose of the data being shared should determine what format it is being served in. Data intended for use in the computation of a consumer can be served in its raw format, while data needed for to be plugged into a view template may benefit more from [view composition](/docs/v1/templating#view-composition) to achieve a higher degree of modularity.
 
 
 ### Sharing tangible artifacts
@@ -427,8 +433,64 @@ $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer 
 	$container->replaceWithConcrete($sutName, $this->configureInstance());
 });
 ```
+ 
+These methods are expected to tame the janky practice of using `$this->modules[0]->getContainer()->whenTypeAny` inside the test body.
+They all support any form of reference type creation except using the `replaceConstructorArguments` method. This double-creator requires the presence of a Container, and none is ready until all modules are successfully built.
 
-With these methods, you're expected not to do janky things like `$this->modules[0]->getContainer()->whenTypeAny` inside the test body.
+There is but one exception to build-phased binding: binding mocks that throw exceptions. These do not work because of the manner in which flow control propagates. When execution is disrupted by an exception, further evaluation is abandoned, including any mocks recorded prior to test method commencement. The runner will not resume by verifying those mocks after execution is terminated, since it could (or could not) mean execution didn't even get to the location of those objects.
+
+Let's look at a sample build-phase mock below:
+
+```php
+protected function getModules ():array {
+
+	return [
+
+		$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+
+			$container->replaceWithMock(Router::class, RouterMock::class, [
+
+				"browserEntryRoute" => SomeCollection::class
+			])
+			->replaceWithMock(SomeService::class, SomeService::class, [], [
+
+				"awesomeMethod" => [0, []] // then
+			]);
+		})
+	];
+}
+
+public function test_some_operation_expected_to_pass () {
+
+	//
+}
+```
+
+This mock is verified at the end of the test, as long as the ensuing action does not throw any exceptions. If it does, the test will error out. If the exception is deliberate and you wish to verify both the mock and the exception, the mock must be attached to the Container before execution commences, usually, using the `massProvide` method for binding.
+
+```php
+
+public function test_some_operation_expected_to_fail () {
+
+	$this->expectException(ExceptionName::class); // then 1
+
+	// given
+	// ...some preconditions
+
+	$this->massProvide([
+
+		SomeService::class => $this->positiveDouble(
+			SomeService::class, [], [
+
+				"awesomeMethod" => [0, []] // then 2
+			]
+		)
+	]);
+
+	// when
+	// ...trigger some action
+}
+```
 
 #### Doubling module dependencies
 
@@ -481,9 +543,41 @@ The modules built from `replicateModule` will trigger their internal decorators.
 $this->replicateModule(ModuleTwoDescriptor::class, function (WriteOnlyContainer $container) {/**/}, true);
 ```
 
+#### Stubbing the descriptor
+
+The most common need for stubbing the descriptor itself during the build-phase is for temporary replacement of its interface collection. Stub methods can be given to the module replicator byspassing an array as its 4th argument.
+
+```php
+
+protected function getModules ():array {
+
+	$interfaceCollection = new class extends CustomInterfaceCollection {
+
+		public function simpleBinds ():array {
+
+			return array_merge(parent::simpleBinds(), [
+
+				SomeInterface::class => ItsConcrete::class
+			]);
+		}
+	};
+
+	return [
+
+		$this->replicateModule(ModuleOneDescriptor::class, function(WriteOnlyContainer $container) {
+
+			// some bindings
+		}, false, [
+
+			"interfaceCollection" => $interfaceCollection::class
+		])
+	];
+}
+```
+
 ### Retrieving routed container
 
-Occassionally, behavior not covered by dedicated test traits can only be tested by manually examining affected objects. This is often a matter of injecting a double or instance and observing that as we have seen in preceding sections. However, some requirements call for further scrutiny. When this is the case, we'd have to read that object from the module that handled request using the `getContainer` method.
+Occasionally, behavior not covered by dedicated test traits can only be tested by manually examining affected objects. This is often a matter of injecting a double or instance and observing that as we have seen in preceding sections. However, some requirements call for further scrutiny. When this is the case, we'd have to read that object from the module that handled request using the `getContainer` method.
 
 ```php
 

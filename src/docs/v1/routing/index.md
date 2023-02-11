@@ -798,7 +798,7 @@ public function PROCESS__FORMh () {
 }
 ```
 
-`Reload` renderer expects another renderer to have responded to a preceding request with an array of data. The raw result of that preceding response is then combined with that generated while processing the current one, to form a final payload. Contents of preceding request are stored on the session, thus making this renderer type applicable only in contexts such as browser-visited routes.
+`Reload` renderer expects another renderer to have responded to a preceding `GET` request. The renderer is stored on the session in order to circumvent additional routing on this return request. Its handler is then executed, expecting to find request parameters required to make that possible. The raw result of this invocation is then combined with that generated while processing the current one attached to the `Reload` renderer, forming a final payload. Since this renderer's functionality is intrinsic to the session construct, it is applicable only in contexts such as browser-visited routes.
 
 The presentation template of that preceding request is equally borrowed to form a new response.
 

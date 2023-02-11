@@ -86,3 +86,7 @@ Implement and implement only. Avoid the stigma that comes with delivering behind
 1. Having a blind eye towards your refactoring needs, only revisiting it after feature is complete, tested, delivered satisfactorily. Depending on how dire the situation you meet is, this can be quite the challenge. You may have to resort to extending involved collaborators, repurposing relevant parts without the chatter getting in your way 
 
 Ensure there are no existing errors before estimating the duration for completing your own feature. If there are any, make room in your schedule for fixing them since they may impede your work
+
+the first step to take after receiving business requirements is to ensure you have an identical understanding with the product owner. Ask as many questions as are necessary to satisfy demands made by the requirements. Consider this your part to play in ensuring you are both on the same page. After that is out of the way, assess the scope of impact implementation of the requirement will affect. This will determine what classes, if any to extend or modify, what new ones to write, what events may be fired, low level details.
+Aside this fact, it ought to assist you estimate implementation duration. If velocity will be reduced by an arcane areas in dire need of a refactor, do factor that in ((think there's a note on this))
+This will guide us on what tests are necessary to certify complete functionality before submission for review

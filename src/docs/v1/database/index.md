@@ -10,7 +10,7 @@ An object relational mapper, though not absolutely crucial, is often used to abs
 
 Relatively static applications may be content with using an ORM that supports this pattern. Eloquent, mentioned above, is a powerful implementation that can serve. However, some believe this pattern to be plagued by an inherent design flaw that can make code maintenance a nightmare. 
 
-When using this pattern, the models will expect a database connection to have been established for them. Consuming modules should endeavor to do this as early as possible.
+When using this pattern, the models will expect a database connection to have been established for them. Consuming modules should endeavor to do this as early as possible, simply by calling the parent.
 
 ```php
 
@@ -29,10 +29,12 @@ class ModuleOneDescriptor extends ModuleDescriptor {
 
 		parent::registerConcreteBindings();
 
-		$this->container->getClass(OrmDialect::class);
+		// your bindings here...
 	}
 }
 ```
+
+When you have no custom bindings to make, it's OK to remove this module's `registerConcreteBindings` override.
 
 In order to combat the typing problem and avoid magical pitfalls associated with this pattern, your software may benefit more from using Data Mappers. This is where an adaptation such as Cycle ORM starts to shine.
 
@@ -64,17 +66,17 @@ Within the default interface loader of `OrmDialect`, a call is placed to boot al
 - Assigning non-fillable columns/attributes.
 - Reading unfetched or non-existent columns/properties.
 
-These benefits work under the premise that your codebase is automatedly tested. The penalty of not doing so is that any violation of those rules in production will be penalized with a failed request.
+These benefits work under the premise that your codebase is automatedly tested. The consequence of not doing so is that any violation of those rules in production will be penalized with a failed request.
 
 #### Configuring the database
 
-Before any operation can be run against the database, it must be created and its server details surrendered to Suphle. The config interface used for this is `Suphle\Contracts\Config\Database`, through its `getCredentials` method. The array returned is expected to fit whatever shape required by the underlying ORM.
+Before any operation can be run against the database, it must be created and its server details surrendered to Suphle. The config interface used for this is `Suphle\Contracts\Config\Database`, through its `getCredentials` method. The array returned is expected to fit whatever shape required by the underlying ORM. The default config class looks like this:
 
 ```php
 
 use Suphle\Contracts\{Config\Database, IO\EnvAccessor};
 
-class PDOMysqlKeys implements DatabaseContract {
+class PDOMysqlKeys implements Database {
 
 	public function __construct (protected readonly EnvAccessor $envAccessor) {
 
@@ -109,7 +111,7 @@ In order to encourage a feature-based, incremental approach toward development, 
 
 ```php
 
-use Suphle\Adapters\Orms\Eloquent\Models\{BaseModel, User};
+use Suphle\Adapters\Orms\Eloquent\Models\BaseModel;
 
 class Employer extends BaseModel {
 
@@ -122,11 +124,7 @@ class Employer extends BaseModel {
 
 	public static function migrationFolders ():array {
 
-		return array_merge(
-			[__DIR__ . DIRECTORY_SEPARATOR . "Migrations"],
-
-			User::migrationFolders()
-		);
+		return [__DIR__ . DIRECTORY_SEPARATOR . "Migrations"];
 	}
 }
 ```
@@ -142,17 +140,38 @@ The `path` argument is relative to Laravel's base folder, which in Suphle, confo
 
 ## Testing the data layer
 
-Database testing is not restricted to a single test-type. However, classes wishing to test models must signify this beforehand in order for the test runner to setup and clean-up seeded data in-between tests. The relevant trait for this purpose is `Suphle\Testing\Condiments\BaseDatabasePopulator`. Functionality exposed on this trait is agnostic to whatever adapter is used under the hood.
+Database testing is restricted to module-level test-types, in accordance with the Eloquent ORM. The next paragraph can be skipped if the reason for this is irrelevant to you.
 
-### Declaring test model
+In order to synchronize URL requests coming into the Suphle application with the container (and [possible router](/docs/v1/bridges#Handling-Laravel-routes)) necessary for the ORM to function, a `RequestDetails` instance is required when accessing either database objects or the crutches that facilitate testing this layer. Soon after its creation, this instance emits an event, `RequestDetails::ON_REFRESH`, and [as you know](/docs/v1/events/#Setting-an-event-manager), events cannot exist without a module.
 
-Most significant in `BaseDatabasePopulator`s signature is an abstract method `getActiveEntity`.
+Any test whose needs cuts across any of these entities is advised to include a call to the `parent` class from your `Events` implementation.
 
 ```php
 
-use Suphle\Testing\{TestTypes\IsolatedComponentTest, Condiments\BaseDatabasePopulator;
+use Suphle\Events\EventManager;
 
-class EmploymentServiceTest extends IsolatedComponentTest {
+class AssignListeners extends EventManager {
+
+	public function registerListeners():void {
+
+		parent::registerListeners();
+		
+		// your bindings here...
+	}
+}
+```
+
+That's all there is to the module-level restraint. `Suphle\Testing\Condiments\BaseDatabasePopulator` is a trait used for exposing ORM agnostic pointers for modifying and observing the state of the database before and after making changes in the testing context.
+
+### Declaring test model
+
+Most significant in `BaseDatabasePopulator`s tool-kit is an abstract method, `getActiveEntity`.
+
+```php
+
+use Suphle\Testing\{TestTypes\ModuleLevelTest, Condiments\BaseDatabasePopulator;
+
+class EmploymentServiceTest extends ModuleLevelTest {
 
 	use BaseDatabasePopulator;
 
@@ -167,7 +186,7 @@ The amount of seeders ran is 10 but can be modified by returning a more appropri
 
 ```php
 
-class EmploymentServiceTest extends IsolatedComponentTest {
+class EmploymentServiceTest extends ModuleLevelTest {
 
 	use BaseDatabasePopulator;
 
@@ -178,45 +197,17 @@ class EmploymentServiceTest extends IsolatedComponentTest {
 }
 ```
 
-These entities will be then be recycled for each test on the test class.
+These entities will be infused into their attached table for each test on the test class.
 
 ### Database state in-between resets
 
-Whenever a URL change occurs, the container is ridded of all objects that interact with URL states. One of these objects is the Eloquent ORM adapter since it relies on its framework, which requires knowing current URL for possible route handling delegation.
+Whenever a URL change occurs, the handling Container is ridded of all objects that were hydrated during the previous request, in preparation for the current one. As was [earlier mentioned](#Active-Record-pattern), Active-Record ORMs must be initiated on behalf of the entities intended to rely on it. However, doing so means that a new connection must be established. The implication of this is felt most strongly in some database-based tests:
 
-For each test, associated migrations are ran and data is seeded even before your test method runs. But if a request is sent within the test, connection used for migration and seeding is being reset. When this occurs, subsequent database calls would see an empty database. In order to avoid this, we'll use the `preDatabaseFreeze` hook for all insertions expected to survive in-between connection resets:
+- Each test case attempts to run within a transaction. That transaction is disrupted if a fresh database connection is established (so that any module that eventually handles request is sure to see the same fixtures). What this means is that when your `ModuleLevelTest` carries more than one module, each test case will see data fixtures seeded or inserted during the preceding test case, if any.
 
-```php
+- Modifications to database rows made before and during a connection-resetting actions like an HTTP request, will neither be reset nor removed in-between tests, but remain visible to the tester after a response is returned i.e. in spite of resets in-between multi-module usage.
 
-class EmploymentServiceTest extends IsolatedComponentTest {
-
-	use BaseDatabasePopulator;
-
-	protected function preDatabaseFreeze ():void {
-
-		$this->replicator->modifyInsertion(50, [
-
-			"customize" => "to_taste"
-		]); // given
-	}
-
-	public function test_http_endpoint () {
-
-		$this->get("/segment") // when
-
-		->assertJsonStructure(["data" => [
-
-			"id", "name", "quantity"
-		]]); // then
-	}
-}
-```
-
-Since `PHPUnit\Framework\TestCase` prevents any functionality from running only once after its `setUp` method, using this hook means that more than one test on the same class will incrementally see data pre-seeded for the previous test. Modifications to database rows made after connection-resetting actions like an HTTP request, will neither be reset nor removed in-between tests. This shouldn't be a problem for database classes with:
-
-- Just one test.
-- Tests not expecting a fixed set of elements.
-- Database assertions without HTTP requests.
+This an unobstrusive caveat worth bearing in mind, depending on what your test is looking out for. If you have to compare row counts before and after a test without a constraint such as a `WHERE` clause, the number returned will include any amount inserted in the preceding test cases on the given class. In such situation, it may be better to use a standalone class for that test case.
 
 ### Asserting database state
 
@@ -258,7 +249,9 @@ The above will return an iterable of all inserted models. Its 2nd argument takes
 
 ```php
 
-protected function preDatabaseFreeze ():void {
+protected function setUp ():void {
+
+	parent::setUp();
 
 	$this->employment = $this->replicator->modifyInsertion(
 
@@ -271,7 +264,9 @@ For more complex needs beyond the table's columns, a callback can be provided as
 
 ```php
 
-protected function preDatabaseFreeze ():void {
+protected function setUp ():void {
+
+	parent::setUp();
 
 	$this->employment = $this->replicator->modifyInsertion(
 
@@ -290,8 +285,6 @@ protected function preDatabaseFreeze ():void {
 }
 ```
 
-Examples above use this method within `preDatabaseFreeze` since that's where insertions will survive HTTP requests. When not writing such tests, `modifyInsertion` is callable from any scope.
-
 #### Retrieving inserted models
 
 Models can be obtained in a few ways, depending on your needs. If there's no constraint on model properties, a random instance can serve. We get them using either `getRandomEntity` or `getRandomEntities` method for one or more entries, respectively.
@@ -308,7 +301,7 @@ public function test_unauthorized_user_cant_perform_operation () {
 }
 ```
 
-Tests verifying behavior for a specific user should use the `getSpecificEntities` method to apply column clauses like so:
+Tests verifying behavior for specific constraints should use the `getSpecificEntities` method to apply column clauses like so:
 
 ```php
 

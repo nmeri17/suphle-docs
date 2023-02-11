@@ -38,3 +38,10 @@ This prevents status codes from verification
 **
 Inasmuch as high level tests are resilient to refactoring implementation detail, they have an assumption that the individual components all behave correctly
 Instead of unit testing each method before an all-encompassing high level test, start with the high level one, only stopping at each sufficiently complex collaborator for a 2nd look when high level expectations are not met
+
+Ordinarily, it's enough to use the library as is. However, Suphle has prepared a component with hopes of streamlining your experience while submitting forms and especially, using turbo streams. Using this component will save you from worrying about setting headers, hotwire specific and otherwise, handling validation errors, checking whether to respond with full page content or a stream, etc
+
+Http tests are not pointless, in the sense that server rendered markup must be submitted for scrutiny since it contains executable code. It doesn't make sense to channel all attention to testing business logic when presentation parsing can still do us in. Templating engines like blade have view-only testing libraries, but why test just that when you can link to the source (action handlers) through a complete http test? 
+
+The argument is that this parsing execution can and should be automated en 
+masse for all routes. 

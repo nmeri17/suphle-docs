@@ -44,9 +44,9 @@ namespace Suphle\Tests\Mocks\Modules\ModuleOne\Meta;
 
 use Suphle\Hydration\Structures\BaseInterfaceCollection;
 
-use Suphle\Contracts\Config\{ Router, Events};
+use Suphle\Contracts\Config\Router;
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\Config\{RouterMock, EventsMock};
+use Suphle\Tests\Mocks\Modules\ModuleOne\Config\RouterMock;
 
 use Suphle\Tests\Mocks\Interactions\ModuleOne;
 
@@ -55,8 +55,6 @@ class CustomInterfaceCollection extends BaseInterfaceCollection {
     public function getConfigs ():array {
 
         return array_merge(parent::getConfigs(), [
-
-            Events::class => EventsMock::class,
 
             Router::class => RouterMock::class
         ]);
@@ -209,23 +207,19 @@ All provisions are required to be compatible with hydrated type; otherwise, an `
 
 When objects are being hydrated, the container will find an available provision for the context it's hydrating for, and will latch onto one when found. Along recursive or lengthy dependency chains, this means some dependencies will be hydrated afresh since they weren't explicitly provided for that consumer. This can become a problem when dependency has been booted to a state that should be visible across its consumers.
 
-In such case, we want all consumers to receive the same instance regardless of their position during a hydration sequence. An app-wide instance of an dependency can be created by decorating it with `Suphle\Contracts\Services\Decorators\BindsAsSingleton`.
+In such case, we want all consumers to receive the same instance regardless of their position during a hydration sequence. An app-wide instance of an dependency can be created by decorating it with the `Suphle\Services\Decorators\BindsAsSingleton` attribute.
 
 ```php
-use Suphle\Contracts\Services\Decorators\BindsAsSingleton;
+use Suphle\Services\Decorators\BindsAsSingleton;
 
-class C implements BindsAsSingleton {
+#[BindsAsSingleton]
+class A {
 
     private $value;
 
     public function setValue (int $value):void {
 
         $this->value = $value;
-    }
-
-    public function entityIdentity ():string {
-
-        return static::class;
     }
 }
 
@@ -238,7 +232,34 @@ class B {
 }
 ```
 
-Now, no matter how deep the nesting the dependency on `C` is, an identical instance will be given since it's only hydrated once. `BindsAsSingleton::entityIdentity` is used to indicate what capacity this object should be applied to. Objects [implementing interfaces](#providing-interfaces) will be more inclined to return the primary interface for which they were written, while classes can merely return their own names.
+Now, no matter how deep the nesting the dependency on `A` is, an identical instance will be given since it's only hydrated once, until any activity [calls for it to be wiped](#Removing-things-from-the-container).
+
+If `A`, above, is the implementation of an interface requested by `B`, the expected functionality will be for this class to be bound to that interface for all possible callers. When this is the case, we pass the target interface name to the `BindsAsSingleton` attribute:
+
+```php
+use Suphle\Services\Decorators\BindsAsSingleton;
+
+#[BindsAsSingleton(C::class)]
+class A implements C {
+
+    private $value;
+
+    public function setValue (int $value):void {
+
+        $this->value = $value;
+    }
+}
+
+class B {
+
+    public function __construct (protected readonly C $c) {
+
+        //
+    }
+}
+```
+
+The `BindsAsSingleton::entityIdentity` argument is used to indicate what capacity this object should be applied to. Objects [implementing interfaces](#providing-interfaces) will be more inclined to return the primary interface for which they were written, while classes can either return their own or their parent's names -- whichever they seek to be provisioned for.
 
 ## Getting objects from the container
 
@@ -335,7 +356,7 @@ class ImmutableDependency implements ImmutableClientContract {
 }
 ```
 
-When `ImmutableClientContract` is type-hinted, its concrete bound through [the instructed channel](/#working-with-interfaces) is what will be served. Those channels are all 1-1 pairings between interface and concrete; which also means some base class like a collection can't bind dependencies for a variable group of sub-classes.
+When `ImmutableClientContract` is type-hinted, its concrete bound through [the instructed channel](#working-with-interfaces) is what will be served. Those channels are all 1-1 pairings between interface and concrete; which also means some base class like a collection can't bind dependencies for a variable group of sub-classes.
 
 In some frameworks, this is solved using container tags. We don't use those in Suphle due to our emphasis on connecting entities to their fully qualified names rather than random strings. What we want to do is to access the parent entity's provision, and that is done using the 2nd argument to `getClass()`. If we slightly adjust `UnknownUserLandHydrator` as follows:
 
@@ -433,6 +454,8 @@ class CProvider extends BaseInterfaceLoader {
 
 We use `BaseInterfaceLoader::bindArguments()` to obscure away instantiation details from an interface's consumer -- which they shouldn't be bound to. Any arguments required by the given constructor are described here. They are analogous to providing the [arguments context](#All-method-arguments-context), but specifically for the entry class.
 
+In the example above, the parameter name is used because the concrete's constructor defines a primitive argument. Classes declaring reference types in their constructors are encouraged to inject arguments using the type name as this makes the loader more resilient to a renaming refactor.
+
 
 ### Binding regular interfaces
 
@@ -512,7 +535,7 @@ class B {
 }
 ```
 
-Aside from loggers, ny environment with `strict_type=1` would halt on encountering this warning.
+Aside from loggers, any environment with `strict_type=1` would halt on encountering this warning, most commonly, while running tests.
 
 ### Circular-dependencies caveat
 
@@ -520,11 +543,19 @@ The fact that concretes are decoupled from their interfaces makes the likelihood
 
 When this is the case, the container won't proxy calls to the interface. Even though it's possible to extract and wrap their concrete on the fly, the overhead and sheer *sorcery* of such an implementation deviate too far away from the language's expected behaviour, for very little benefit. Doing so goes against one of Suphle's core principles. That said, when Container encounters such concretes, it will throw a `Suphle\Exception\Explosives\Generic\HydrationException`.
 
-As with all problems in this category, the solution is to breakdown the intertwining bits either into a third, decoupled entity; or, to defer evaluation of the *lesser* of both dependencies. One surprising situation where this problem arises is during the use of interface loaders. While working with them, there are a few advice that may be helpful:
+Circular dependencies are commonly associated with class-class constructor similarity but can equally spring up in surprising areas of the project. For instance:
 
-- You have two interfaces; their respective concretes are prohibited from depending on the other's interface.
+- The respective concretes of two interfaces are prohibited from depending on the other's interface. This carries just the same weight as the concretes depending one each other.
 
-- Circular dependencies is not a phenomena limited to constructor. It can be witnessed anywhere from method signatures to `Suphle\Hydration\BaseInterfaceLoader::afterBind()`. Be on the lookout for locations involving hydrating things. If one of the dependencies contains a reference to the caller, it requires our attention.
+- Container assisted method signature derivation, service location, `Suphle\Hydration\BaseInterfaceLoader::afterBind()`.
+
+No entity requested from the Container is allowed to depend on its calling scope as that has high potential of resulting in a recursive loop. Some effective methods of resolution arond this issue are listed below:
+
+- Breakdown the intertwining bits either into a third, decoupled entity.
+
+- Defer evaluation of the *lesser* of both dependencies, such that one is called manually rather than being hydrated by the Container.
+
+- Merge both classes into one as their double dependency may be an indication of the Inappropriate Intimacy code smell.
 
 ## Removing things from the container
 

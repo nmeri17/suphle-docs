@@ -57,38 +57,31 @@ Before intercepting values from our users, it's important to shield the precious
 
 ### Linking validators to request handler
 
-To avoid cluttering action methods with validators, they are aggregated on one class and this class is connected to the running controller. Validator methods are derived from the request handler:
+For HTTP methods where validators are compulsory, if no validator aggregate or matching method is found, a `Suphle\Exception\Explosives\Generic\NoCompatibleValidator` exception is thrown, which in turn, is a sub-class of the famous [Suphle\\Contracts\\Exception\\BroadcastableException](/docs/v1/exception/#programmer-level-exceptions).
+
+Our validations thus need to meet the following objectives:
+
+- Co-location with the action method they oversee since this is only entity they're relevant to.
+- Reside outside the action method to avoid cluttering actual service calls.
+- Remain visible to the Framework such that their absence can duly prevent action method invocation.
+
+One of the constructs that allows us meet us these requirements is the `Suphle\Services\Decorators\ValidationRules` attribute, where validation rules can be defined.
 
 ```php
-use Suphle\Tests\Mocks\Modules\ModuleOne\Validators\ValidatorOne;
 
-class ValidatorController extends ServiceCoordinator {
+class ValidatorCoordinator extends ServiceCoordinator {
 
-	public function validatorCollection ():?string {
+	#[ValidationRules([
 
-		return ValidatorOne::class;
-	}
-
+		"foo_field" => "required",
+		"bar_field" => "email"
+	])]
 	public function postWithValidator () {
 
 		//
 	}
 }
 ```
-
-```php
-class ValidatorOne {
-
-	public function postWithValidator () {
-
-		return ["foo" => "required"];
-	}
-}
-```
-
-For HTTP methods where validators are compulsory, if no validator aggregate or matching method is found, a `Suphle\Exception\Explosives\Generic\NoCompatibleValidator` exception is thrown, which in turn, is a sub-class of the famous [Suphle\\Contracts\\Exception\\BroadcastableException](/docs/v1/exception/#programmer-level-exceptions).
-
-On the surface, `ValidatorOne` is a POPO housing methods that define rules. But where do these rules come from?
 
 ### Validator adapters
 
@@ -107,38 +100,17 @@ interface RequestValidator {
 
 ### Validation failure
 
-When incoming request is unable to satisafy rules bound to a handler, the handler is not executed. As with all exceptions, the output of a validation failure is [determined by](/docs/v1/exceptions#Exception-diffusers) its diffuser. Requests matching the API configuration will parse any renderer connected to the incoming route, usually expected to be the `JSON` renderer. Other situations are anticipated to originate from the browser, however, the behavior will vary depending on the validation evaluator configured.
+As expected, when incoming request is unable to satisfy rules bound to a handler, the handler is not executed. As with all exceptions, the output of a validation failure is [determined by](/docs/v1/exceptions#Exception-diffusers) its diffuser. Requests matching the API configuration will parse any renderer connected to the incoming route, usually expected to be the `JSON` renderer. Other situations are anticipated to originate from the browser, however, the behavior will vary depending on the validation evaluator configured.
 
 The default evaluator will perform the equivalent of using the `Reload` renderer, but in addition, it will include two keys in your payload serialized by the preceding request being handled. This combination is then received by your presentation layer. If you want to adulterate it with extra content, the `ValidationFailureDiffuser::prepareRendererData` method is what is used as the action handler for all failed requests. You can override and bind a descendant with choice objects.
 
 #### Checking for validation errors
 
-When flow is reverted to previous renderer, you want to ascertain whether the arrival is the original `GET` request or as a result of validation failure redirect. The default evaluator adds a key corresponding to the constant `Suphle\Exception\Diffusers\ValidationFailureDiffuser::ERRORS_PRESENCE`. If you're using Transphporm's stylesheet layer, that would bear semblance to this:
-
-```css
-
-#validation-errors:data[ValidationFailureDiffuser::ERRORS_PRESENCE=null] {
-
-	display: none
-}
-```
+When flow is reverted to previous renderer, you want to ascertain whether the arrival is the original `GET` request or as a result of validation failure redirect. The default evaluator adds a key corresponding to the constant `Suphle\Exception\Diffusers\ValidationFailureDiffuser::ERRORS_PRESENCE`, or the literal value `"validation_errors"`.
 
 #### Restoring request data
 
-After confirming it's a re-render, it's not desirable UX to empty the form inputs altogether. Instead, it should be populated using data sent during last request. This value is to be obtained using the `ValidationFailureDiffuser::PAYLOAD_KEY` constant, like so:
-
-```css
-
-form {
-
-	repeat: data(ValidationFailureDiffuser::PAYLOAD_KEY)
-}
-
-form input[name=title] {
-
-	content: iteration(title)
-}
-```
+After confirming it's a re-render, it's not desirable UX to empty the form inputs altogether. Instead, it should be populated using data sent during last request. This value is to be obtained using the `ValidationFailureDiffuser::PAYLOAD_KEY` constant, or the literal equivalent, `"payload_storage"`:
 
 ## Retrieving request input
 
@@ -582,11 +554,9 @@ use Suphle\Services\{UpdatefulService, Structures\BaseErrorCatcherService};
 
 use Suphle\Services\Decorators\{InterceptsCalls, VariableDependencies};
 
-use Suphle\Contracts\Services\CallInterceptors\SystemModelEdit;
+use Suphle\Contracts\{Events, Services\CallInterceptors\SystemModelEdit};
 
 use Suphle\Events\EmitProxy;
-
-use Suphle\Tests\Mocks\Modules\ModuleOne\Events\AssignListeners;
 
 #[InterceptsCalls(SystemModelEdit::class)]
 #[VariableDependencies([
@@ -597,11 +567,11 @@ class CheckoutCart extends UpdatefulService implements SystemModelEdit {
 
 	use BaseErrorCatcherService, EmitProxy;
 
-	const EMPTIED_CART = "cart_empty";
+	public const EMPTIED_CART = "cart_empty";
 
 	private $cartBuilder;
 
-	public function __construct (private readonly AssignListeners $eventManager) {
+	public function __construct (private readonly Events $eventManager) {
 
 		//
 	}
