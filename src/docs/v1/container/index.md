@@ -37,7 +37,9 @@ class ModuleOneDescriptor extends ModuleDescriptor {
 }
 ```
 
-Suphle already provides a default implementation of this class, `Suphle\Hydration\Structures\BaseInterfaceCollection`, from which you're expected to extend. `InterfaceCollection` exposes methods that describe what kind of interface it is being provided. They all return key-value arrays pairing the interface to the name of a concrete implementation. At the very least, you're going to have an interface collection with a semblance to that below:
+While it would've been considered elegant for these provisions to be bound using attributes, that pattern has the disadvantage of requiring a project scan for auto-binding, as well as limitation posed to discoverability.
+
+The default implementation of the `InterfaceCollection` is `Suphle\Hydration\Structures\BaseInterfaceCollection` -- more of an indispensable class than a replaceable one -- from which you're expected to extend. `InterfaceCollection` exposes methods that describe what kind of interface it is being provided. They all return key-value arrays pairing the interface to the name of a concrete implementation. At the very least, the interface collection of [a module involved in routing](/docs/v1/modules#Connecting-standalone-modules) will have a semblance to that below:
 
 ```php
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Meta;
@@ -70,7 +72,7 @@ class CustomInterfaceCollection extends BaseInterfaceCollection {
 }
 ```
 
-We go into more detail about the kinds of interface in a [later section](/#working-with-interfaces). But for now, let's deal with bind concretes.
+We go into more detail about the kinds of interface in a [later section](#working-with-interfaces). For now, let's deal with binding concretes.
 
 ### Binding instances
 

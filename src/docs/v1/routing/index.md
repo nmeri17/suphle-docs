@@ -10,6 +10,8 @@ Pattern indicators include [authentication](/docs/v1/authentication#Securing-rou
 
 This style isn't a vain attempt to stand out but one that happens to come with some perks:
 
+- The same content, coordinators, etc, can be used for diverse response formats.
+
 - Being classes imbues them with qualities such as the ease of replacement (while temporarily modifying features) that extension brings. 
 
 - Class methods give room for further activity pertaining to each pattern, without forming nasty callback hells.
@@ -32,18 +34,14 @@ Static patterns are treated as defined (rather than as placeholders), by the rou
 
 ```php
 
-use Suphle\Routing\BaseCollection;
+use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
 
 use Suphle\Response\Format\Markup;
 
 use AllModules\CarModule\Coordinators\EntryCoordinator;
 
+#[HandlingCoordinator(EntryCoordinator::class)]
 class CarRoutes extends BaseCollection {
-
-	public function _handlingClass ():string {
-
-		return EntryCoordinator::class;
-	}
 	
 	public function SALES() {
 		
@@ -64,12 +62,8 @@ In the collection below, we define patterns that route to `field-agents` and `ot
 
 ```php
 
+#[HandlingCoordinator(EntryCoordinator::class)]
 class EmployeeRoutes extends BaseCollection {
-
-	public function _handlingClass ():string {
-
-		return EntryCoordinator::class;
-	}
 	
 	public function FIELD__AGENTSh () {
 		
@@ -93,12 +87,8 @@ Instead, we employ the use of dynamic segments, by defining them with lower-case
 
 ```php
 
+#[HandlingCoordinator(EntryCoordinator::class)]
 class MusicRoutes extends BaseCollection {
-
-	public function _handlingClass ():string {
-
-		return EntryCoordinator::class;
-	}
 	
 	public function id () {
 		
@@ -115,12 +105,8 @@ We use the reserved method `_index` to define a pattern that matches requests wi
 
 ```php
 
+#[HandlingCoordinator(EntryCoordinator::class)]
 class MusicRoutes extends BaseCollection {
-
-	public function _handlingClass ():string {
-
-		return EntryCoordinator::class;
-	}
 	
 	public function _index () {
 		
@@ -414,12 +400,8 @@ class RouterMock extends Router {
 
 use AllModules\ModuleOne\Coordinators\Versions\V1\ApiEntryCoordinator;
 
+#[HandlingCoordinator(ApiEntryCoordinator::class)]
 class LowerMirror extends BaseApiCollection {
-
-	public function _handlingClass ():string {
-
-		return ApiEntryCoordinator::class;
-	}
 	
 	public function API__SEGMENTh () {
 		
@@ -446,12 +428,8 @@ In addition, one new pattern is added to this version.
 
 use AllModules\ModuleOne\Coordinators\Versions\V2\ApiUpdate2Coordinator;
 
+#[HandlingCoordinator(ApiUpdate2Coordinator::class)]
 class ApiUpdate2Entry extends BaseApiCollection {
-
-	public function _handlingClass ():string {
-
-		return ApiUpdate2Coordinator::class;
-	}
 
 	public function CASCADE () {
 
@@ -473,12 +451,8 @@ In version 3, that pattern is overriden once again:
 
 use AllModules\ModuleOne\Coordinators\Versions\V3\ApiUpdate3Coordinator;
 
+#[HandlingCoordinator(ApiUpdate3Coordinator::class)]
 class ApiUpdate3Entry extends BaseApiCollection {
-
-	public function _handlingClass ():string {
-
-		return ApiUpdate3Coordinator::class;
-	}
 
 	public function CASCADE () {
 
@@ -497,12 +471,8 @@ If the risk of forgetting to rebind overridden route patterns is too great, cons
 
 ```php
 
+#[HandlingCoordinator(ApiEntryCoordinator::class)]
 class LowerMirror extends BaseApiCollection {
-
-	public function _handlingClass ():string {
-
-		return ApiEntryCoordinator::class;
-	}
 
 	public function CASCADE () {
 
@@ -520,12 +490,8 @@ To save ourselves from re-binding to this overriden pattern, we extend the origi
 
 ```php
 
+#[HandlingCoordinator(ApiUpdate2Coordinator::class)]
 class ApiUpdate2Entry extends LowerMirror {
-
-	public function _handlingClass ():string {
-
-		return ApiUpdate2Coordinator::class;
-	}
 
 	public function CASCADE () {
 
@@ -546,12 +512,8 @@ When defining CRUD builders, the method under which they're introduced is interp
 
 use AllModules\ModuleOne\Coordinators\CrudCoordinator;
 
+#[HandlingCoordinator(CrudCoordinator::class)]
 class BasicRoutes extends BaseCollection {
-
-	public function _handlingClass ():string {
-
-		return CrudCoordinator::class;
-	}
 	
 	public function SAVE__ALLh () {
 		
@@ -623,12 +585,8 @@ Since there's no markup and template folder to read from for this resource, ther
 
 ```php
 
+#[HandlingCoordinator(CrudCoordinator::class)]
 class BasicRoutes extends BaseApiCollection {
-
-	public function _handlingClass ():string {
-
-		return CrudCoordinator::class;
-	}
 	
 	public function SAVE__ALLh () {
 		
@@ -645,12 +603,8 @@ In the collection below, all patterns are registered except that represented by 
 
 ```php
 
+#[HandlingCoordinator(CrudCoordinator::class)]
 class BasicRoutes extends BaseApiCollection {
-
-	public function _handlingClass ():string {
-
-		return CrudCoordinator::class;
-	}
 	
 	public function DISABLE__SOMEh () {
 			
@@ -731,11 +685,9 @@ $renderer->setHeaders(200, [ "X-POWERED-BY" => "Suphle" ]);
 
 ### Default renderers
 
-During browser-based request handling, renderers are stored under PHP's `$_SESSION` superglobal so the Framework can fallback to them in the event of a POST request failure. Renderers expected to be received here are serialization-friendly ones. Those with exotic properties such as callbacks will neither raise an exception nor be saved. When used for the preceding `GET` part of a `GET-POST/x` flow, exceptions such as validation failure will fallback to the last saved renderer found, which may not necessarily be the immediate preceding one.
+During `GET` requests to non-API-based paths, the Framework stores renderers under PHP's `$_SESSION` superglobal so it can fallback to the last saved renderer in the event of a validation failure while handling a `GET` to `POST` flow.
 
-For example, when the `Redirect` renderer is used for a `GET` request, it won't be stored for fallback. The same holds true for descendants of `BaseHotwireStream`, since their shtick is replacement of segments with up-to-date page fragments using AJAX.
-
-The following renderers are available. If none of them suits your needs, you can either extend `GenericRenderer` or implement `BaseRenderer` itself.
+The following renderers are available. If none of them suits your needs, you can either extend `GenericRenderer`, or implement `BaseRenderer` itself.
 
 #### Json renderer
 
@@ -743,12 +695,8 @@ Perhaps the simplest renderer to make use of the `Suphle\Response\Format\Json` r
 
 ```php
 
+#[HandlingCoordinator(ApiEntryCoordinator::class)]
 class LowerMirror extends BaseApiCollection {
-
-	public function _handlingClass ():string {
-
-		return ApiEntryCoordinator::class;
-	}
 
 	public function CASCADE () {
 
@@ -763,12 +711,8 @@ The `Suphle\Response\Format\Markup` renderer is the default renderer responsible
 
 ```php
 
+#[HandlingCoordinator(EntryCoordinator::class)]
 class CarRoutes extends BaseCollection {
-
-	public function _handlingClass ():string {
-
-		return EntryCoordinator::class;
-	}
 	
 	public function SALES() {
 		
@@ -949,12 +893,9 @@ class CanaryForUser5 implements CanaryGateway {
 ```
 
 ```php
+
+#[HandlingCoordinator(CanaryController::class)]
 class CollectionForUser5 extends BaseCollection {
-
-	public function _handlingClass ():string {
-
-		return CanaryController::class;
-	}
 
 	public function SAME__URLh () {
 
@@ -982,16 +923,13 @@ use AllModules\ModuleOne\Routes\Canaries\{DefaultCanary, CanaryRequestHasFoo, Ca
 
 class CanaryRoutes extends BaseCollection {
 
-	public function _handlingClass ():string {
-
-		return "";
-	}
-
 	public function SPECIAL__FOOh () {
 
 		$this->_canaryEntry([
 
-			CanaryForUser5::class, CanaryRequestHasFoo::class, DefaultCanary::class
+			CanaryForUser5::class, CanaryRequestHasFoo::class,
+
+			DefaultCanary::class
 		]);
 	}
 }

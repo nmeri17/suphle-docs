@@ -10,7 +10,7 @@ Flows are written in [route collections](/docs/v1/routing). Each flow is connect
 
 ```php
 
-use Suphle\Routing\BaseCollection;
+use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
 
 use Suphle\Response\Format\Json;
 
@@ -18,12 +18,8 @@ use Suphle\Flows\ControllerFlows;
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\CatalogCoordinator;
 
+#[HandlingCoordinator(CatalogCoordinator::class)]
 class CatalogCollection extends BaseCollection {
-
-	public function _handlingClass ():string {
-
-		return CatalogCoordinator::class;
-	}
 
 	public function _prefixCurrent ():string {
 

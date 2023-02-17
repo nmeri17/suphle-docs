@@ -173,12 +173,8 @@ use Suphle\Response\Format\Json;
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\{Controllers\BaseCoordinator, Authorization\Paths\AdminRule};
 
+#[HandlingCoordinator(BaseCoordinator::class)]
 class AuthorizeRoutes extends BaseCollection {
-
-	public function _handlingClass ():string {
-
-		return BaseCoordinator::class;
-	}
 
 	public function ADMIN__ENTRYh () {
 
@@ -223,12 +219,9 @@ The above tag will prohibit access to all routes matching "/admin-entry", as wel
 Suppose we want to exclude certain sub-patterns under "/admin/\*", we'll use `Suphle\Request\PathAuthorizer::forgetRule(array $patterns, string $rule):self` method:
 
 ```php
+
+#[HandlingCoordinator(EmploymentEditCoordinator::class)]
 class UnlocksAuthorization1 extends BaseCollection {
-
-	public function _handlingClass ():string {
-
-		return EmploymentEditCoordinator::class;
-	}
 
 	public function RETAIN () {
 

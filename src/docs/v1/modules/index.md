@@ -305,7 +305,7 @@ Suphle app composition API is designed in a way to prohibit cyclical referencing
 
 ### Data sharing format
 
-The purpose of the data being shared should determine what format it is being served in. Data intended for use in the computation of a consumer can be served in its raw format, while data needed for to be plugged into a view template may benefit more from [view composition](/docs/v1/templating#view-composition) to achieve a higher degree of modularity.
+The purpose of the data being shared should determine what format it is being served in. Data intended for use in the computation of a consumer can be served in its raw format, while data needed for to be plugged into a view template may benefit more from [micro front-ends](/docs/v1/templating#micro-front-ends) to achieve a higher degree of modularity.
 
 
 ### Sharing tangible artifacts

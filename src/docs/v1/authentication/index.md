@@ -35,7 +35,7 @@ class Auth implements AuthContract {
 }
 ```
 
-The array is keyed by desired login paths, which will eventually be compared against incoming request. Matching requests are then forwarded to login renderers. You can define as many login paths as necessary for your application. However, note that paths defined here are automatically designated to the POST HTTP method. You are free to connect the UI and GET pattern in their regular layers.
+The array is keyed by desired login paths, which will eventually be compared against incoming request. Matching requests are then forwarded to login renderers. You can define as many login paths as necessary for your application. However, note that paths defined here are automatically designated to the `POST` HTTP method. You are free to connect the UI and `GET` pattern in their regular layers.
 
 ## Login mediators
 
@@ -79,41 +79,51 @@ class ApiLoginMediator implements LoginFlowMediator {
 	}
 }
 ```
-You may have observed that the renderers are not wrapped in any HTTP method using `_get`. As we hinted earlier, all routes on this level are designated as POSTs.
+You may have observed that the renderers are not wrapped in any HTTP method using `_get`. As we hinted earlier, all routes on this level are designated as `POST`s.
+
+The action handlers given to these renderers are expected to reside on the service returned by the `LoginFlowMediator::getLoginService` method.
 
 ## Login services
 
-These are responsible for communicating with whatever medium we intend to extract users from and authenticate against. They can be considered as [coordinators](/docs/v1/service-coordinators) action methods but for login requests. The same [validator-for-POST-request rule](/docs/v1/service-coordinators#Validating-incoming-requests) on regular controllers applies to them. Login services are classes that implement `Suphle\Contracts\Auth\LoginActions`.
+These are responsible for communicating with whatever medium we intend to extract users from and authenticate against. They can be considered as [coordinators](/docs/v1/service-coordinators) action methods, but for login requests. The same [validator-for-POST-request rule](/docs/v1/service-coordinators#Validating-incoming-requests) on regular coordinators apply to them.
 
-Both default login mediators have complementary login services-- `Suphle\Auth\Repositories\BrowserAuthRepo`, and `Suphle\Auth\Repositories\ApiAuthRepo`. Each of them utilizes an identical identification technique but have a slight difference in their behavior on success; `BrowserAuthRepo` initializes a session for the authenticated user and outputs whatever renderer is given in `BrowserLoginMediator::successRenderer()`. `ApiAuthRepo` on the other hand, responds with a token to use in authenticating user during subsequent visits.
+Login services are classes that implement `Suphle\Contracts\Auth\LoginActions`.
+
+Both default login mediators have complementary login services-- `Suphle\Auth\Repositories\BrowserAuthRepo`, and `Suphle\Auth\Repositories\ApiAuthRepo`. Each of them utilizes an identical identification technique but have a slight difference in their behavior on success: `BrowserAuthRepo` initializes a session for the authenticated user and outputs whatever renderer is given in `BrowserLoginMediator::successRenderer()`. `ApiAuthRepo` on the other hand, responds with a token to use in authenticating user during subsequent visits.
 
 ```php
+
 namespace Suphle\Auth\Repositories;
+
+use Suphle\Services\Decorators\ValidationRules;
 
 class ApiAuthRepo extends BaseAuthRepo {
 
-	public function successLogin () {
+	#[ValidationRules([
+		"email" => "required|email",
 
-		return [
+		"password" => "required|alpha_num|min:5"
+	])]
+	public function successLogin ():iterable {
 
-			"token" => $this->authStorage->startSession($this->comparer->getUser()->getId())
-		];
+		return [ "token" => $this->startSessionForCompared() ];
 	}
 }
 ```
-Notice that methods on `Suphle\Contracts\Auth\LoginActions` correspond to those defined in our mediator renderers--controller actions.
 
-All this while, we have looked at success methods and their failure counterparts. But how is Suphle able to decipher whether or not credentials received are accurate?
+Identical rules are used for validating requests to both login services, The rules are generic as they are intended to conform with the default  credential verifier. If you wish to replace it, do remember to update the rules as well.
 
-### Obtaining Login status
+### Credential verifiers
 
-The average business will require a way to determine whether incoming credentials belong to an existing user. We usually employ the use of payload field names or database columns. A common trope is searching a user on the database matching the incoming email and comparing his hashed password with the incoming one. As you may have guessed, the default status is resolved using an implementation of the process described. If your authentication needs exceed those provided by an email-password comparison, or assuming you want to emit an event that initiates some domain specific action, custom functionality can be provided through `Suphle\Contracts\Auth\LoginActions::compareCredentials()` method.
+The average business will require a way to determine whether incoming credentials belong to an existing user. We usually employ the use of payload field names or database columns. A common trope is searching a user on the database matching the incoming email and comparing his hashed password with the incoming one.
 
-Both login services available inject an interface, `Suphle\Contracts\Auth\ColumnPayloadComparer`, for comparing input with existing data. Default implementation of this interface is `Suphle\Auth\EmailPasswordComparer`; a class which, as the name implies, compares email field on incoming payload to the email database column. You are free to supply custom login services that inject an appropriate comparer. The only important factor is that Suphle is informed through `Suphle\Contracts\Auth\LoginActions::compareCredentials()` whether or not authentication succeeded.
+Given its level of popularity, the default verification is resolved using an implementation of the process described. If your authentication needs exceed those stipulated by an email-password comparison, or assuming you want to emit an event that initiates some domain specific action, custom functionality can be provided through `Suphle\Contracts\Auth\LoginActions::compareCredentials()` method.
 
-### Custom comparer
+Both login services available inject an interface, `Suphle\Contracts\Auth\ColumnPayloadComparer`, for comparing input with existing data. Default implementation of this interface is `Suphle\Auth\EmailPasswordComparer`; a class which, as the name implies, compares email field on incoming payload to the email database column. You are free to bind custom login services that inject an appropriate comparer. The only important condition is that Suphle is informed through `Suphle\Contracts\Auth\LoginActions::compareCredentials()` whether or not authentication succeeded.
 
-`EmailPasswordComparer` uses its `columnIdentifier` property to hydrate a user based on email fields. You can afford to extend it and set that property to any field of your choosing. When one field comparison is not sufficient, you can override `EmailPasswordComparer::findMatchingUser():?UserContract`.
+### Custom credential verifier
+
+`EmailPasswordComparer` uses its `columnIdentifier` property to hydrate a user based on email fields. You can afford to extend it and set that property to any field of your choosing. When one field comparison is not sufficient, you can override the `EmailPasswordComparer::findMatchingUser` method.
 
 ```php
 
@@ -127,7 +137,6 @@ protected function findMatchingUser ():?UserContract {
 	]);
 }
 ```
-The comparer will use that to compare passwords.
 
 If you're not interested in password comparisons at all, consider ditching `EmailPasswordComparer` altogether, using `UserHydrator` on your `Suphle\Contracts\Auth\ColumnPasswordComparer` implementation to obtain a user instance.
 
@@ -139,12 +148,10 @@ public function compare ():bool {
 
 		"username" => $this->payloadStorage->getKey("username"),
 
-		"other_field" => $this->payloadStorage->getKey("other_field")
+		"otp" => $this->payloadStorage->getKey("otp")
 	]);
 
-	$hasActiveAccount = $user->some_condition != false;
-
-	return $hasActiveAccount;
+	return !is_null($user);
 }
 ```
 
@@ -169,35 +176,7 @@ class UserHydrator implements HydratorContract {
 
 It's at the database layer. You don't want to change it unless additional query clauses beyond simple fields are required for comparison.
 
-### Login service Validation
-
-As was stated earlier, `Suphle\Contracts\Auth\LoginActions` should be considered as controller actions--they are entitled to compulsory vaidators that must run before `Suphle\Contracts\Auth\LoginActions::compareCredentials()`. This means we can confidently work with fields inside the comparer without the need to check for presence of fields.
-
-The difference between login and validators you're [accustomed to](/docs/v1/controllers#validation) is that the method name for the former is being derived from the action method. Login only consists of one route, thus, only one valid rule-set is required. The validation rules are expected to reside at `Suphle\Contracts\Auth\LoginActions::successRules()`. 
-
-Both our login services are constrained by the following rules:
-
-```php
-namespace Suphle\Auth\Repositories;
-
-use Suphle\Contracts\Auth\LoginActions;
-
-abstract class BaseAuthRepo implements LoginActions {
-
-	public function successRules ():array {
-
-		return [
-			"email" => "required|email",
-
-			"password" => "required|alpha_num|min:5"
-		];
-	}
-}
-```
-
-These values are set to conform with the default `EmailPasswordComparer` discussed above. If you wish to replace it, remember to update the validator as well.
-
-That's all there is to the login flow. Deep customization may seem like a lot but we have achieved is not muddling up responsibilities in a way that's going to make modification a nightmare. We also have no god objects. It's flexible enough to authenticate and connect users from any source, any ORM, using clearly defined interfaces.
+That's all there is to the login flow. Deep customization may seem like a lot but what has been achieved is not muddling up responsibilities in a way that's going to make modification risky and a nightmare. We also have no god objects. It's flexible enough to authenticate and connect users from any source, any ORM, using clearly defined interfaces.
 
 # Authentication in the application
 
@@ -239,16 +218,13 @@ class SecureBrowserCollection extends BaseCollection {
 As route patterns cascade, protection applied to a prefixed pattern or method applies to patterns in the collection below it. To selectively apply authentication to a sub-collection, we mention only those patterns we want to retain authentication on. When Suphle encounters authentication in a nested collection, it filters off patterns not on that list. For example, given the following collection sequence:
 
 ```php
-use Suphle\Routing\BaseCollection;
+
+use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Prefix\UnchainParentSecurity, Controllers\BaseCoordinator};
 
+#[HandlingCoordinator(BaseCoordinator::class)]
 class UpperCollection extends BaseCollection {
-
-	public function _handlingClass ():string {
-
-		BaseCoordinator::class;
-	}
 
 	public function _authenticatedPaths():array {
 
@@ -263,18 +239,15 @@ class UpperCollection extends BaseCollection {
 ```
 
 ```php
-use Suphle\Routing\BaseCollection;
+
+use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
 
 use Suphle\Response\Format\Json;
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\Controllers\MixedNestedSecuredController;
 
+#[HandlingCoordinator(MixedNestedSecuredController::class)]
 class UnchainParentSecurity extends BaseCollection {
-
-	public function _handlingClass ():string {
-
-		return MixedNestedSecuredController::class;
-	}
 
 	public function _authenticatedPaths():array {
 
@@ -297,7 +270,7 @@ All manner of visitors are free to visit "/prefix/unlink", without discriminatin
 
 ### Authentication in mirrored collections
 
-As you are already aware, routing [works a little differently](/docs/v1/routing#route-inter-operability) in Suphle -- collections rendering HTML content (implying a session-based authentication mechanism) can be mirrored to respond with JSON (and would naturally prefer a token-based mechanism). This presents a conundrum over which mechanism to prefer.
+As you are already aware, routing [works a little differently](/docs/v1/routing#Route-mirroring) in Suphle -- collections rendering HTML content (implying a session-based authentication mechanism) can be mirrored to respond with JSON (and would naturally prefer a token-based mechanism). This presents a conundrum over which mechanism to prefer.
 
 To aid us in resolving this challenge, we use the `Suphle\Contracts\Config\Router::mirrorAuthenticator()` method. When a mirrored request detects the presence of an authentication definition, it hydrates the class returned from this method and proceeds to use that to find an active session. The default config returns `Suphle\Auth\Storage\TokenStorage`.
 
@@ -315,16 +288,7 @@ If you're using your own comparer, you might as well provide a similar method fo
 
 ### Everywhere else
 
-Wherever the container sees the type-hint `Suphle\Contracts\Auth\AuthStorage`, it'll either inject the default bound mechanism or the one used to authenticate a user if it's a secured route. The default binding is `Suphle\Auth\Storage\SessionStorage`, a session-based implementation that unless replaced, will be returned on routes without authentication. For obtaining users from the mechanism, the interface defines the following method:
-
-```php
-interface AuthStorage {
-
-	public function getUser ():?UserContract;
-}
-```
-
-`getUser()` is only capable of returning `null` for unprotected routes where user presence is optional. Resources at such routes are intended for consumption by both authenticated and unauthenticated parties.
+Wherever the container sees the type-hint `Suphle\Contracts\Auth\AuthStorage`, it'll either inject the default bound mechanism or the one used to authenticate a user if it's a secured route. The default binding is `Suphle\Auth\Storage\SessionStorage`, a session-based implementation that unless replaced, will be returned on routes without authentication. For obtaining users from the mechanism, `AuthStorage` defines the `getUser` method. It's only capable of returning `null` for unprotected routes where user presence is optional. Resources at such routes are intended for consumption by both authenticated and unauthenticated parties.
 
 ### Unique mechanism features
 
@@ -376,7 +340,7 @@ They are expected to interact with the actual mechanism and facilitate other use
 ## Testing authentication
 
 Within test environment, we'll want to simulate the authentication states to examine our software's behavior in those states. For this purpose, Suphle provides the trait
-`Suphle\Testing\Proxies\SecureUserAssertions`, applicable on all the [test types](/docs/v1/testing/in-universe-functionality.md). It contains utilities for a streamlined experience working with the authentication mechanisms:
+`Suphle\Testing\Proxies\SecureUserAssertions`, applicable on all the [test types](/docs/v1/testing), although you're more likely to use them on module-level tests only since they interact with the database. The trait contains utilities for a streamlined experience working with the authentication mechanisms:
 
 ```php
 

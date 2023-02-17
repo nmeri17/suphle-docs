@@ -14,18 +14,14 @@ Candidates for centralization listed are not vague concepts we expect you to rel
 
 ```php
 
-use Suphle\Routing\BaseCollection;
+use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
 
 use Suphle\Response\Format\Json;
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\Controllers\BaseCoordinator;
 
+#[HandlingCoordinator(BaseCoordinator::class)]
 class BrowserNoPrefix extends BaseCollection {
-
-	public function _handlingClass ():string {
-
-		return BaseCoordinator::class;
-	}
 
 	public function SEGMENT() {
 
@@ -49,7 +45,9 @@ class BaseCoordinator extends ServiceCoordinator {
 }
 ```
 
-The most simplistic service coordinator, such as the one defined above, will return a self contained response. For POST and GET requests however, we want to validate input, lift it into a DTO, before sending it to a waiting service. We'll look at the designated location for these roles, starting with the first.
+The most simplistic service coordinator, such as the one defined above, will return a self contained response. It is this response that will be attached as response body of the `Json` renderer declared in the route collection.
+
+In the real world, however, it's pertinent that input is validated, before utilizing it in sensitive areas such as our internal, trusted DTO, or a service with unrestricted access to the database. We'll look at the designated location for these roles below, starting with validation.
 
 ## Validating incoming requests
 

@@ -49,7 +49,7 @@ Route-based middleware binding is defined on route collection using the `Middlew
 
 ```php
 
-use Suphle\Routing\BaseCollection;
+use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
 
 use Suphle\Response\Format\Markup;
 
@@ -57,12 +57,8 @@ use Suphle\Middleware\MiddlewareRegistry;
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\{Coordinators\BaseCoordinator, Middlewares\SelectiveMiddleware};
 
-class MultiTagSamePattern extends BaseCollection {
-
-	public function _handlingClass ():string {
-
-		return BaseCoordinator::class;
-	}
+#[HandlingCoordinator(BaseCoordinator::class)]
+class MultiTagSamePattern extends BaseCollection 
 
 	public function NEGOTIATE () {
 
@@ -92,11 +88,6 @@ When any of the given patterns serves as entrance to another collection (using `
 
 class MultiTagPrefix extends BaseCollection {
 
-	public function _handlingClass ():string {
-
-		return "";
-	}
-
 	public function NEGOTIATE () {
 
 		$this->_prefixFor(UntagsMiddleware::class);
@@ -108,12 +99,8 @@ class MultiTagPrefix extends BaseCollection {
 	}
 }
 
+#[HandlingCoordinator(BaseCoordinator::class)]
 class UntagsMiddleware extends BaseCollection {
-
-	public function _handlingClass ():string {
-
-		return BaseCoordinator::class;
-	}
 
 	public function FIRST__UNTAGh () {
 
