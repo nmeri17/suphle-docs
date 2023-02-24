@@ -18,7 +18,7 @@ footer: Made with blood and tears by Nmeri Alphonsus
 ---
 # Introduction
 
-Suphle is a PHP framework for enterprises and SAASes to build anything from robust APIs, to CLI programs and server rendered full-stack apps **without** compromising on the high fidelity expected of SPAs. It builds upon some of the [industry's most trusted](/docs/v1/database) components, but can equally get out of the way for you to insert libraries that make you feel more at home. Its recommended stack is STT (Suphle-Transphporm-Turbo)
+Suphle is a modern PHP framework for enterprises and SAASes to build anything from robust APIs, to CLI programs and server rendered full-stack apps **without** compromising on the high fidelity expected of SPAs. It builds upon some of the industry's most trusted components, but can equally get out of the way for you to insert libraries that make you feel more at home. Its recommended stack is SBT (Suphle-Blade-Turbo)
 
 ## Performance
 
@@ -35,7 +35,7 @@ Suphle has a number of objectives it advices you prioritize over speed benchmark
 - Get developers who don't yet to take automated testing more seriously
 - Deprecate error pages and responses.
 
-Thankfully, PHP's ecosystem has matured enough to boast of  static type-checking tools to snipe out what can be classified as compile-time errorsand RoadRunner to attend to both fears. Suphle comes pre-built with these tools, although it can still handle requests in the traditional PHP fashion.
+Thankfully, PHP's ecosystem has matured enough to boast of  static type-checking tools to snipe out what can be classified as compile-time errors and RoadRunner to attend to both fears. Suphle comes pre-built with these tools, although it can still handle requests in the traditional PHP fashion.
 
 ## How it's similar
 In a broader sense, if you're coming from a framework written in another language, some features there parallel what is obtainable in Suphle:
@@ -55,16 +55,15 @@ You may be thinking:
 Let me spare you the hassle by listing topics I personally find compelling:
 
 1. The routing system, guaranteed to be the most unconventional you've seen till date
-1. Module descriptors and wiring
+1. Module descriptors and their wiring
 1. Flows
 1. Testing framework to mock and verify behavior exposed by every observable functionality
 1. The default decorators available
 1. 3rd party framework bridge
 1. Exception handling, testing, broadcasting
-1. The controller layer
-1. HTML templating
+1. Service-coordinators
 
-You can randomly check out any of them. But the APIs for everything else in Suphle is carefully designed to look marvelous; from events to middleware, outgoing and incoming HTTP requests. There's model-based authorization, authentication customization. Pair strategic design with functionality, and you have the doozy that your SAAS application will be.
+You can randomly check out any of them. But the APIs for everything else in Suphle is carefully designed to look marvelous; from events to middleware, component-templates, outgoing and incoming HTTP requests. There's model-based authorization, authentication customization. Pair strategic design with functionality, and you have the doozy that your SAAS application will be.
 
 Let's not forget: this is still Suphle's first official release. The idea is that when it's augmented by a community no longer burdened by the issues it currently puts to rest, it'll serve as springboard for the next level of engineering web and CLI based software.
 

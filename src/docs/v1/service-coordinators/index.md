@@ -439,6 +439,8 @@ To solve these problems, Suphle provides a meta decorator `Suphle\Services\Decor
 
 In order to help with some boilerplate on consumers of this decorator, Suphle provides the trait `Suphle\Services\Structures\BaseErrorCatcherService`.
 
+All failable actions within your action handlers, mutative ones especially, should be wrapped in the safety net of a class with this decorator or that of any of its descendants. That way, any unintended failure that occurs will be isolated to that invocation and that invocation alone, without corrupting or forcely terminating the request.
+
 #### Substituting call result
 
 When decorator handler encounters an error during execution of decorated service, instead of terminating request or responding to caller with empty hands, it first [forwards the exception](/docs/v1/exceptions#Broadcasting-exception-details), before deriving a value to resolve the original call with.

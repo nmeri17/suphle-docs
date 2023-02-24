@@ -188,7 +188,7 @@ High-level, user-facing classes powered by the exception manager, `DetectedExcep
 
 class DecoratedServiceTest extends ModuleLevelTest {
 
-	protected $muffleExceptionBroadcast = false;
+	protected bool $muffleExceptionBroadcast = false;
 
 	public function test_service_call () {
 
@@ -201,31 +201,7 @@ class DecoratedServiceTest extends ModuleLevelTest {
 }
 ```
 
-#### Debugging HTTP exceptions
-
-When we automate HTTP tests into our application, the test won't fail if it encounters an error; rather, the call will return a response object with a payload containing formatted error-handled message, along with status code 500.
-
-Often, this isn't very helpful when trying to determine the reason test is not passing and would require reading possibly mangled response from the CLI. In order to prevent this, we want failing HTTP tests to terminate before reaching associated exception diffuser. This is achieved by setting class property `debugCaughtExceptions` to `true`.
-
-```php
-
-class TriggerHTTPTest extends ModuleLevelTest {
-
-	protected $debugCaughtExceptions = true;
-
-	public function test_http_endpoint () {
-
-		$this->putJson("/segment", [
-
-			"some" => "payload"
-		]); // when
-
-		// then, some assertion that won't run if above call ran into an error.
-	}
-}
-```
-
-These debug constructs should be removed from the test class after deciphering what's wrong behind the scenes.
+[These debug constructs](/docs/v1/testing#Debugging-HTTP-exceptions) should be removed from the test class after deciphering what's wrong behind the scenes.
 
 ### Specific exception testing
 

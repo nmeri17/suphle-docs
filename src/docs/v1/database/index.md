@@ -199,6 +199,30 @@ class EmploymentServiceTest extends ModuleLevelTest {
 
 These entities will be infused into their attached table for each test on the test class.
 
+### Overriding test setup
+
+This trait hooks into your test type's `setUp` process, thereby prohibiting its regular modification. If you have additional operations to run after `parent::setUp`, the trait's `setUp` must be aliased:
+
+```php
+
+class EmploymentServiceTest extends ModuleLevelTest {
+
+	use BaseDatabasePopulator {
+
+		BaseDatabasePopulator::setUp as databaseAllSetup;
+	}
+
+	private SomeType $myProperty;
+
+	protected function setUp ():void {
+
+		$this->databaseAllSetup();
+
+		$this->myProperty = $this->getFromSomewhere();
+	}
+}
+```
+
 ### Database state in-between resets
 
 Whenever a URL change occurs, the handling Container is ridded of all objects that were hydrated during the previous request, in preparation for the current one. As was [earlier mentioned](#Active-Record-pattern), Active-Record ORMs must be initiated on behalf of the entities intended to rely on it. However, doing so means that a new connection must be established. The implication of this is felt most strongly in some database-based tests:

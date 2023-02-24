@@ -399,7 +399,7 @@ class SomeDomainTest extends ModuleLevelTest {
 
 ```
 
-The call to `replaceWithMock` will create a `positiveDouble` for `RouterMock` and bind it to the Container given to `ModuleOneDescriptor`, and finally return an instance of the given descriptor. The double can equally be mocked by [passing mock arguments](/docs/v1/testing#mocking-doubles) as the 4th argument:
+The call to `replaceWithMock` will create a `positiveDouble` for `RouterMock` and bind it to the Container given to `ModuleOneDescriptor`, and finally return an instance of the given descriptor. The double can equally be mocked by [passing mock arguments](/docs/v1/testing#making-test-doubles) as the 4th argument:
 
 ```php
 
@@ -466,7 +466,7 @@ public function test_some_operation_expected_to_pass () {
 }
 ```
 
-This mock is verified at the end of the test, as long as the ensuing action does not throw any exceptions. If it does, the test will error out. If the exception is deliberate and you wish to verify both the mock and the exception, the mock must be attached to the Container before execution commences, usually, using the `massProvide` method for binding.
+This mock is verified at the end of the test, as long as the ensuing action does not throw any exceptions. If it does, the test will error out. If the exception is deliberate and you wish to verify both the mock and the exception, the mock must be attached to the Container before execution commences, usually, the [`massProvide`](/docs/v1/testing#Binding-objects-within-a-test) method for binding.
 
 ```php
 
