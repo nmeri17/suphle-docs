@@ -1,45 +1,48 @@
 ## Introduction
-When someone is asked "what part of our application do we test?", a wide range of answers quickly come to mind. Do we concentrate our efforts on our controllers since it encompasses the user's interaction with our application? Do we even pay attention to our validation layer so as to secure our endpoints from nonsensical input? What about models, events, services?
 
-An objective answer would approach that question by
-1) the amount of value testing each layer offers
-2) the layer that provides a broad surface area for examination
+The question "What part of the application do we test?", spurs a range of possible choices. For instance, one may ponder whether to concentrate efforts on the [coordinators](/docs/v1/service-coordinators) since it encompasses the user's interaction with the web-application? To what extent should attention be paid to [request validators](/docs/v1/service-coordinators#Validating-incoming-requests) so as to secure our endpoints from nonsensical input? What about models, events, services?
 
-Controllers pass the first point in flying colours, but fail the second one woefully. Due to their nature of crowding data from a myriad of sources under the umbrella of one endpoint, it becomes near impossible to exhaustively test those sources independently.The validation layer sits low in the hierarchy of importance, since one can't boast of how foolproof their input interceptor is if the business logic working with the input functions incorrectly
+This chapter sets out to walk through the various user-land layers, in order to glean which of them would be most beneficial to test.
 
-Given enough time and manpower, no layer should be exempt from being tested; that includes model hydrators, middleware, error handlers, authorization, queued tasks, configuration. However, in the absence of that, we channel our limited resources on the most critical aspect of our software – the business layer. If we can't guarantee the integrity of this layer, nothing we are building matters to the stakeholders. That is why decisive steps are put in place in the controllers to drive the service-oriented gospel home
+## Prioritizing test layers
 
-What would constitute a robust testing regimen is extensive examination of all the services come in contact with – specifically, the parts of our services that end up in controllers, the tasks they queue, listeners to raised events. A medium sized application will almost certainly contain enough code that testing this layer will keep the developers occupied before attaining satisfaction. When they eventually do, they can then ascend to the fringes of middleware, dtos and external calls (link to http)
+Given enough time and manpower, no layer should be exempt from being tested; that includes model hydrators, middleware, error handlers, authorization, queued tasks, configuration. More often than not, these resources are scarce, thus we must decide based on these salient points:
 
-## to test presentation format or not to test
-What becomes of this mighty layer, then? Actually, It is still vital in the scheme of things. However, the controller is not the best place to situate such tests. Presentation ultimately belongs in the realm of markup for html based responses, and documentation for API based ones. Presentation shouldn't concern itself with whether the information served to it by the business layer is "correct" or not. Its sole responsibility is to layout that data it receives in a format agreed upon by the applicable consumption mechanism (html/json)
-// can you give an example of testing the "data" value goes into div id x?
+1. The amount of value testing each layer offers.
+1. The layer that provides a broad surface area for examination.
+1. The layer that makes for [tests resilient to refactoring](#brittle-test-layers).
 
-**
-I will say unit tests are impossible to decouple from code. Integration tests for behavior shouldn't meddle with implementation details except where unwanted io is incurred. Then it has to be replaced with appropriate doubles. I almost always prefer mocks, to avoid an imaginary fiend removing the dependency and it's not apparent that a significant change has occurred
+Below, we pass some application's layers through these prisms:
 
-This sort of brittleness is inevitable, AFAIK
-**
-My own take on coordinators:
+- Coordinators pass point 1 but fails point 2. Due to their nature of crowding data from a myriad of sources under the umbrella of one endpoint, it becomes near impossible to exhaustively test those sources independently.
 
-1) do the http test for endpoints. It's unfortunate that there aren't more 
-libraries available for generic http tests verifying basic status code
+- Validators sit low in the hierarchy of importance, since one can't boast of how foolproof their input interceptor is if the business logic working with the input functions incorrectly.
 
-2) don't test controllers. That's the most common candidate of brittleness
+- Presentation tests ultimately belong in the realm of markup for HTML-based responses, and documentation for API-based ones. These both have dedicated testing libraries, indicating they're beyond the scope of testing the application's functionality. This layer is disqualified because it should not concern itself with whether the information served to it after executing business logic is "correct" or not. Its sole responsibility is to layout that data it receives in a format agreed upon by the applicable consumption mechanism.
 
-3) test the underlying services used by the action methods
+- Inbound HTTP tests foster duplicate verification of response bodies when the underlying endpoints re-use services.
 
-Testing response values for coordinators reusing services leads to duplicate tests
-Api = requires validation fields, status codes, and response shape
+In the actual sense, no one sector meets those objectives in an optimal measure. Attempting to do so would result in god-objects and mixed concerns. However, the over-arching concept where those objectives converge is commonly known as the application's business logic. If we can't guarantee its integrity, nothing we are building matters to the stakeholders. Thus, the software layers most vital to test are those situated in this layer -- where activities that define what the business wants are implemented.
 
-Test = requires coupling to service methods for the sake of regression. 
-This prevents status codes from verification
+For some background, we're differentiating between the *transport layer* and business logic. The transport layer is encapsulates peripheral mechanisms for carrying data in and out of the business layer. These are coordinators, queue tasks, middleware, Container and event bindings, console commands, presentation formats, that category of layers. On the other hand, there is company-specific behavior backed by the transport layer, without which those domains lose their meaning. This idea is what is being referred to as *business layer*.
 
-**
-Inasmuch as high level tests are resilient to refactoring implementation detail, they have an assumption that the individual components all behave correctly
-Instead of unit testing each method before an all-encompassing high level test, start with the high level one, only stopping at each sufficiently complex collaborator for a 2nd look when high level expectations are not met
+When decoupled from the transport layer, a strictly business layer can be adequately tested irrespective of a specific transport layer. That is one of the driving factors behind Suphle's replacement of Controllers with [Coordinators](/docs/v1/service-coordinators#Coordinator-services), [outgoing request wrappers](/docs/v1/http), and the likes. You're expected to replicate this philosophy across your transport layer i.e. extracting as much behavior as possible out of it. These extracts are what should be rigorously tested.
 
-Http tests are not pointless, in the sense that server rendered markup must be submitted for scrutiny since it contains executable code. It doesn't make sense to channel all attention to testing business logic when presentation parsing can still do us in. Templating engines like blade have view-only testing libraries, but why test just that when you can link to the source (action handlers) through a complete http test? 
+After testing the business layer, any spare time available should be purposed towards endorsing its integration with the transport layer: confirm the presence of expected validation rules, that your server rendered template successfully parses against the actual response payload, etc.
 
-The argument is that this parsing execution can and should be automated en 
-masse for all routes. 
+## Brittle test layers
+
+Two common testing antipatterns are known by the terms Flaky tests and Brittle tests. They are similar in characteristic but have a subtle difference: Flaky tests are those dependent on external, unstable factors that cause the test to pass/fail in an unpredictable manner. These factors could range from expected timestamps to filesystem permissions. Brittle tests, on the other hand, are those too tightly coupled to implementation details. These are concrete aspects of the software rather than intangible elements like behavior.
+
+Suphle's testing framework makes it convenient to verify interactions with the transport layer. However, when testing your business logic, behavior can be inferred by observing the shape of return values or its specific properties where necessary. Behavioral tests are not meant to be aware of the actual methods or internal concretes responsible for the effect eventually being observed. They should be observed much like the end user would. There are some exceptions where following this guideline is not always possible:
+
+- When debugging a defect with unit tests.
+- When practising TDD.
+- When the internals meddles with IO.
+- When doubling targets and collaborators with mocks.
+
+Inasmuch as these scenarios have their merits, brittleness can be considered one of their trade-offs when using them is inevitable. But the idea behind a brittle-resistant test is that its inner workings can be modified without requiring adjustment of the test as well, unless those implementation details are aimed at replacing existing behavior.
+
+## Conclusion
+
+In this chapter, we explored the diverse segments of an application in search of which of them would deliver the most profitable tests. We were able to deduce that the behavior of the business layer is where we should exercise our testing might.
