@@ -1,7 +1,9 @@
 # suphle-docs
-Documentation for https://github.com/nmeri17/suphle 
+Documentation for https://github.com/nmeri17/suphle
 
-As we have not launched yet, it's not hosted on its own domain yet. It can be accessed by cloning the repository. Cd into it, and run the command
+Hosted temporarily at https://angry-cray-9c191b.netlify.app
+
+To contribute, install and run locally by cloning the repository. Cd into it, and run the command
 
 ```bash
 npm install && npm run start
