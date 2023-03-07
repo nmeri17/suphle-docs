@@ -2,9 +2,9 @@
 
 This chapter relates to conventions and configurations for objects that enable [coordinator result](/docs/v1/service-coordinator#Creating-a-service-coordinator) to be parsed against a series of relevant files, into HTML content for a browser response or HTML mail. If you're not seeking to delve into the nitty-gritty of what makes this [renderer type](/docs/v1/routing#Markup-renderer) tick, the summary is that the default adapter is powered by Blade, assisted by a plugin for facilitating the use of Turbo Hotwire.
 
-### A brief history of settling for Blade
+### Settling for Blade
 
-PHP originally being a templating language means there's no shortage of SSR templating libraries. Among this list includes a certain Blade project whose ideology revolves around full separation of markup from content parsing or binding. It doesn't introduce a new template language, but uses the CSS syntax every web developer is already familiar with. Aside the theoretic advantage that this presents, it would both result in far more elegant templates, and obviate the quest for a full-stack developer with strong UI chops. Since the markups don't mangle arcane escape tags, they can directly be edited by the designer, at will.
+PHP originally being a templating language means there's no shortage of SSR templating libraries. Among this list includes a certain Transphporm project whose ideology revolves around full separation of markup from content parsing or binding. It doesn't introduce a new template language, but uses the CSS syntax every web developer is already familiar with. Aside the theoretic advantage that this presents, it would both result in far more elegant templates, and obviate the quest for a full-stack developer with strong UI chops. Since the markups don't mangle arcane escape tags, they can directly be edited by the designer, at will.
 
 These should have been every back-end developer's dream come true, but for reasons best known to the community, they were not convincing enough to gain it traction. Thus, its maintainers abandoned it.
 
@@ -69,7 +69,7 @@ These bindings are then used in the templates as follows, respectively:
 <x-project-name::tag-name /> <!-- Reads the tag names automatically on your behalf -->
 ```
 
-`CustomBladeAdapter` must then be bound to the `HtmlParser` interface [replacing](/docs/v1/container#Binding-regular-interfaces).
+`CustomBladeAdapter` must then be bound to the `HtmlParser` interface [replacing](/docs/v1/container#Binding-regular-interfaces) `DefaultBladeAdapter`.
 
 ## Configuring a presentation adapter
 
