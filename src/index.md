@@ -11,7 +11,7 @@ features:
   details: Class names are preferred over aliases in all cases (labelling, payloads/DTOs, routing); for discoverability, lazy-loading, auto-wiring them, etc. Strongly typed config classes. There are no includes, no folder scanning, no instantiation is done prematurely (during booting or whenever)
 - title: Infinite flexibility
   details: No hard-coded folder names. Dislike the default ORM? Swap it out in a heartbeat! Same goes for templating engine. Bring whatever components you're used to along. Even bring existing projects written in other PHP frameworks. Suphle will not object
-footer: Made with blood and tears by Nmeri Alphonsus
+footer: Made with 💉 and 😰 by Nmeri Alphonsus
 ---
 
 
