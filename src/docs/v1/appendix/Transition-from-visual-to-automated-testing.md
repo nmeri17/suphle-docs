@@ -136,3 +136,14 @@ This strategy comes in handy when stuck in the "Middle of nowhere" trap. This oc
 [As has already been said](/docs/v1/appendix/Building-blocks-of-the-testing-chain#the-induction), any value we intend to test has to end up somewhere, otherwise, there simply would be no way to observe it. Wrapping the steps leading up to `x` makes for cleaner code that is ready for reuse. But when that is not possible, hook up a checkpoint wherever `x` is eventually used, with the aid of mocks and spies
 
 // example
+
+#### Peeling off RCAs
+
+Applies not only to RCAs but dependencies whose lifetime are managed, and contents populated by external forces beyond our control
+
+stripping off the RCA itself and isolating its dependency to use expected raw input
+
+rca examples: middleware, request details, payload readers (both internal --stdIputR, etc), and user-land that rely on these guys, cli readers (getOption)
+
+** test equivalent identifiers section
+When building database-powered applications, learning migrations and factories is not optional

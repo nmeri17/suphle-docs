@@ -33,7 +33,7 @@ php suphle modules:create Products --module_descriptor="\AllModules\Products\Met
 
 When run, the command above will transfer contents of the template folder, *ModuleTemplate*, to a new `Products` module, replacing namespaces, class names and their contents, generally mirroring source structure to appropriately match the newly birthed module. When present, the `module_descriptor` option causes [component templates](/docs/v1/component-templates) to be automatically installed after module creation.
 
-Usually, ModuleTemplate will be customized to taste. If, however, your architecture of choice deviates from the default, your module template may reside away the Suphle executable. In this case, its new destination should be communicated to the executable through its `template_source` option:
+Usually, ModuleTemplate will be customized to taste. If, however, your architecture of choice deviates from the default, your module template may reside away from the Suphle executable. In this case, its new destination should be communicated to the executable through its `template_source` option:
 
 ```bash
 
@@ -123,7 +123,7 @@ interface ModuleTwo {
 
 By the namespace used and its location, you may observe that module interfaces reside outside the implementation created for them. The implementations can be removed or replaced at will. But consumers will always rely on the contract on the interface.
 
-`ModuleTwo`, above, is a simplistic interface in that it only deals with primitive types. This is not always the case in the real world. When a module interface deals with reference types, they should live in a visible, global scope i.e. defining a `Models` namespace beside `AllModules` and `ModuleInteractions`.
+`ModuleTwo`, above, is a simplistic interface in that it only deals with primitive types. Note that this is not always the case [in the real world](/docs/v1/database#Models-location).
 
 Usually, you'd want your module to be consumed directly from a coordinator in the dependent module instead of proxying calls to it using additional services. In this case, it'll be wise for the module's interface to extend `Suphle\Contracts\Modules\ControllerModule`. Suphle uses this measure to dissuade direct consumption of the implementation classes. Should you attempt to inject a random module interface into a coordinator, as with [any other *unknown* class](/docs/v1/service-coordinators#Permitted-dependencies), it will throw a `Suphle\Exception\Explosives\Generic\UnacceptableDependency` exception. 
 

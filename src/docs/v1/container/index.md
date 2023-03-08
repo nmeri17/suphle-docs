@@ -182,7 +182,7 @@ In the above examples, arguments are provided using class types. However, we may
 
 #### Service-locator context
 
-This refers to provisions intended for when we [manually retrieve objects from the container](/#Service-location). The same working model described for `whenType()` and `whenTypeAny()` are prevalent here. However, instead of `needsArguments()`, we use the `needs()` method.
+This refers to provisions intended for when we [manually retrieve objects from the container](#Service-location). The same working model described for `whenType()` and `whenTypeAny()` are prevalent here. However, instead of `needsArguments()`, we use the `needs()` method.
 
 ```php
 

@@ -68,13 +68,19 @@ Since implementation wasn't driven by tests, RTs should be combined with [code c
 
 Below, we discuss some drivers that determine what part of the development cycle should determine when the RTer tests his implementations.
 
-### Bite-sized driver
+### Test-cycle driver
 
-This driver dissuades the developer from putting off testing until development of the entire software is complete. The likelihood of . The retrofitted tester should endeavor never to accumulate so much untested code that their eventual testing becomes monotonous and daunting, because the risk of abandoning test automation is higher when that route taken.
+This driver dissuades the developer from putting off testing until development of the entire implementation is complete. A testing cycle is due once implementation of a testable behavior is completed. This driver holds true both during inclusion of new features and while debugging since it's easier to decipher the reason something is broken and triangulate from there.
 
-Systems under test are usually 3 times bulkier than the code testing them. This means that on average, try not to exceed 3 modified classes or methods before covering those additions in relevant tests. Doing so will equally prevent the tester from losing track of system's intended behavior.
+The Retrofitted Tester should endeavor never to accumulate so much untested code that their eventual testing becomes monotonous and daunting, because the risk of abandoning test automation is higher when that route is taken.
 
-### Exposure driver
+### Numerical-limit driver
+
+This driver refers to a measure of concretions to complete before writing tests for them. It should be kept at a low number; in fact, 3 is recommended, as systems under test are usually bulkier than the code testing them by that magnitude.
+
+When observing this driver, try not to exceed its figure when modified classes or methods before covering the additions in tests. Doing so will prevent the tester from losing track of system's intended behavior.
+
+### Pre-exposure driver
 
 There is a limited subset of users who should ever interact with unverified functionality. That list often contains the feature developer and occasionally, his collaborators. This means that whenever your work is to be merged either into master, production, something a teammate should continue from, they least those collaborators can ask for is for it to be stable.
 

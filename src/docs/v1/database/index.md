@@ -2,9 +2,9 @@
 
 The database layer can be considered as the heart of your program. It's where we describe nouns or entities that drive the application. If you visualize your software, picture this layer residing on the outskirts of the application, independent of the [modules](/docs/v1/modules), and are all accessible to each other.
 
-An object relational mapper, though not absolutely crucial, is often used to abstract away rows and functionality from the walls of the database server, into strongly-typed objects. PHP happens to be furnished with some established ORM libraries (not limited to [Eloquent](laravel.com/docs/8.x/eloquent) and [Cycle ORM](cycle-orm.dev)), with vast coverage of most possible database needs. Suphle keeps an open mind regarding your choice of which to use. If you are at a loss and could use some recommendation, do read on. Otherwise, skip the next section.
-
 ## Choosing an ORM
+
+An object relational mapper, though not absolutely crucial, is often used to abstract away rows and functionality from the walls of the database server, into strongly-typed objects. PHP happens to be furnished with some established ORM libraries (not limited to [Eloquent](laravel.com/docs/8.x/eloquent) and [Cycle ORM](cycle-orm.dev)), with vast coverage of most possible database needs. Suphle keeps an open mind regarding your choice of which to use. If you are at a loss and could use some recommendation, do read on.
 
 ### Active Record pattern
 
@@ -46,6 +46,14 @@ This pattern is yet to be explored in Suphle. Thus, no informed recommendation c
 1. Chances of replacing our ORM in future are next to none
 
 Whichever direction is most suitable for your application, it is recommended that as much as is possible, access to each model/entity is restricted to its managing module and its services.
+
+## Models location
+
+Since Modules are expected to be opaque to their consumers, a module interface that returns a value typed to an internal model will warrant its consumers reach into the module for the model's type, which is unacceptable. Thus, models and indeed any type whose usage transcends one module, ought to be situated in a visible, global scope.
+
+Since domains are unique to each application, it's impossible for Suphle to provide any default models. However, it is recommended that whichever ones you create are stored in a directory beside `AllModules` and `ModuleInteractions` or any other location convenient for all modules to access. In the [Starter project](https://github.com/nmeri17/suphle-starter), an `AppModels` directory is created and namespaced for you. If another name will be more intuitive, rename this folder and update its namespace in your `composer.json`.
+
+This same location should house the model's migrations, for better proximity when pointing models to [their related migrations](#Configuring-table-structure).
 
 ## ORM adapters
 
@@ -136,7 +144,7 @@ While testing `Employer`, the test runner will scan specified directories in an 
 php suphle bridge:laravel "make:migration create_employers_table --path=Migrations"
 ```
 
-The `path` argument is relative to Laravel's base folder, which in Suphle, conforms to the component's location on the module. However, this rigid constraint conflicts with Suphle's architecture, where models reside outside the module and are expected to reference their migrations' location. To avoid coupling your models to the component class, the only choice left is to move the freshly created migration files within proximity of the models.
+The `path` argument is relative to Laravel's base folder, which in Suphle, conforms to the component's location on the module. However, this rigid constraint conflicts with Suphle's architecture, where [models reside outside the module](#Models-location) and are expected to reference their migrations' location. To avoid coupling your models to the component class, the only choice left is for the freshly created migration files to share the same location with their parent models.
 
 ## Testing the data layer
 
@@ -311,7 +319,9 @@ protected function setUp ():void {
 
 #### Retrieving inserted models
 
-Models can be obtained in a few ways, depending on your needs. If there's no constraint on model properties, a random instance can serve. We get them using either `getRandomEntity` or `getRandomEntities` method for one or more entries, respectively.
+Models can be obtained in a few ways, depending on your needs. However, before their retrieval, you will recall where we made mention of [lazy-loading being disabled](#Eloquent-models) for all models. This means that any model retrieved by the methods discussed in this section will throw a `Illuminate\Database\LazyLoadingViolationException` when their relations are being read without first being eagerly loaded. In order to avoid this error during retrieval, a list of relations must be submitted beforehand.
+
+If there's no constraint on model properties, a random instance can serve. We get them using either `getRandomEntity` or `getRandomEntities` method for one or more entries, respectively.
 
 ```php
 
@@ -323,6 +333,13 @@ public function test_unauthorized_user_cant_perform_operation () {
 
 	// do thing with these entities
 }
+```
+
+Both methods take an optional 1st and 2nd argument respectively, named `relations`, for passing relations to eagerly load.
+
+```php
+
+$employment = $this->replicator->getRandomEntity(["employer.user"]);
 ```
 
 Tests verifying behavior for specific constraints should use the `getSpecificEntities` method to apply column clauses like so:
@@ -347,6 +364,8 @@ public function test_modified_expected_rows () {
 	// then
 }
 ```
+
+`getSpecificEntities` takes an optional 3rd argument for setting relationships to eagerly load.
 
 #### Count test data
 

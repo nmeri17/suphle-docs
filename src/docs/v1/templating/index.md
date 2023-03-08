@@ -419,7 +419,11 @@ As was discussed in the [login mediators](/docs/v1/authentication#Login-mediator
 
 ## Connecting the broadcaster
 
-One other tag Hotwire introduces is the `turbo-stream-source` for creating persistent connections for creating one-way connections to streamable URI sources such as those provided by web-sockets. This tag requires a `src` attribute for defining the target URI source. Fortunately, the Roadrunner load-balancer that powers Suphle [application servers](/docs/v1/application-server) is equipped with a plugin for spinning up web-socket servers. To connect it, you have to start by including its entries in your server config yaml file. The reference config includes the following settings.
+One other tag Hotwire introduces is the `turbo-stream-source` for creating persistent connections for creating one-way connections to streamable URI sources such as those provided by web-sockets and server-sent events.
+
+Streamable URI sources are updates that should be seen by all connected clients. They are publications in response to the change in state of some vector observed by one or more clients. Such changes can either be orchestrated by the regular HTTP request of one user (for e.g. new status of a database model during that request handling), a client-only action, or in response to a 3rd-party subject. Since web-socket us mainly for transmitting data back and forth clients, if a client originated action is expected to mutate the database in-between that flow, a regular AJAX request should be sent to the server.
+
+The `turbo-stream-source` tag requires a `src` attribute for defining the target URI source. Fortunately, the Roadrunner load-balancer that powers Suphle [application servers](/docs/v1/application-server) is equipped with a plugin for spinning up web-socket servers. To connect it, you have to start by including its entries in your server config yaml file. The reference config includes the following settings:
 
 ```yaml
 # Websockets plugin
@@ -534,7 +538,7 @@ class BasicTemplateTest extends ModuleLevelTest {
 }
 ``` 
 
-As already explained in the Appendix chapter regarding what [aspects of the software constitute meaningful tests](/docs/v1/appendix/What-to-test.md), you can only go so far with verifying DOM elements. However, if you insist, you may be better served by installing [a package](https://github.com/nunomaduro/laravel-mojito) that provides greater verification functionality for Blade templates.
+As already explained in the Appendix chapter regarding what [aspects of the software constitute meaningful tests](/docs/v1/appendix/What-to-test), you can only go so far with verifying DOM elements. However, if you insist, you may be better served by installing [a package](https://github.com/nunomaduro/laravel-mojito) that provides greater verification functionality for Blade templates.
 
 ```bash
 

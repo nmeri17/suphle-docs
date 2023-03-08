@@ -6,6 +6,8 @@ One of the recommended steps at adhering to this guideline is warning against th
 
 Whatever design decision is made based on these suggestions, events are expected to be an important part of it. This is because they are a strong symbol of high cohesion, enabling us escape writing an infamous Transactional Script. Developers ought to pay attention at seams for operations whose results are of no importance to the caller, and execute them in response to an event, for them to evolve and be tested without incurring the initiator.
 
+A developer more accustomed to the age-old Transactional Script can initially warrant an ideological revolution to think in terms of events. Features or functionality will no longer be read as a sequential, fixed procedure of activities, but as isolated reactions to relevant events, executed in event handlers.
+
 ## Setting an event manager
 
 Event managers act as platform for all signal emission and reception pertaining to the module containing them. Modules aiming to perform either functionality are required to [supply a sub-class](/docs/v1/container#Binding-regular-interfaces) of `Suphle\Events\EventManager` as the binding for the parent interface, `Suphle\Contracts\Events`.
