@@ -14,7 +14,7 @@ I don't believe the difference between when the test artifacts are produced are 
 
 ## Relevance of retrofitted tests
 
-[tests-code-for-code.jpg](/tests-code-for-code.jpg)
+![tests-code-for-code.jpg](/tests-code-for-code.jpg)
 
 The TDD adherent may wonder the purpose of writing tests after implementation, since production code that tests should have driven has already been written. They suppose one should visually tell whether that code is factual. However, eye tests should only be recommended for verifying that the presentation layer matches the product designer's mockups. One cardinal rule to always bear in mind is that anything executable should not be subject to assumptions, wishes, or eye tests.
 

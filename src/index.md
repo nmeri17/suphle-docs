@@ -20,7 +20,7 @@ Suphle is a modern PHP framework for enterprises and SAASes to build anything fr
 
 ## Performance
 
-[image-not-found](/image-not-found.jpg)
+![image-not-found](/image-not-found.jpg)
 
 If you're coming from the JS ecosystem, you must be itching to see whether Suphle has the longest bar among a row of competing contenders. By now, it should be common knowledge that if you're not building one of the FAANG companies, handling hundreds of thousands of requests per second should be the least of your worries.
 
