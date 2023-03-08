@@ -8,7 +8,7 @@ Hurry to your CLI to install Suphle starter project through Composer.
 
 ```bash
 
-composer require nmeri17/suphle-starter
+composer create-project nmeri17/suphle-starter
 ```
 
 Replace the contents of `AllModules\PublishedModules` in your project with this class:

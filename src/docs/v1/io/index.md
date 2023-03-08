@@ -1,6 +1,6 @@
 ## Introduction
 
-I/O consists of peripheral components typically not governed by domain logic. They typically serve to facilitate efficient meeting of business goals and by their configuration, exist at the infrastructural layer of our application.
+I/O consists of peripheral components not governed by domain logic. They typically serve to facilitate efficient meeting of business goals and by their configuration, exist at the infrastructural layer of our application.
 
 In order to access any of the underlying mechanisms exposed by interfaces discussed in this chapter, all the consumer is required to do is to declare a dependency on it from its constructor. We mostly go into the detail of these interfaces, here, for the purpose of customization or providing alternative adapters for their underlying mechanisms.
 

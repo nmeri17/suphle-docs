@@ -52,7 +52,7 @@ class CarRoutes extends BaseCollection {
 
 Upper-case method segments such as `SALES` correspond to their literal equivalents. The definition above says that GET requests to `http://example.com/sales` should execute `EntryCoordinator::salesHandler`, and use the result of that invocation to parse the HTML template at `/configured/path/show-sales.php`.
 
-`_get` and `Markup` refer to the [HTTP method](#HTTP-request-methods) and response [content format](#Presentation-formats) respectively.
+`_get` and `Markup` refer to the [HTTP method](#HTTP-request-methods) and response [content format](#Presentation-formats) sections respectively.
 
 #### Hyphenated pattern segments
 
