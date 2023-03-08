@@ -182,7 +182,7 @@ class ProductRepository extends UpdatelessService {
 If we focus on our coordinator, there are a few things to observe:
 
 - Aside the fact that it visually looks cleaner than dumping everything there,
-- GETs are lazier and under caller's control, giving room for extended query clauses.
+- Fetches are lazier and under caller's control, giving room for extended query clauses.
 - We avoided duplicating builders across request objects.
 - Coordinator doesn't mingle into implementation details of the payload.
 
