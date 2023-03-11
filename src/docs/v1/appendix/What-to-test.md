@@ -24,15 +24,82 @@ Below, we pass some application's layers through these prisms:
 
 In the actual sense, no one sector meets those objectives in an optimal measure. Attempting to do so would result in god-objects and mixed concerns. However, the over-arching concept where those objectives converge is commonly known as the application's business logic. If we can't guarantee its integrity, nothing we are building matters to the stakeholders. Thus, the software layers most vital to test are those situated in this layer -- where activities that define what the business wants are implemented.
 
-For some background, we're differentiating between the *transport layer* and business logic. The transport layer is encapsulates peripheral mechanisms for carrying data in and out of the business layer. These are coordinators, queue tasks, middleware, Container and event bindings, console commands, presentation formats, that category of layers. On the other hand, there is company-specific behavior backed by the transport layer, without which those domains lose their meaning. This idea is what is being referred to as *business layer*.
+For some background, we're differentiating between the *transport layer* and business logic. The transport layer encapsulates peripheral mechanisms for carrying data in and out of the business layer. These are coordinators, queue tasks, middleware, Container and event bindings, console commands, presentation formats, that category of layers. On the other hand, there is company-specific behavior backed by the transport layer, without which those domains lose their meaning. This idea is what is being referred to as *business layer*.
 
 When decoupled from the transport layer, a strictly business layer can be adequately tested irrespective of a specific transport layer. That is one of the driving factors behind Suphle's replacement of Controllers with [Coordinators](/docs/v1/service-coordinators#Coordinator-services), [outgoing request wrappers](/docs/v1/http), and the likes. You're expected to replicate this philosophy across your transport layer i.e. extracting as much behavior as possible out of it. These extracts are what should be rigorously tested.
 
-After testing the business layer, any spare time available should be purposed towards endorsing its integration with the transport layer: confirm the presence of expected validation rules, that your server rendered template successfully parses against the actual response payload, etc.
+For example, our objective is to build a feed for users to see content from accounts they are following. If the test for this problem approaches it from the implementation standpoint, it'll make the test look redundant. An working implementation could start out as follows:
+
+```php
+
+// PostsService
+public function showPostsToUser (
+
+	UserContract $user, array $fields, int $amount = 20,
+
+	bool $hasSeenAll = false;
+):iterable {
+
+	$subscribedIds = $this->userModule->mostInteractedWith($user)
+
+	->pluck("id");
+
+	$postsBuilder = $this->blankPost->whereIn("author_id", $subscribedIds)
+
+	->where([
+		[
+			"created_at", "<=",
+
+			(new DateTime)->add(new DateInterval("PT3H"))
+		]
+	])
+	->inRandomOrder()->limit($amount)->select($fields);
+
+	if (!$hasSeenAll) $postsBuilder->whereDoesntHave("seen", $user->id);
+
+	return $postsBuilder->get();
+}
+```
+
+The fetcher above almost entirely interacts with the database, but it'll be wasteful to mock those internal methods:
+
+- It's unrealistic to mock all those methods both due to their size and how [brittle](#brittle-test-layers) such a test would be.
+- Since the methods belong to 3rd-party maintainers, it's unreliable to stub the mock with an expected return value.
+- The database is a transport layer.
+- By mocking the internals of `showPostsToUser`, we will end up recreating that invocation sequence, resulting in a redundant test.
+
+What the business demands is that,
+
+> users to see content from accounts they are following
+
+Some of the clauses applied to that query are modifiers not relevant to the aim of this scope. What would guarantee the rectitude of `showPostsToUser`'s results is that the content it returns indeed correspond to accounts they are subscribed to. And that is what we should test.
+
+```php
+
+public function test_fetches_only_subscribed_content () {
+
+	$user = $this->getRandomEntity(); // given
+
+	$postsService = $this->getContainer()->getClass(PostsService::class);
+
+	$posts = $postsService->showPostsToUser($user, ["id"], 10); // when
+
+	$allMatching = $posts->filter(function ($post) use ($user, $postsService) {
+
+		return $postsService->isFollowingAuthor($post, $user);
+	});
+
+	$this->assertSame( $posts->count(), $allMatching->count()); // then
+}
+```
+
+Our `test_fetches_only_subscribed_content` relies on the premise that `isFollowingAuthor` has a test that uses [the `databaseApi` property](/docs/v1/database#Asserting-database-state) to verify at the lower-level, that the relationship column matches the given value.
+
+After testing the business layer, any spare time available should be purposed towards endorsing its integration with the transport layer: confirm the presence of expected validation rules, that your server-rendered template successfully parses against the actual response payload, etc.
 
 ## Brittle test layers
 
-Two common testing antipatterns are known by the terms Flaky tests and Brittle tests. They are similar in characteristic but have a subtle difference: Flaky tests are those dependent on external, unstable factors that cause the test to pass/fail in an unpredictable manner. These factors could range from expected timestamps to filesystem permissions. Brittle tests, on the other hand, are those too tightly coupled to implementation details. These are concrete aspects of the software rather than intangible elements like behavior.
+Two common testing anti-patterns are known by the terms Flaky tests and Brittle tests. They are similar in characteristic but have a subtle difference: Flaky tests are those dependent on external, unstable factors that cause the test to pass/fail in an unpredictable manner. These factors could range from expected timestamps to filesystem permissions. Brittle tests, on the other hand, are those too tightly coupled to implementation details. These are concrete aspects of the software rather than intangible elements like behavior.
 
 Suphle's testing framework makes it convenient to verify interactions with the transport layer. However, when testing your business logic, behavior can be inferred by observing the shape of return values or its specific properties where necessary. Behavioral tests are not meant to be aware of the actual methods or internal concretes responsible for the effect eventually being observed. They should be observed much like the end user would. There are some exceptions where following this guideline is not always possible:
 

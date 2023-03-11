@@ -66,7 +66,7 @@ Majority of your interaction with an ORM will be done against methods on its par
 - Models not having factories or migrations
 - Indiscriminate access to model instances using facades
 
-This class is known as `Suphle\Adapters\Orms\Eloquent\Models\BaseModel` and all models are expected to extend it. Specifics regarding factories are described in greater detail on [their documentation page](laravel.com/docs/8.x/database-testing#defining-model-factories), although you may want to look at off the shelf [solutions at automating](github.com/mpociot/laravel-test-factory-helper) this task.
+This class is known as `Suphle\Adapters\Orms\Eloquent\Models\BaseModel` and all models are expected to extend it. Specifics regarding factories are described in greater detail on [their documentation page](https://laravel.com/docs/8.x/database-testing#defining-model-factories), although you may want to look at off the shelf [solutions at automating](github.com/mpociot/laravel-test-factory-helper) this task.
 
 Within the default interface loader of `OrmDialect`, a call is placed to boot all models into their strict mode. This prevents them from:
 
@@ -115,7 +115,7 @@ class PDOMysqlKeys implements Database {
 
 #### Configuring table structure
 
-In order to encourage a feature-based, incremental approach toward development, models are required to list all migrations pertaining to them, using the `BaseModel::migrationFolders` method.
+In order to encourage a feature-based, incremental approach toward development, models are required to list all [migrations](https://laravel.com/docs/9.x/migrations) pertaining to them, using the `BaseModel::migrationFolders` method.
 
 ```php
 
@@ -262,7 +262,7 @@ public function test_my_database_service () {
 }
 ```
 
-An exhaustive list of [available database assertions](laravel.com/docs/8.x/database-testing#available-assertions) is maintained by the authors of Eloquent, but applies to any ORM adapter connected.
+An exhaustive list of [available database assertions](https://laravel.com/docs/8.x/database-testing#available-assertions) is maintained by the authors of Eloquent, but applies to any ORM adapter connected.
 
 ### Accessing test models
 

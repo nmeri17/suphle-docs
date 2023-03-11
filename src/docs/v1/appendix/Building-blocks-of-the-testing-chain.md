@@ -81,7 +81,7 @@ class SomeCoordinator {
 ```
 
 Some other times, the object needs to collaborate with guardians or 
-managers, as its own invocation won't make thematic sense in the bigger picture. This is discussed in more detail in the chapter covering [isolation techniques](/docs/v1/appendix/Transition-from-visual-to-automated-testing#isolation-strategies). In the interim, it suffices to know that inducement in this context refers to the act of **triggering** some effect, behavior or functionality we intend to observe.
+managers, as its own invocation won't make thematic sense in the bigger picture. This is discussed in more detail in the chapter covering [isolation techniques](/docs/v1/appendix/Transition-from-visual-to-automated-testing#unit-isolation-strategies). In the interim, it suffices to know that inducement in this context refers to the act of **triggering** some effect, behavior or functionality we intend to observe.
 
 ## The effect
 

@@ -4,11 +4,13 @@ As a wise friend once put it, "the devil is in the maintenance. Don't assume kno
 
 In this chapter, we'll be looking at strategies for the new addition to dovetail the way it would have, had it been planned along with the original structure. It assumes an already firm [grasp of test automation](/docs/v1/appendix/Building-blocks-of-the-testing-chain).
 
-## Understanding business requirements
+## Team synchronization
 
 Irrespective of the hierarchy information propagates between the developer and the client, one of the earliest steps to take before committing a line of code to the text editor, is to ensure you have a shared understanding of what the requirements are expected of you, with the stakeholder.
 
 Depending on scope and level of complexity, it may be necessary to request for more clarification than is stated on the document. When this is the case, don't hesitate to ask as many questions as needed to remove ambiguity. Consider it your part to play in ensuring you are both on the same page.
+
+If the back or front end is developed by multiple engineers, it's more beneficial to define a chain of command for orders to flow through. While all team members should accelerate towards the same vision, they ought to prioritize the steps that will lead to those goals and religiously adhere to them. This will cause working conditions to be standardized such that contributors don't publish conflicting updates or whimsically take on any part of the project they deem fit.
 
 ## Calculating delivery schedule
 
@@ -64,7 +66,7 @@ After implementing our shiny new feature, modifying or refactoring an existing o
 
 We mentioned earlier the usefulness of the event-for-non-fetches approach from the [onset](#Initial-build-guidelines). The caveat to this rule is that it only applies under situations where we're not modifying existing behaviour itself but only augmenting it. When the motive is to replace existing behaviour, we have to either [extend](#Extending-and-integrating-existing-parts) or modify the existing system, depending on intended longevity of the modification. In any case, the fresh addition should be tested in isolation to guarantee it functions as intended before its integration into the system (using `whenTypeAny()` or any other [binding mechanism](/docs/v1/container#Putting-objects-into-the-container)). Afterwards, the entire test suite should be run and pass, as a stamp of stability.
 
-Don't change numerous parts of the system haphazardly so as not to render it unrunnable. A *system* here, can refer to a module or group of collaborating classes that form an integration test. It can be tricky to edit them coherently, considering how intertwined implementation of real-life features can be. That's where our [isolatory tactics](/docs/v1/appendix/Transition-from-visual-to-automated-testing#Isolation-strategies) should come to play. They ought to enable incremental modification while maintaining system stability. With the aid of doubles and extensions, you should be able to break the bigger picture into smaller units by its Areas of Impact. Implement all requirements for each constituent from its little corner, without leaving system worse than you met it, or losing the ability to test that AoI independently.
+Don't change numerous parts of the system haphazardly so as not to render it unrunnable. A *system* here, can refer to a module or group of collaborating classes that form an integration test. It can be tricky to edit them coherently, considering how intertwined implementation of real-life features can be. That's where our [isolatory tactics](/docs/v1/appendix/Transition-from-visual-to-automated-testing#unit-isolation-strategies) should come to play. They ought to enable incremental modification while maintaining system stability. With the aid of doubles and extensions, you should be able to break the bigger picture into smaller units by its Areas of Impact. Implement all requirements for each constituent from its little corner, without leaving system worse than you met it, or losing the ability to test that AoI independently.
 
 ### Extending and integrating existing parts
 
