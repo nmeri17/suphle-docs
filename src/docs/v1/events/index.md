@@ -62,7 +62,7 @@ In the example above, the `Events` interface is used, as opposed to the class, `
 
 **Note**: A more complete variation of `CheckoutCart` can be found in the [Programmatic updates](/docs/v1/service-coordinators#Programmatic-updates) chapter.
 
-Managers can be called from most scopes, although it's likely only service classes will be necessary to emit from. However, service coordinators are explicitly prohibited from importing event managers or emission. Doing so will throw an `Suphle\Exception\Explosives\Generic\UnacceptableDependency` exception at [compile-time](/docs/v1/application-server#Startup-operations). The reason for this is to dissuade any form of logic or computation that would distract us from the primary assignment within coordinators. Coordinators are simply not classes to be relied on by anyone except the framework.
+Managers can be called from most scopes, although it's likely only service classes will be necessary to emit from. However, service coordinators are explicitly prohibited from importing event managers or emission. Doing so will throw an `Suphle\Exception\Explosives\DevError\UnacceptableDependency` exception at [compile-time](/docs/v1/application-server#Startup-operations). The reason for this is to dissuade any form of logic or computation that would distract us from the primary assignment within coordinators. Coordinators are simply not classes to be relied on by anyone except the framework.
 
 There is a trait recommended to be combined with the manager during emissions, known as `Suphle\Events\EmitProxy`. It is used as follows:
 

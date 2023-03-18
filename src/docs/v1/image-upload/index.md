@@ -50,7 +50,7 @@ In the first argument to `setImages` above, we use the property `ImagefulPayload
 
 ### Applying optimizer operations
 
-Once appropriate image fields are selected, the objective is to write them to disk, and persist the stored names into some database. However, `OptimizersManager` will throw an `Suphle\Exception\Explosives\Generic\UnmodifiedImageException` exception on attempts to save a resource collection without first applying optimizations to it. At the very least, images are expected to all conform to a uniform size.
+Once appropriate image fields are selected, the objective is to write them to disk, and persist the stored names into some database. However, `OptimizersManager` will throw an `Suphle\Exception\Explosives\DevError\UnmodifiedImageException` exception on attempts to save a resource collection without first applying optimizations to it. At the very least, images are expected to all conform to a uniform size.
 
 The default optimizer doesn't seek to encompass all possible operations, only those considered essential:
 

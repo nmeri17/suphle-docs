@@ -149,25 +149,32 @@ protected $childrenTypes = [
 
 There are a few other ways to have gone about this, one of which is the use of model factories. This method deletes it at the database level, but isn't quite supported on all database engines. Model-based authorizers are a safe location to gather child relations and send them to any of the entity decomissioning locations we prefer. Some developers opt for the simpler soft-deletes approach, while others are convinced model archiving is a far superior paradigm.
 
-However, for any generic solution to this problem to bear fruit, you must promise not to delete any models using shortcuts such as a DBMS.
+However, for any generic solution to this problem to bear fruit, you must promise yourself and team members not to delete any models using shortcuts such as a DBMS.
 
 #### Authorization through relationships
 
-Permissions aren't contagious. You'd have to protect the models in those relationships themselves from any form of undesirable access.
+Permissions aren't contagious -- those relationships must be protected on their models from any form of undesirable access.
 
 
 ## Route-based authorization
 
-You may have noted that our `retrieved` method in the model-based authorizer simply returned `true`, which would imply everyone can view instances of this resource. In the real world, this isn't always desirable. We want to limit contextual access to our models; that is, while it may be okay to list available `Employment`s, we only want those with sufficient authority to retrieve them within the scope where updates to them can be made, for example, to their edit page. We still retrieve `Employment`s here but since the concept of pages doesn't exist on the DAL, we use route-based authorization to achieve our goal. Furthermore, it is applicable to pages not strictly offering priviliged access to database models, such as an administrative dashboard, pages displaying an interface to create sub-resources, etc. Any mutative endpoint is a ripe candidate for a series of authorization impositions.
+You may have noted that our `retrieved` method in the model-based authorizer simply returned `true`, which would imply everyone can view instances of this resource. In the real world, this isn't always desirable. We want to limit contextual access to our models; that is, while it may be okay to list available `Employment`s, we only want those with sufficient authority to retrieve them within the scope where updates to them can be made; for example, to their edit page. We still retrieve `Employment`s here but since the concept of pages doesn't exist on the DAL, we use route-based authorization to achieve our goal. Furthermore, it is applicable to pages not strictly offering priviliged access to database models, such as an administrative dashboard, pages displaying an interface to create sub-resources, etc. Any mutative endpoint is a ripe candidate for a series of authorization impositions.
 
 ### Tagging route authorization
 
-As you may have guessed, this form of authorization is defined on route collection, using the `Suphle\Contracts\Routing\RouteCollection::_authorizePaths (PathAuthorizer $pathAuthorizer)` method. `Suphle\Routing\BaseCollection`defines an empty implementation of this method, meaning that when absent, it is assumed that no route is authorized. However, when present, it works in conjuction with `Suphle\Request\RouteRule`. Suppose we want to secure routes on a collection `AuthorizeRoutes`, they will be tagged as follows:
+This form of authorization is achieved by overriding the `Suphle\Contracts\Routing\RouteCollection::_preMiddleware` method with a binding to the `Suphle\Auth\RequestScrutinizers\AuthorizeMetaFunnel` collector.
+
+`Suphle\Routing\BaseCollection` defines an empty implementation of the `_preMiddleware` method, meaning that when absent, it is assumed that no route pattern on this collection is authorized unless it's used as a sub-collection of one bound to the `AuthorizeMetaFunnel` collector.
+
+The binding to this collector accepts a list of patterns and a rule class to evaluate. Path authorization rule classes are extensions of the base `Suphle\Request\RouteRule`.
+
+Suppose we want to authorize access to route patterns on a collection `AuthorizeRoutes`, they will be bound as follows:
 
 ```php
-use Suphle\Routing\BaseCollection;
 
-use Suphle\Request\PathAuthorizer;
+use Suphle\Routing\{BaseCollection, PreMiddlewareRegistry, Decorators\HandlingCoordinator};
+
+use Suphle\Auth\RequestScrutinizers\AuthorizeMetaFunnel;
 
 use Suphle\Response\Format\Json;
 
@@ -186,17 +193,15 @@ class AuthorizeRoutes extends BaseCollection {
 		$this->_prefixFor(UnlocksAuthorization1::class);
 	}
 
-	public function _authorizePaths (PathAuthorizer $pathAuthorizer):void {
+	public function _preMiddleware (PreMiddlewareRegistry $registry):void {
 
-		$pathAuthorizer->addRule (
+		$registry->tagPatterns(
 
-			[ "ADMIN__ENTRYh", "ADMIN"], AdminRule::class
+			new AuthorizeMetaFunnel([ "ADMIN__ENTRYh", "ADMIN"], AdminRule::class)
 		);
 	}
 }
 ```
-
-`addRule` returns a fluent interface that allows us to pair as many patterns to as many rules as necessary.
 
 Meanwhile, `AdminRule` will look like this:
 
@@ -212,26 +217,16 @@ class AdminRule extends RouteRule {
 }
 ```
 
-The above tag will prohibit access to all routes matching "/admin-entry", as well as sub-patterns under "/admin/\*" for users who aren't admins.
+The above tag will prohibit access to all routes matching `/admin-entry`, as well as sub-patterns under `/admin/*` for users who aren't admins.
 
-### Untagging route authorization
+### Detaching parent route authorization
 
-Suppose we want to exclude certain sub-patterns under "/admin/\*", we'll use `Suphle\Request\PathAuthorizer::forgetRule(array $patterns, string $rule):self` method:
+The `PreMiddlewareRegistry::removeTag` method is used to exclude route sub-patterns from inherited collector bindings. For instance, suppose we want disconnect some patterns on the `UnlocksAuthorization1` nested collection, we'll override its `_preMiddleware` method as follows:
 
 ```php
 
 #[HandlingCoordinator(EmploymentEditCoordinator::class)]
 class UnlocksAuthorization1 extends BaseCollection {
-
-	public function RETAIN () {
-
-		$this->_get(new Json("simpleResult"));
-	}
-
-	public function ADDITIONAL__RULEh () {
-
-		$this->_get(new Json("simpleResult"));
-	}
 
 	public function SECEDE () {
 
@@ -248,29 +243,34 @@ class UnlocksAuthorization1 extends BaseCollection {
 		$this->_get(new Json("getEmploymentDetails"));
 	}
 
-	public function _authorizePaths (PathAuthorizer $pathAuthorizer):void {
+	public function _preMiddleware (PreMiddlewareRegistry $registry):void {
 
-		$pathAuthorizer->addRule (
+		$registry->tagPatterns(
 
-			[ "GMULTI__EDITh_id"], EmploymentEditRule::class // note that this equates &&
-		)
-		->forgetRule([
+			new AuthorizeMetaFunnel(
 
-			"SECEDE", "GMULTI__EDIT__UNAUTHh"
-		], AdminRule::class);
+				[ "GMULTI__EDITh_id"], EmploymentEditRule::class
+			)
+		)->removeTag(
+
+			["SECEDE", "GMULTI__EDIT__UNAUTHh" ],
+
+			AuthorizeMetaFunnel::class, function (AuthorizeMetaFunnel $collector) {
+
+				return $collector->ruleClass == AdminRule::class;
+			})
+		);
 	}
 }
 ```
 
-In the collection above, we declare some patterns but modify existing authorization inherited from the parent collection in a few ways: we use `forgetRule` to detach authorization applied from preceding collections. It doesn't necessarily have to be the immediate parent collection.
+We distill through authorization declarations for the one bound to `AdminRule` rule.
 
-While at it, we apply an additional authorization rule. Instead of overwriting `AdminRule`, what this does is combine both into a stack of rules that looks like:
+### Combining with inherited path rules
 
-```php
-$patternRules = [AdminRule::class, EmploymentEditRule::class];
-```
+Within `UnlocksAuthorization1::_preMiddleware`, an additional authorization rule is applied to the `GMULTI__EDITh_id` pattern, which already has the `AdminRule` inherited from the parent collection. The `EmploymentEditRule` authorization rule will never run if `AdminRule` fails, so there's no need to combine the logic manually in the rule class.
 
-`EmploymentEditRule` will never run if `AdminRule` fails, so there's no need to combine the logic manually in the rule class. By the way, `EmploymentEditRule` is a model-based authorization, meaning that where necessary, there's no problem with combining both.
+`EmploymentEditRule` is a model-based authorization, meaning that where necessary, there's no problem with combining both.
 
 ```php
 class EmploymentEditRule extends RouteRule {
@@ -301,7 +301,7 @@ class EmploymentEditRule extends RouteRule {
 }
 ```
 
-This will make that pattern accessible to only admins AND the resource's creator.
+The combination of both authorization rules above will reduce `/admin/gmulti-edit/1603` accessibility to only admins AND the resource's creator.
 
 ## Testing authorization
 

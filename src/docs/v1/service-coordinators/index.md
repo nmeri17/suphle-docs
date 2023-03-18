@@ -55,7 +55,7 @@ Before intercepting values from our users, it's important to shield the precious
 
 ### Linking validators to request handler
 
-For HTTP methods where validators are compulsory, if no validator aggregate or matching method is found, a `Suphle\Exception\Explosives\Generic\NoCompatibleValidator` exception is thrown, which in turn, is a sub-class of the famous [Suphle\\Contracts\\Exception\\BroadcastableException](/docs/v1/exception/#programmer-level-exceptions).
+For HTTP methods where validators are compulsory, if no validator aggregate or matching method is found, a `Suphle\Exception\Explosives\DevError\NoCompatibleValidator` exception is thrown, which in turn, is a sub-class of the famous [Suphle\\Contracts\\Exception\\BroadcastableException](/docs/v1/exception/#programmer-level-exceptions).
 
 Our validations thus need to meet the following objectives:
 
@@ -74,16 +74,18 @@ class ValidatorCoordinator extends ServiceCoordinator {
 		"foo_field" => "required",
 		"bar_field" => "email"
 	])]
-	public function postWithValidator () {
+	public function postWithValidator (CartBuilder $cartBuilder) {
 
 		//
 	}
 }
 ```
 
+Validation rules are bound to the action handlers rather than the builders or database models since not all requests using the same model are qualified by the presence of the same fields or validation rules.
+
 ### Validator adapters
 
-Suphle employs an agnostic approach to underlying validator. This means the rules are merely expected to conform to whatever active validation library is connected under the hood. The default library in use is that of Illuminate. This makes all rules defined on [that doc](https://laravel.com/docs/8.x/validation#available-validation-rules) equally applicable in Suphle. To gain access to a rule collection you're more conversant with, you want to replace this default with another library by implementing the `Suphle\Contracts\Requests\RequestValidator` interface and connecting it as an [interface loader](/docs/v1/container/#interface-loaders).
+Suphle employs an agnostic approach to underlying validator. This means the rules are merely expected to conform to whatever active, compatible validation library is connected under the hood. The default library in use is that of Illuminate. This makes all rules defined on [that doc](https://laravel.com/docs/8.x/validation#available-validation-rules) equally applicable in Suphle. To gain access to a rule collection you're more conversant with, you want to replace this default with another library by implementing the `Suphle\Contracts\Requests\RequestValidator` interface and connecting it as an [interface loader](/docs/v1/container#interface-loaders).
 
 ```php
 namespace Suphle\Contracts\Requests;
@@ -270,13 +272,13 @@ In order to keep our Coordinators lean, cohesive and disciplined, they have a na
 
 - `Suphle\Services\UpdatefulService` and `Suphle\Services\UpdatelessService`
 
-Attempting to inject a dependency outside this list will throw a `Suphle\Exception\Explosives\Generic\UnacceptableDependency` exception and prevent app server from being built. Details about each class is treated in its appropriate section.
+Attempting to inject a dependency outside this list will throw a `Suphle\Exception\Explosives\DevError\UnacceptableDependency` exception and prevent app server from being built. Details about each class is treated in its appropriate section.
 
 Action methods can only type-hint arguments extending `Suphle\Services\Structures\ModelfulPayload` and `Suphle\Services\Structures\ModellessPayload`. This is because any other service we want to inject will likely be applicable to other endpoints on this coordinator and should be injected through the constructor. Violating this rule will throw an `InvalidArgumentsException` while equally preventing app server from being built.
 
 ## Securing POST requests
 
-You may already be aware of the famous CSRF [middleware](/docs/v1/middlewares) customary for non-GET requests. In Suphle, this alone is not enough -- it's mandatory for such endpoints to use services that [facilitate such operations](#mutative-database-decorators), by injecting at least one service decorated with either `Suphle\Contracts\Services\Decorators\SystemModelEdit` or `Suphle\Contracts\Services\Decorators\MultiUserModelEdit`. Failure to adhere to this will throw a `Suphle\Exception\Explosives\Generic\MissingPostDecorator` runtime exception.
+You may already be aware of the famous CSRF [middleware](/docs/v1/middlewares) customary for non-GET requests. In Suphle, this alone is not enough -- it's mandatory for such endpoints to use services that [facilitate such operations](#mutative-database-decorators), by injecting at least one service decorated with either `Suphle\Contracts\Services\Decorators\SystemModelEdit` or `Suphle\Contracts\Services\Decorators\MultiUserModelEdit`. Failure to adhere to this will throw a `Suphle\Exception\Explosives\DevError\MissingPostDecorator` runtime exception.
 
 ## Coordinator services
 

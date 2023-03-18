@@ -14,9 +14,9 @@ features:
 footer: Made with 💉 and 😰 by Nmeri Alphonsus
 ---
 
-## Introduction
+## The Suphle you ordered is here!
 
-Suphle is a modern PHP framework for enterprises and SAASes to build anything from robust APIs, to CLI programs and server rendered full-stack apps without compromising on the high fidelity expected of SPAs. It builds upon some of the industry's most trusted components, but can equally get out of the way for you to insert libraries that make you feel more at home. Its recommended stack is SBT (Suphle-Blade-Turbo)
+Suphle is a modern PHP framework for enterprises, startups and SAASes to build anything from robust APIs, to CLI programs and server rendered full-stack apps without compromising on the high fidelity expected of SPAs. It builds upon some of the industry's most trusted components, but can equally get out of the way for you to insert libraries that make you feel more at home. Its recommended stack is SBT (Suphle-Blade-Turbo)
 
 ## Performance
 
@@ -44,7 +44,9 @@ In a broader sense, if you're coming from a framework written in another languag
 - *Rust:* Macros, Result
 - *Phoenix:* Livewire
 
-It may interest you to know that some of these best practices were only found to intersect after Suphle was mostly complete rather than a premeditated attempt to build a chimera of widely acclaimed functionality. That is why in Suphle, their implementation details differ. For instance, Suphle's modules are wired/built differently. The rest of the documentation goes into thorough detail about how that, as well as other implementations you're used to were improved upon.
+It may interest you to know that some of these best practices were only found to intersect after Suphle was mostly complete rather than a premeditated attempt to build a chimera of widely acclaimed functionality. That is why in Suphle, their implementation details differ. For instance, Suphle's modules are wired/built differently, our transaction decorator does more than just transactions, and so on.
+
+The rest of the documentation goes into thorough detail about how that, as well as other implementations you're used to were improved upon.
 
 ## How it's different
 
@@ -68,5 +70,9 @@ You can randomly check out any of them. But the APIs for everything else in Suph
 ::: tip
 The love you have for what you build naturally reflects in the artsy attention paid to it. What if every thing could be built that way without the costly expense of tedium?
 :::
+
+## How reliable it is
+
+The iteration of Suphle released for public use has been in the making for at least 3 years, with 2 of out of that demanding full-time devotion. It's not farfetched to assume that that is enough time for it to have been rigorously tested and refined to withstand most realistic conditions. Should any need or bug have escaped internal usage, you can label the StackOverflow tag, `suphle`, on [your question](https://stackoverflow.com/questions/ask). If it's unexpected behavior, or that which deviates from specification on this documentation, kindly attempt to reproduce it on the [Github repopository](https://github.com/nmeri17/suphle/issues/new/choose).
 
 [Ready to get started?](/docs/v1/quick-start)

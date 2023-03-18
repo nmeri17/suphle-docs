@@ -479,9 +479,12 @@ class LowerMirror extends BaseApiCollection {
 		$this->_get(new Json("originalCascade"));
 	}
 
-	public function _authenticatedPaths ():array {
+	public function _preMiddleware (PreMiddlewareRegistry $registry):void {
 
-		return ["CASCADE"];
+		$registry->tagPatterns(
+
+			new AuthenticateMetaFunnel(["CASCADE"], $this->authStorage)
+		);
 	}
 }
 ```

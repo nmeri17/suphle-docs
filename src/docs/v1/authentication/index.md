@@ -188,15 +188,19 @@ A number of authentication mechanisms are used in practise, depending on capabil
 
 ### Simple authentication tag
 
-In Suphle, we use `Suphle\Contracts\Auth\AuthStorage` to represent the mechanisms mentioned earlier. Each unique mechanism must implement this interface. Collections containing routes we wish to secure must return the list of routes as follows:
+In Suphle, the `Suphle\Contracts\Auth\AuthStorage` interface is used to represent the mechanisms mentioned earlier, and must be implemented by each unique mechanism. Collections containing routes we wish to secure must bind those paths to the `Suphle\Auth\RequestScrutinizers\AuthenticateMetaFunnel` collector by overriding the `_preMiddleware` reserved method like so:
 
 ```php
-use Suphle\Routing\BaseCollection;
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\Controllers\BaseCoordinator;
+use Suphle\Routing\{BaseCollection, PreMiddlewareRegistry, Decorators\HandlingCoordinator};
+
+use Suphle\Auth\RequestScrutinizers\AuthenticateMetaFunnel;
 
 use Suphle\Response\Format\Json;
 
+use Suphle\Tests\Mocks\Modules\ModuleOne\Controllers\BaseCoordinator;
+
+#[HandlingCoordinator(BaseCoordinator::class)]
 class SecureBrowserCollection extends BaseCollection {
 
 	public function SEGMENT() {
@@ -204,31 +208,41 @@ class SecureBrowserCollection extends BaseCollection {
 		$this->_get(new Json("plainSegment"));
 	}
 
-	public function _authenticatedPaths():array {
+	public function _preMiddleware (PreMiddlewareRegistry $registry):void {
 
-		return ["SEGMENT"];
+		$registry->tagPatterns(
+
+			new AuthenticateMetaFunnel(["SEGMENT"], $this->authStorage)
+		);
 	}
 }
 ```
 
-`Suphle\Routing\BaseCollection` injects `Suphle\Contracts\Auth\AuthStorage` into its constructor, which would lift whatever mechnism is set as default in `BaseInterfaceCollection`. If you have any reason to override your collection's constructor, do well to provide a preferred authentication mechanism as well. The sub-class, `Suphle\Routing\BaseApiCollection` uses the more specific `Suphle\Auth\Storage\TokenStorage`
+With the binding above, all requests to `http://example.com/segment` will require the user to be authenticated by the given authentication mechanism.
 
-### Authentication in nested collections
+`Suphle\Routing\BaseCollection` injects `Suphle\Contracts\Auth\AuthStorage` into its constructor, which would lift whatever mechnism is set as default in `BaseInterfaceCollection`. If you have any reason to override your route collection's constructor, do well to provide a preferred authentication mechanism for your route authentication needs. The sub-class, `Suphle\Routing\BaseApiCollection` uses the more specific `Suphle\Auth\Storage\TokenStorage`
 
-As route patterns cascade, protection applied to a prefixed pattern or method applies to patterns in the collection below it. To selectively apply authentication to a sub-collection, we mention only those patterns we want to retain authentication on. When Suphle encounters authentication in a nested collection, it filters off patterns not on that list. For example, given the following collection sequence:
+### Detaching in nested collections
+
+As route patterns cascade, protection applied to a prefixed pattern or method applies to patterns in the collection below it. To selectively apply authentication to a sub-collection, those patterns to be exempted must be detached from the over-arching authentication lording over them. For example, given the following parent route collection:
 
 ```php
 
-use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
+use Suphle\Routing\{BaseCollection, PreMiddlewareRegistry, Decorators\HandlingCoordinator};
+
+use Suphle\Auth\RequestScrutinizers\AuthenticateMetaFunnel;
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Prefix\UnchainParentSecurity, Controllers\BaseCoordinator};
 
 #[HandlingCoordinator(BaseCoordinator::class)]
 class UpperCollection extends BaseCollection {
 
-	public function _authenticatedPaths():array {
+	public function _preMiddleware (PreMiddlewareRegistry $registry):void {
 
-		return ["PREFIX"];
+		$registry->tagPatterns(
+
+			new AuthenticateMetaFunnel(["PREFIX"], $this->authStorage)
+		);
 	}
 	
 	public function PREFIX () {
@@ -238,9 +252,11 @@ class UpperCollection extends BaseCollection {
 }
 ```
 
+If we want to open some patterns on `UnchainParentSecurity` to guest and authenticated users alike, we'll use the `PreMiddlewareRegistry::removeTag` method to disconnect them.
+
 ```php
 
-use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
+use Suphle\Routing\{BaseCollection, PreMiddlewareRegistry, Decorators\HandlingCoordinator};
 
 use Suphle\Response\Format\Json;
 
@@ -249,9 +265,12 @@ use Suphle\Tests\Mocks\Modules\ModuleOne\Controllers\MixedNestedSecuredControlle
 #[HandlingCoordinator(MixedNestedSecuredController::class)]
 class UnchainParentSecurity extends BaseCollection {
 
-	public function _authenticatedPaths():array {
+	public function _preMiddleware (PreMiddlewareRegistry $registry):void {
 
-		return ["RETAIN__AUTHh"];
+		$registry->removeTag(
+
+			["UNLINK"], AuthenticateMetaFunnel::class
+		);
 	}
 	
 	public function UNLINK () {
@@ -266,7 +285,78 @@ class UnchainParentSecurity extends BaseCollection {
 }
 ```
 
-All manner of visitors are free to visit "/prefix/unlink", without discriminating against their authentication status.
+Now, requests to `/prefix/unlink` will no longer discriminate against the authentication status of its visitor.
+
+### Enforcing user verification
+
+Often, it's not enough for visiting user to be authenticated, but for them to have verified their account using mediums such as email or phone number. In order to achieve this, a collector that evaluates user verification status must be bound after the one to `AuthenticateMetaFunnel`. A default one is provided for you, in the form of  `Suphle\Adapters\Orms\Eloquent\RequestScrutinizers\AccountVerifiedFunnel`.
+
+```php
+
+use Suphle\Routing\{BaseCollection, PreMiddlewareRegistry, Decorators\HandlingCoordinator};
+
+use Suphle\Auth\RequestScrutinizers\AuthenticateMetaFunnel;
+
+use Suphle\Response\Format\Json;
+
+use Suphle\Adapters\Orms\Eloquent\RequestScrutinizers\AccountVerifiedFunnel;
+
+use Suphle\Tests\Mocks\Modules\ModuleOne\Controllers\BaseCoordinator;
+
+#[HandlingCoordinator(BaseCoordinator::class)]
+class SecureBrowserCollection extends BaseCollection {
+
+	public function SEGMENT() {
+
+		$this->_get(new Json("plainSegment"));
+	}
+
+	public function _preMiddleware (PreMiddlewareRegistry $registry):void {
+
+		$patterns = ["SEGMENT"];
+
+		$registry->tagPatterns(
+
+			new AuthenticateMetaFunnel($patterns, $this->authStorage)
+		)
+		->tagPatterns(new AccountVerifiedFunnel($patterns) );
+	}
+}
+```
+
+`AccountVerifiedFunnel` accepts an optional 2nd argument for declaring what URL is necessary for commencing the verification process. The default value for this parameter is `/accounts/verify`. When the protected route pattern matches [the API prefix](/docs/v1/routing#API-channel-configuration), the visitor will receive a JSON message containing the verification destination, while those originating from the browser will be redirected to it.
+
+The 3rd argument of this collector is used for optionally specifying what field determines account verification status. Majority applications use their database's `email_verified_at` column, thus this is the default value for that parameter. It can be set to any other field is more applicable in your case. However, if your account verification transcends the simplistic single column comparison, consider replacing this collector with a custom one that meets your needs. This collector must then be linked to its handler through the `Suphle\Contracts\Config\Router::scrutinizerHandlers` method.
+
+```php
+
+class RouterMock extends Router {
+
+	/**
+	 * {@inheritdoc}
+	*/
+	public function scrutinizerHandlers ():array {
+
+		return array_merge(parent::scrutinizerHandlers(), [
+
+			CustomVerifierFunnel::class => ComplexVerifierHandler::class
+		]);
+	}
+}
+```
+
+Collector handlers are required to extend the `Suphle\Routing\Structures\BaseScrutinizerHandler` class.
+
+```php
+
+class ComplexVerifierHandler extends BaseScrutinizerHandler {
+
+	public function scrutinizeRequest ():void {
+
+		// some awesome verification
+	}
+}
+```
 
 ### Authentication in mirrored collections
 

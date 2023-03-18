@@ -125,7 +125,7 @@ By the namespace used and its location, you may observe that module interfaces r
 
 `ModuleTwo`, above, is a simplistic interface in that it only deals with primitive types. Note that this is not always the case [in the real world](/docs/v1/database#Models-location).
 
-Usually, you'd want your module to be consumed directly from a coordinator in the dependent module instead of proxying calls to it using additional services. In this case, it'll be wise for the module's interface to extend `Suphle\Contracts\Modules\ControllerModule`. Suphle uses this measure to dissuade direct consumption of the implementation classes. Should you attempt to inject a random module interface into a coordinator, as with [any other *unknown* class](/docs/v1/service-coordinators#Permitted-dependencies), it will throw a `Suphle\Exception\Explosives\Generic\UnacceptableDependency` exception. 
+Usually, you'd want your module to be consumed directly from a coordinator in the dependent module instead of proxying calls to it using additional services. In this case, it'll be wise for the module's interface to extend `Suphle\Contracts\Modules\ControllerModule`. Suphle uses this measure to dissuade direct consumption of the implementation classes. Should you attempt to inject a random module interface into a coordinator, as with [any other *unknown* class](/docs/v1/service-coordinators#Permitted-dependencies), it will throw a `Suphle\Exception\Explosives\DevError\UnacceptableDependency` exception. 
 
 #### Integrating module interfaces
 
@@ -190,7 +190,7 @@ class ModuleTwoDescriptor extends ModuleDescriptor {
 }
 ```
 
-Other modules will reference this one using this interface. If in any of those references, an incompatible implementation is given, a `Suphle\Exception\Explosives\Generic\InvalidImplementor` exception will be thrown and prevent server build.
+Other modules will reference this one using this interface. If in any of those references, an incompatible implementation is given, a `Suphle\Exception\Explosives\DevError\InvalidImplementor` exception will be thrown and prevent server build.
 
 
 ### Receiving module dependencies
@@ -262,7 +262,7 @@ class PublishedModules extends ModuleHandlerIdentifier {
 
 In larger apps, some of the modules will tend to have enough dependencies to crowd the `getModules` method. In such case, don't hesitate to build them from the comfort of dedicated methods, only using instance variables on `getModules`.
 
-While building your application, a verification is performed to compare implementations with the consumer's `expatriateNames`. Any one that doesn't match this list will cause an `Suphle\Exception\Explosives\Generic\UnexpectedModules` exception to be thrown, preventing app from building.
+While building your application, a verification is performed to compare implementations with the consumer's `expatriateNames`. Any one that doesn't match this list will cause an `Suphle\Exception\Explosives\DevError\UnexpectedModules` exception to be thrown, preventing app from building.
 
 #### Dependency availability
 

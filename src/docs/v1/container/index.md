@@ -201,9 +201,9 @@ protected function registerConcreteBindings ():void {
 }
 ```
 
-These methods return a fluent interface but it may be safer to terminate the end of each entity provision to avoid ambiguity. Any attempt to define a provision without first declaring its context will raise a `Suphle\Exception\Explosives\Generic\HydrationException`. Avoid nesting provisions so as not to encounter unpleasant scenario of outer provision using the inner one.
+These methods return a fluent interface but it may be safer to terminate the end of each entity provision to avoid ambiguity. Any attempt to define a provision without first declaring its context will raise a `Suphle\Exception\Explosives\DevError\HydrationException`. Avoid nesting provisions so as not to encounter unpleasant scenario of outer provision using the inner one.
 
-All provisions are required to be compatible with hydrated type; otherwise, an `Suphle\Exception\Explosives\Generic\InvalidImplementor` exception is thrown.
+All provisions are required to be compatible with hydrated type; otherwise, an `Suphle\Exception\Explosives\DevError\InvalidImplementor` exception is thrown.
 
 #### Global singletons
 
@@ -543,7 +543,7 @@ Aside from loggers, any environment with `strict_type=1` would halt on encounter
 
 The fact that concretes are decoupled from their interfaces makes the likelihood of one concrete unwittingly referring to an interface whose concrete, in turn, refers to it high. Bear in mind that proxying interfaces is different from concretes since it has methods that need implementations.
 
-When this is the case, the container won't proxy calls to the interface. Even though it's possible to extract and wrap their concrete on the fly, the overhead and sheer *sorcery* of such an implementation deviate too far away from the language's expected behaviour, for very little benefit. Doing so goes against one of Suphle's core principles. That said, when Container encounters such concretes, it will throw a `Suphle\Exception\Explosives\Generic\HydrationException`.
+When this is the case, the container won't proxy calls to the interface. Even though it's possible to extract and wrap their concrete on the fly, the overhead and sheer *sorcery* of such an implementation deviate too far away from the language's expected behaviour, for very little benefit. Doing so goes against one of Suphle's core principles. That said, when Container encounters such concretes, it will throw a `Suphle\Exception\Explosives\DevError\HydrationException`.
 
 Circular dependencies are commonly associated with class-class constructor similarity but can equally spring up in surprising areas of the project. For instance:
 
