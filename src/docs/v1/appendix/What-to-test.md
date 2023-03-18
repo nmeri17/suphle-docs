@@ -37,7 +37,7 @@ public function showPostsToUser (
 
 	UserContract $user, array $fields, int $amount = 20,
 
-	bool $hasSeenAll = false;
+	bool $hasSeenAll = false
 ):iterable {
 
 	$subscribedIds = $this->userModule->mostInteractedWith($user)
