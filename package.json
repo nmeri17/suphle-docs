@@ -11,7 +11,6 @@
   "scripts": {
     "dev": "vuepress dev src",
     "build": "vuepress build src",
-    "postbuild": "vuepress-sitemap -H https://suphle.dev -d dist",
     "watch": "npm run dev -- --watch",
     "watch2": "vuepress dev src --temp .temp"
   },
