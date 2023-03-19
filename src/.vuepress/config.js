@@ -4,7 +4,7 @@ module.exports = {
   /**
    * Ref：https://v1.vuepress.vuejs.org/config/#title
    */
-  title: "Suphle Docs",
+  title: "Suphle",
   /**
    * Ref：https://v1.vuepress.vuejs.org/config/#description
    */
@@ -21,7 +21,7 @@ module.exports = {
     ["meta", { name: "apple-mobile-web-app-status-bar-style", content: "black" }]
   ],
 
-  // theme: "antdocs",
+  theme: "vt",
 
   /**
    * Theme configuration, here is the default theme configuration for VuePress.
@@ -29,16 +29,17 @@ module.exports = {
    * ref：https://v1.vuepress.vuejs.org/theme/default-theme-config.html
    */
   themeConfig: {
+    enableDarkMode: true,
     repo: "https://github.com/nmeri17/suphle",
     docsRepo: "https://github.com/nmeri17/suphle-docs",
     editLinks: false,
     docsDir: "",
     editLinkText: "",
-    lastUpdated: true,
+    //lastUpdated: true,
 
-    logo: "/logo.jpg",
+    logo: "/logo.svg",
     searchPlaceholder: 'Search topic',
-    base: "/suphple-docs/",
+    base: "/suphple-docs/", // folder name
 
     sidebarDepth: 2,
     nav: [
@@ -81,20 +82,23 @@ module.exports = {
       ["/docs/v1/component-templates/", "Component-templates"], ["/docs/v1/application-server/", "Application-server"], ["/docs/v1/credits/", "Credits"],
 
       ["/docs/v1/appendix/", "Appendix"]
-    ]
+    ],
+    plugins: {
+      '@vuepress-plugin-sitemap': {
+        hostname: 'https://suphle.com'
+      }
+    }
   },
 
   /**
    * Apply plugins，ref：https://v1.vuepress.vuejs.org/zh/plugin/
    */
-  plugins: [
+  plugins: [ // vendor/title (can be gotten from package.json)
     "@vuepress/plugin-back-to-top",
-    "@vuepress/plugin-medium-zoom",
-    "@vuepress/plugin-last-updated",
     "@vuepress/plugin-register-components",
     "@vuepress/plugin-active-header-links",
-    "@vuepress/plugin-search",
+    //"@vuepress/plugin-search",
     "@vuepress/plugin-nprogress",
-    "vuepress-theme-antdocs"
+    "@vuepress/plugin-check-md", // run with vuepress check-md [docsDir]. Optionally add the --fix flag,
   ]
 }

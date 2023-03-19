@@ -1,8 +1,8 @@
 ---
 home: true
-heroImage: /suphle.jpg
+heroImage: /logo.svg
 tagline: Opinionated PHP framework for building performant, extensible, and testable web applications
-actionText: Quick Start →
+actionText: Quick Start
 actionLink: /docs/v1/quick-start/
 features:
 - title: Building an architectural masterpiece?
@@ -20,13 +20,13 @@ Suphle is a modern PHP framework for enterprises, startups and SAASes to build a
 
 ## Performance
 
-![image-not-found](/image-not-found.jpg)
+![](/image-not-found.jpg)
 
 If you're coming from the JS ecosystem, you must be itching to see whether Suphle has the longest bar among a row of competing contenders. By now, it should be common knowledge that if you're not building one of the FAANG companies, handling hundreds of thousands of requests per second should be the least of your worries.
 
 Performance graphs compare frameworks/runtimes built for Hello World projects, or rudimentary apps making a very simple SQL query. These "educational" apps lack the context of a realistic project using an ORM to make dynamic, unpredictable or un-cacheable queries. That is not to discredit the value of speed. In Suphle, we use a trie-based router for quick failure, a RoadRunner server that's as close to a compiled language as it gets, and Flows for preemptively caching endpoints serving complex content.
 
-Suphle has a number of objectives it advices you prioritize over speed benchmarks. That is:
+Suphle has a number of objectives it advices you prioritize over speed benchmarks:
 
 - Building software maintainable by both minnows and those who didn't originally create it.
 - Bridging the gap between developers who make best practices optional and those who don't -- standardizing them, if you will.
