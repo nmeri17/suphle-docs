@@ -11,7 +11,7 @@
   "scripts": {
     "dev": "vuepress dev src",
     "build": "vuepress build src",
-    "watch": "npm run dev -- --watch",
+    "watch": "vuepress build --watch",
     "watch2": "vuepress dev src --temp .temp"
   },
   "license": "MIT",

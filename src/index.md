@@ -1,4 +1,5 @@
 ---
+layout: Home
 home: true
 heroImage: /logo.svg
 tagline: Opinionated PHP framework for building performant, extensible, and testable web applications
