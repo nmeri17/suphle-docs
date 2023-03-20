@@ -285,11 +285,6 @@ section.content.markdown-body {
 	margin: 0;
     padding: 0 8%;
 
-    &#performance-container, &#similar-container {
-
-    	background: #fafaff;
-    }
-
 	h2 {
 		font-weight: 500;
 	    font-size: 20px;

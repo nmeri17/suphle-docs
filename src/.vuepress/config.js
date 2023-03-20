@@ -99,6 +99,12 @@ module.exports = {
     "@vuepress/plugin-active-header-links",
     //"@vuepress/plugin-search",
     "@vuepress/plugin-nprogress",
-    "@vuepress/plugin-check-md", // run with vuepress check-md [docsDir]. Optionally add the --fix flag,
+    "@vuepress/plugin-check-md", // run with vuepress check-md [docsDir]. Optionally add the --fix flag
+    "versioning" // not working now
   ]
 }
+
+/*https://github.com/lorisleiva/vuepress-plugin-seo
+https://github.com/webmasterish/vuepress-plugin-minimal-analytics
+https://github.com/webmasterish/vuepress-plugin-autometa
+*/
