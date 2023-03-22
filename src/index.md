@@ -6,12 +6,12 @@ tagline: Opinionated PHP framework for building performant, extensible, and test
 actionText: Quick Start
 actionLink: /docs/v1/quick-start/
 features:
-- title: Building an architectural masterpiece?
-  details: Modular-monoliths? Slim controllers? Conditional factories? If those terms appeal to you, their enabling structures are enforced in Suphle
+- title: Unprecedented integrationa
+  details: Side-loading projects written in other frameworks. Overridable, versioned API routes automatically derived from existing browser paths
 - title: Intuitive DX
-  details: Class names are preferred over aliases in all cases (labelling, payloads/DTOs, routing); for discoverability, lazy-loading, binding them, etc. Strongly-typed config classes. There are no includes, no runtime folder scanning, no instantiation is done prematurely (during booting or whenever), no statics, magics or globals
+  details: Modular-monoliths. Class names are preferred over aliases in all cases (labelling, payloads/DTOs, routing); for discoverability, lazy-loading, binding them, etc. Strongly-typed config classes. There are no includes, no runtime folder scanning, no instantiation is done prematurely (during booting or whenever), no statics, magics or globals
 - title: Infinite flexibility
-  details: No hard-coded folder names. Dislike the default ORM? Swap it out in a heartbeat! Same goes for templating engine. Bring whatever components you're used to along. Even bring existing projects written in other PHP frameworks. Suphle will not object
+  details: No hard-coded folder names. Dislike the default ORM? Swap it out in a heartbeat! Same goes for templating engine. Bring whatever components you're used to along.
 footer: Made with 💉 and 😰 by Nmeri Alphonsus
 ---
 
