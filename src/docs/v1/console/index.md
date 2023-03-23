@@ -79,6 +79,34 @@ class AltersConcreteCommand extends BaseCliCommand {
 
 In this case, `getExecutionContainer()` will simply fallback to the first module for hydrating dependencies or the logic service. In fact, when going this route, you can bypass `getExecutionContainer()`, altogether and inject said dependency from the constructor; although, you may want to keep things uniform, and avoid the risk of forgetting the call to `parent::_construct()`.
 
+### Referencing vendor/bin
+
+Suphle provides the `Suphle\Server\VendorBin` class to simplify access to binaries domiciled in that directory. It has, among others, the handy `setProcessArguments` method for sending in binary name and arguments, and retrieving a `Symfony\Component\Process\Process` object for monitoring activity or flushing output.
+
+Suppose we have a service that interacts with an `ft` binary, it will have the following signature:
+
+```php
+
+use Suphle\Server\VendorBin;
+
+class FTWrapper {
+
+	public function __construct (protected readonly VendorBin $vendorBin) {
+
+		//
+	}
+
+	public function triggerFTBinary (array $argumentList):bool {
+
+		return $this->vendorBin->setProcessArguments("ft", $argumentList)
+
+		->isSuccessful();
+	}
+}
+```
+
+`FTWrapper` can then be used like any other service in the actual command. The complete documentation for the `Process` class can be found [here](https://symfony.com/doc/current/components/process.html), where you can see other things to do aside verifying binary executed successfully. The example above simply returns this status rather than defining the commands reaction to execution status because output should be controlled by the calling layer. Another caller may prefer a different output to the same outcome. It also allows the service be tested without rigging up a command testing setup.
+
 ## Connecting commands
 
 Each module provides its own console config `Suphle\Contracts\Config\Console`, using its `commandsList()` method to expose available commands. The default configuration class to extend when including custom commands is `Suphle\Config\Console`.
@@ -166,3 +194,117 @@ class AltersConcreteTest extends CommandLineTest {
 ```
 
 This is the recommended way to inject things within module-based tests. Notice the use of `replaceConstructorArguments` over other doubling variants. Symfony commands will not run if their constructor is not invoked. Unlike other objects, we can get away with doubling commands in this manner since their constructor has no parameters.
+
+### Testing vendor/bin
+
+When executing the commands in your modules within a test environment, Suphle's CLI runner will use the titular module's `ModuleFiles::getRootPath` method to determine where to execute. This is usually fine since all custom files you intend to read or work with take their root from the project's entry path. However, the case is different for commands that interact with the `vendor/bin` folder, since additional effort is needed to locate it dynamically from the test scope.
+
+#### Setting vendor path
+
+In order to adequately test such commands, it's recommended that the part of the service invoking the binary is decoupled by stubbing it out before executing the command. It's a convenient method to use for binaries that are comfortable with receiving a file or folder to work with as an argument. It allows the test fixtures exist in dynamic paths independent of a fixed file structure.
+
+Suphle provides the `Suphle\Testing\Proxies\RealVendorPath` trait for facilitating operations performed on `vendor/bin` from the test scope, irrespective of the test class's relative path to that folder.
+
+Bringing this to our `FTWrapper` service above, its command's test could look like this:
+
+```php
+
+
+class FTCommandTest extends CommandLineTest {
+
+	protected function getModules ():array {
+
+		return [new ModuleOneDescriptor(new Container) ];
+	}
+
+	public function test_command_does_x_on_success () {
+
+		$wrapperName = FTWrapper::class;
+
+		$this->massProvide([
+
+			$wrapperName => $this->positiveDouble($wrapperName, [
+
+				"triggerFTBinary" => true
+			])
+		]);
+
+		$command = $this->consoleRunner->findHandler(
+
+			FTCommand::commandSignature()
+		);
+
+		$commandTester = new CommandTester($command);
+
+		$commandTester->execute([
+
+			FTCommand::FILE_ARGUMENT => "random/path"
+		]);
+
+		// then // test command output or command specific behavior
+	}
+}
+```
+
+Then the wrapper service can be tested exclusively by supplying arguments to it.
+
+```php
+
+use AllModules\Tests\Mocks\Modules\ModuleOne\Concretes\Commands\FTEvaluate1;
+
+use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\RealVendorPath};
+
+use ReflectionClass;
+
+class FTWrapperTest extends ModuleLevelTest {
+
+	use RealVendorPath;
+
+	protected function getModules ():array {
+
+		return [new ModuleOneDescriptor(new Container) ];
+	}
+
+	public function test_can_successfully_read_file () {
+
+		$this->setVendorPath();
+
+		$sampleFile = (new ReflectionClass(FTEvaluate1::class))->getFileName();
+
+		$status = $this->getContainer()->getClass(FTWrapper::class)
+
+		->triggerFTBinary(
+			[$sampleFile] // given
+		); // when
+
+		$this->assertFalse($status); // then
+	}
+}
+```
+
+#### Setting test execution path
+
+It isn't always possible to remotely set the vendor path since not all binaries collect specific entries to work with through a flag. In addition, your command wrapping the binary may either want to obscure such an entry or may not specify a file, prefering to run some functionality across the codebase. In this situation, the solution is to switch the directory the test CLI runner considers as root to one above your project. This is done by overriding the `CommandLineTest::getRunnerPath` method with an alternate value to use. For our `vendor/bin` challenge, we can safely relegate the path generation to `RealVendorPath` like so:
+
+```php
+
+class FolderScannerCommadTest extends CommandLineTest {
+
+	use RealVendorPath;
+
+	protected function getRunnerPath ():string {
+
+		return $this->getVendorPath();
+	}
+
+	protected function getModules ():array {
+
+		return [new ModuleOneDescriptor(new Container) ];
+	}
+
+	public function test_can_scan_project () {
+
+		// run your regular command test
+	}
+}
+```

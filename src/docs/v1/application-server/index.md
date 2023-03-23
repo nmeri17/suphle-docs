@@ -42,9 +42,66 @@ Before the server builds, it performs a series of checks against the codebase be
 
 - [Mailable](/docs/v1/io#mailing) restrictions.
 
+##### Static type checks
+
+Even though PHP has a type-system, its interpreted nature means that code whose usage conflicts with either its typed definition or the language's syntax, must be evaluated before they can be spotted and corrected. This would either imply writing tests to arbitrarily execute paths in our code, or distract us by writing language-level tests instead of verifying the acccuracy of our business logic.
+
+Fortunately, a handful tools devoted toward evaluating your code without executing it (inadvertently triggering the business logic they implement), have sprung up over the years. Intermediate and senior developers often integrate these tooling into their project's build pipeline or rely on their IDE to detect and report potential type errors. Since these solutions are either team or tool dependent, they are easy to escape the Junior developer's radar, who will usually be most concerned with running his code as is.
+
+For this reason, Suphle bundles static type-checking into its server setup phase. It uses [Psalm](https://psalm.dev) for this since it allows us automate violation correction. If an error is caught during this scan, server build will be terminated and the details of the error flushed to the terminal. An error is any body of that that executing will disrupt or crash the request or program.
+
+```php
+
+class ContainsError {
+
+	public function echoTypo ():void {
+
+		$animal = "cat";
+
+		echo $amimal;
+	}
+}
+```
+
+If the interpreter encounters a class such as the one defined above, it will result in an error. So the job of the static-type checker is to report it beforehand.
+
+After all errors are corrected, Psalm will incrementally suggest stricter validation rules to judge compliance by, but since they won't outright crash the program, such suggestions won't interrupt your Suphle server build. However, we will attempt to fix the suggestions for you automatically. If you don't appreciate the assistance, automatic fixes can be disabled by passing the `no_static_refactor` modifier to the server start command:
+
+```bash
+
+php suphle server:start --rr_config_path="/absolute/path/to/dev-rr.yaml" --no_static_refactor
+```
+
+In that case, you are expected to correct them by other means such as manually.
+
+For it to function properly, Psalm anticipates the presence of a `psalm.xml` configuration schema. Among [other settings](https://psalm.dev/docs/running_psalm/configuration/), this file determines what severity level will be used in judging type-correctness. The file will be created for you automatically, and you're free to update its fields to customize its behavior i.e. it won't be overwritten in-between runs. For instance, to exclude blade templates from being scanned and incorrectly reported as errors, we'd add a tag for it as follows:
+
+```diff
+<?xml version="1.0"?>
+<psalm
+    errorLevel="7"
+    allowNamedArgumentCalls="false"
+    resolveFromConfigFile="true"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="https://getpsalm.org/schema/config"
+    xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
+>
+    <projectFiles>
+        <directory name="src" />
+        <ignoreFiles>
+            <directory name="vendor" />
+        </ignoreFiles>
++        <ignoreFiles>
++            <directory name="compiled-views" />
++        </ignoreFiles>
+    </projectFiles>
+</psalm>
+
+```
+
 ##### Custom startup operations
 
-Additional operations unique to your use-case can be prepended to this phase. Such operations will include activities like architectural rule re-enforcements, static type checks, running tests, etc. Operations wishing to be part of this process must reside in a class implementing `Suphle\Contracts\Server\OnStartup`. This class will then be fed to the startup command.
+Additional operations unique to your use-case can be prepended to this phase. Such operations will include activities like architectural rule re-enforcements or anything else you need to certify project state before it's safe to bootstrap the HTTP server. Operations wishing to be part of this process must reside in a class implementing `Suphle\Contracts\Server\OnStartup`. This class will then be fed to the startup command.
 
 ```bash
 
