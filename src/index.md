@@ -7,7 +7,7 @@ actionText: Quick Start
 actionLink: /docs/v1/quick-start/
 features:
 - title: Unprecedented integrationa
-  details: Side-loading projects written in other frameworks. Overridable, versioned API routes automatically derived from existing browser paths
+  details: Side-loading projects written in other frameworks. Overridable, versioned API routes automatically derived from existing browser paths. Roadrunner. Psalm
 - title: Intuitive DX
   details: Modular-monoliths. Class names are preferred over aliases in all cases (labelling, payloads/DTOs, routing); for discoverability, lazy-loading, binding them, etc. Strongly-typed config classes. There are no includes, no runtime folder scanning, no instantiation is done prematurely (during booting or whenever), no statics, magics or globals
 - title: Infinite flexibility
