@@ -81,7 +81,7 @@
 		<section class="content markdown-body">
 			<h2 id="the-suphle-you-ordered-is-here">The Suphle you ordered is here!</h2>
 			<p>
-					Suphle is a modern PHP framework for enterprises, startups and SAASes to
+					Suphle is a sophisticated PHP framework for enterprises, startups and SAASes to
 					build anything from robust APIs, to CLI programs and server rendered
 					full-stack apps without compromising on the high fidelity expected of
 					SPAs. It builds upon some of the industry's most trusted components, but

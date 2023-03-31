@@ -204,4 +204,26 @@ This refers to ways in which ubiquitous data can be stored on the application se
 
 This is one of the major advantages of a long-running server over the traditional ones -- data can be shared in-between requests originating from different users. The challenge with leveraging this is that Suphle will evict all classes used to handle a request to avoid its state from interferring with another request to the application. In order to forestall this on a class where data seeking longevity has been saved, the data can either be stored on a static property, or the class [should implement](/docs/v1/container#Stickying-objects) `Suphle\Contracts\Hydration\ClassHydrationBehavior`.
 
-Be careful not to implement this on a class that better exists in fresh state per request e.g. a coordinator.
+Be careful not to implement this on a class that better exists in fresh state per request e.g. a Coordinator.
+
+## Testing application server
+
+With all the bootstrap operations that come with an application server build, a pertinent safety measure is for us to automate verification that necessary conditions are being met. This is carried out with an assertion against the `Suphle\Testing\Utilities\PingHttpServer::assertServerBuilds` trait. It will execute the binary at the project's root path using the server's configuration YAML file, with identical options used in setting up a bootstrapped application server.
+
+Since it's a nominal assertion that rarely requires customization, it's created in the `Tests\Exceptions\ServerBuildTest` test class that accompanies default module templates. The class contains the following test case:
+
+```php
+
+public function test_server_builds_successfully () {
+
+	$this->assertServerBuilds();
+}
+```
+
+`PingHttpServer::assertServerBuilds` takes optional arguments for:
+
+1. Passing additional options to the server command. This accepts all valid flags usually passed to the `suphle` binary from the CLI, with the exception of the `rr_config_path` option.
+
+1. This argument should be used for directing the asserter to find the `suphle` binary at an alternate path; helpful for projects following a non-conventional structure where the titular module's root path doesn't correspond to binary location.
+
+1. Absolute path to a server config YAML either not residing at the project's root, or not bearing the name `dev-rr.yaml`.

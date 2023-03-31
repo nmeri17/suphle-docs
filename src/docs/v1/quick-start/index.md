@@ -75,6 +75,6 @@ OK (1 test, 2 assertions)
 
 Voila! We have a reproducible, irrefutable confirmation that our very first endpoint passes in flying colors. Now, we are ready for the serious business -- because, in our hands lies the power to build the **next big thing.** All that is left is for us to delve deeper into getting a better understanding of the possibilities we can accomplish with Suphle.
 
-You can either take things easy, [sequentially](/docs/v1/modules) getting your feet wet. Or, you can hop right over to any other chapter on the menu that catches your fancy.
+You can either take things easy, [sequentially](/docs/v1/modules) getting your feet wet. Or, you can hop right over to any other chapter on the menu that catches your fancy. Either way you prefer, please endeavor to scour all pages of this documentation instead of assuming your existing practices are correct or applies In Suphle. Don't be satisfied with knowing [how to intercept incoming payload](/docs/v1/service-coordinators#Retrieving-request-input); finishing the chapter should teach you a thing or two about events and exceptions, what actions should be taken there, etc.
 
 Have a jolly ride.

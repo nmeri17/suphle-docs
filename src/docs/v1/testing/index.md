@@ -2,6 +2,63 @@
 
 Suphle's testing framework is a wrapper around PHPUnit, Laravel's testing libraries, as well as abstractions for testing components inexistent in both libraries. The format used throughout this documentation has been to demonstrate its use on those chapters rather than convening them on one grand page that will likely overwhelm a reader from testing. Thus, what will be introduced here are the base test types for creating conducive environment for verifying your Suphle components. In addition, we will discuss how to have fun with Suphle's mocking library.
 
+## Running tests
+
+All bootstrapping necessary to create conducive environment for the various [test types](#Base-test-types) are handled by the PHPUnit test runner. If you're not familiar with it yet, it is PHP's industry standard for testing and the tool on which every other testing framework is based off. The same way the most basic PHPUnit tests are being run is what is tenable in Suphle as well. For instance, to run all tests, we'd do:
+
+```bash
+
+phpunit "/project/path/tests"
+```
+
+A directory path is given above but a file can equally be provided. The command can optionally filter executed tests [to a specific one](/docs/v1/appendix/Building-blocks-of-the-testing-chain#Combining-event-induction-and-observation), or selectively executes [test suites](https://docs.phpunit.de/en/10.0/textui.html#selection).
+
+### Executing tests in parallel
+
+Activities such as running large test suites or compiling huge code-bases have been memed as an opportunity to grab a cup of coffee. However, developers short on time for a coffee break are advised to leverage their machine's cores by running the tests concurrently. The defacto library for achieving this in PHP is Paratest. To use it, we'll simply replace the `phpunit` binary like so:
+
+```bash
+
+paratest "/project/path/tests"
+```
+
+[Its repository](https://github.com/brianium/paratest) mentions some of its notable modifiers for customizing run behaviour. However, it currently has one known limitation, which is that it mutes all terminal output from your script during and after running, since it replaces the PHPUnit printer. This means you should not expect to see any `var_dump`s, but any exceptions resulting it test termination will be flushed as usual.
+
+Parallel testing is associated with a few, minor caveats, but specific to the interactions being conducted by the test. These are discussed below.
+
+#### Parallel testing the file-system
+
+ Those pertaining to the file-system may need to avoid race conditions by dynamically setting test class to a hashed value, like so:
+
+```php
+
+class OneFileSystemTest extends ModuleLevelTest {
+
+	protected function setUp ():void {
+
+		parent::setUp();
+
+		$this->file = __DIR__ . "/test_file_" . sha1(uniqid(__METHOD__)); // it's important that this assignment occurs after setting up any class parents as shown above
+	}
+
+	protected function getModules ():array {
+
+		return [new ModuleOneDescriptor (new Container)];
+	}
+
+	public function test_some_file_system_feature () {
+
+		//
+	}
+}
+```
+
+This workaround is only necessary if you have multiple file-system based tests accessing the same resource and randomly getting permission errors.
+
+#### Parallel testing the database
+
+No additional work is needed on your part to make the database suitable for parallel testing. The default [database configuration](/docs/v1/database#Configuring-the-database) checks for the presence of the parallel indicator, and adjusts its value accordingly.
+
 ## Base test types
 
 These are low-level test types which most of your tests are expected to extend in place of `PHPUnit\Framework\TestCase`. The are basically context-aware wrappers that erase inconsistencies that may arise from interacting with these environment within the scope of a test becuase they were not properly booted into a compatible state. Beside the environments listed below are their corresponding test types:

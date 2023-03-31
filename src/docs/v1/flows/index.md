@@ -377,8 +377,6 @@ use Suphle\Testing\Condiments\{QueueInterceptor, BaseDatabasePopulator};
 
 use Suphle\Testing\TestTypes\ModuleLevelTest;
 
-use Suphle\Tests\Integration\Modules\ModuleDescriptor\DescriptorCollection;
-
 use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
@@ -405,11 +403,6 @@ class SomeFlowTest extends ModuleLevelTest {
 	protected function getModules ():array {
 
 		return [new ModuleOneDescriptor(new Container)];
-	}
-
-	protected function preDatabaseFreeze ():void {
-
-		$this->replicator->modifyInsertion(10);
 	}
 }
 ```

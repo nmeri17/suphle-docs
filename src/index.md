@@ -6,8 +6,8 @@ tagline: Opinionated PHP framework for building performant, extensible, and test
 actionText: Quick Start
 actionLink: /docs/v1/quick-start/
 features:
-- title: Unprecedented integrationa
-  details: Side-loading projects written in other frameworks. Overridable, versioned API routes automatically derived from existing browser paths. Roadrunner. Psalm. Predefined type-dependent architectural rules. Websockets. Parallel testing 
+- title: Unprecedented integrations
+  details: Side-loading projects written in other frameworks. Overridable, versioned API routes automatically derived from existing browser paths. Load-balancer. Static-checking. Predefined type-dependent architectural rules. Websockets. Parallel testing 
 - title: Intuitive DX
   details: Modular-monoliths. Class names are preferred over aliases in all cases (labelling, payloads/DTOs, routing); for discoverability, lazy-loading, binding them, etc. Strongly-typed config classes. There are no includes, no runtime folder scanning, no instantiation is done prematurely (during booting or whenever), no statics, magics or globals
 - title: Infinite flexibility
@@ -17,7 +17,7 @@ footer: Made with 💉 and 😰 by Nmeri Alphonsus
 
 ## The Suphle you ordered is here!
 
-Suphle is a modern PHP framework for enterprises, startups and SAASes to build anything from robust APIs, to CLI programs and server rendered full-stack apps without compromising on the high fidelity expected of SPAs. It builds upon some of the industry's most trusted components, but can equally get out of the way for you to insert libraries that make you feel more at home. Its recommended stack is SBT (Suphle-Blade-Turbo)
+Suphle is a sophisticated PHP framework for enterprises, startups and SAASes to build anything from robust APIs, to CLI programs and server rendered full-stack apps without compromising on the high fidelity expected of SPAs. It builds upon some of the industry's most trusted components, but can equally get out of the way for you to insert libraries that make you feel more at home. Its recommended stack is SBT (Suphle-Blade-Turbo)
 
 ## Performance
 

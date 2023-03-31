@@ -721,7 +721,7 @@ The setup above looks similar to `Suphle\Contracts\Services\CallInterceptors\Sys
 - Update requests must be accompanied by a field indicating resource matches its last edited state, otherwise, a `Suphle\Exception\Explosives\EditIntegrityException` will be thrown. For this field to be active, the resource in question ought to be defined as update-protected. This exception's [default diffuser](/docs/v1/exceptions#Exception-diffusers) is `Suphle\Exception\Diffusers\StaleEditDiffuser`. It responds with received JSON payload or re-renders the previous markup and loaded fields, along with error indicators:
 
 	- Status code: 400
-	- Additional payload path: errors.0.message
+	- Additional payload path: *errors.0.message*
 
 ##### Update-protected models
 
@@ -746,9 +746,9 @@ What `IntegrityModel` does is:
 
 - It defines a database field, `updated_at`, that is compared against an incoming request field, `_collision_protect`. All you have to do is set this form field to the resource's `updated_at`. Each time resource is updated, this field is equally updated such that any editor with a now stale copy will be informed they're about to unwittingly overwrite a fresh value, by throwing a `Suphle\Exception\Explosives\EditIntegrityException`. This exception exists in the following states:
 
-- `NO_AUTHORIZER`
-- `KEY_MISMATCH`
-- `MISSING_KEY`
+- `EditIntegrityException::NO_AUTHORIZER`
+- `EditIntegrityException::KEY_MISMATCH`
+- `EditIntegrityException::MISSING_KEY`
 
 They are constants that can be read for custom error display using the `EditIntegrityException::getIntegrityType()` method.
 

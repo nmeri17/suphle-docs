@@ -78,7 +78,7 @@ These benefits work under the premise that your codebase is automatedly tested. 
 
 #### Configuring the database
 
-Before any operation can be run against the database, it must be created and its server details surrendered to Suphle. The config interface used for this is `Suphle\Contracts\Config\Database`, through its `getCredentials` method. The array returned is expected to fit whatever shape required by the underlying ORM. The default config class looks like this:
+Before any operation can be run against the database, it must be created and its server details surrendered to Suphle. The config interface used for this is `Suphle\Contracts\Config\Database`, through its `getCredentials` method. The array returned is expected to fit whatever shape is required by the underlying ORM. The default config class looks like this:
 
 ```php
 
@@ -86,9 +86,11 @@ use Suphle\Contracts\{Config\Database, IO\EnvAccessor};
 
 class PDOMysqlKeys implements Database {
 
-	public function __construct (protected readonly EnvAccessor $envAccessor) {
+	protected ?string $parallelToken;
 
-		//
+	public function __construct(protected readonly EnvAccessor $envAccessor) {
+
+		$this->parallelToken = $envAccessor->getField("TEST_TOKEN");
 	}
 
 	public function getCredentials ():array {
@@ -98,7 +100,10 @@ class PDOMysqlKeys implements Database {
 
 				"host" => $this->envAccessor->getField("DATABASE_HOST"),
 
-				"database" => $this->envAccessor->getField("DATABASE_NAME"),
+				"database" => $this->addParallelSuffix(
+
+					$this->envAccessor->getField("DATABASE_NAME")
+				),
 
 				"username" => $this->envAccessor->getField("DATABASE_USER"),
 
@@ -109,6 +114,13 @@ class PDOMysqlKeys implements Database {
 				"engine" => "InnoDB"
 			]
 		];
+	}
+
+	public function addParallelSuffix (string $databaseName):string {
+
+		return is_null($this->parallelToken) ? $databaseName:
+
+		$databaseName. "_". $this->parallelToken;
 	}
 }
 ```
@@ -207,6 +219,148 @@ class EmploymentServiceTest extends ModuleLevelTest {
 
 These entities will be infused into their attached table for each test on the test class.
 
+### Database retention mode
+
+One effective technique in curbing lengthy test execution is by tracking migration changes and only running them on changes, because migrating table schema notoriously takes copious amounts of time, thereby prolonging test execution. Since it's unlikely for migrations to be updated in between your test execution, it's safe to reuse the same migration table and its databases. For this reason, the default behavior is for the database not to be cleared. Transactions are used to temporarily seed the database per test method /case. What this means is that database-based tests [employing multiple modules](#Database-connection-in-between-resets) will leave residual data behind, which will accumulate if left unchecked.
+
+While long lived test databases accelerate test speed, a recommended middle ground is to occasionally cleanse vestigial data. In order to eject from the default retention mode, the migrator requires the presence of the `SUPHLE_NUKE_DB` environment variable while running the tests. There are a few ways to pass environment variables to the test runner but perhaps, the most convenient is via use of the configuration schema:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+
+<phpunit
+	colors = "true"
+>
+	<testsuites>
+
+		<testsuite name="integration">
+			<directory>./tests/integration</directory>
+		</testsuite>
+
+		<testsuite name="unit">
+			<directory>./tests/unit</directory>
+		</testsuite>
+	</testsuites>
+
+	<php>
+		<ini name="error_reporting" value="-1" />
+		<env name="SUPHLE_NUKE_DB" value="true" />
+	</php>
+</phpunit>
+```
+
+This configuration is then connected as usual:
+
+```bash
+
+phpunit "/project/path/tests" -c="/path/to/phpunit.xml"
+```
+
+#### Retained mode policy
+
+The potential retention of database state across implies adherence to a testing style that although uncomplicated, compliance to it will favour the robustness of your tests in general.
+
+- This mode dictates that database-based tests shouldn't assume the database is either empty or the size of seeded data. The number of rows each test works with cannot be static, but must be determined by [reading its current value](#Count-test-data), usually before commencing the operation expected to modify number of elements on affected models.
+
+- Database transactions don't reset auto-incremented primary keys. For tests to be independent of preceding conditions, they are prohibited from relying on the presence of static IDs at the beginning of the test.
+
+If we have a feature whose implementation exercises a hard-coded value, we could make our test dynamic for both retained and recycled database runs like so:
+
+```php
+
+public function test_feature_for_specific_model () {
+
+	$this->safeFetchUser5();
+
+	// rest of the test
+}
+
+protected function safeFetchUser5 ():UserContract {
+
+	$user5Fields = ["id" => 5];
+
+	$userList = $this->replicator->getSpecificEntities(1, $user5Fields);
+
+	if (count($userList)) return $userList[0];
+
+	return $this->replicator->modifyInsertion(1, $user5Fields)[0];
+}
+```
+
+This style is a more convenient course of action than wiping and manually re-seeding the models.
+
+### Database connection in-between resets
+
+Whenever a URL change occurs, the handling Container is ridded of all objects that were hydrated during the previous request, in preparation for the current one. As was [earlier mentioned](#Active-Record-pattern), Active-Record ORMs must be initiated on behalf of the entities intended to rely on it. However, doing so means that a new connection must be established. The unobstrusive caveats associated with this on database-based tests are discussed below.
+
+- Each test case attempts to run within a transaction. That transaction is disrupted if a fresh database connection is established (for example, so that any module that eventually handles request is sure to see the same fixtures). What this means is that when tests in the `ModuleLevelTest` family are composed of more than one module descriptor, each test case will see data fixtures seeded or inserted during the preceding test case, if any.
+
+```php
+
+class MultiModuleRetainTest extends ModuleLevelTest {
+
+	use BaseDatabasePopulator;
+
+	protected function getModules ():array {
+
+		return [
+
+			new ModuleOneDescriptor(new Container),
+
+			new ModuleTwoDescriptor(new Container)
+		];
+	}
+
+	protected function getActiveEntity ():string {
+
+		return Employment::class;
+	}
+
+	public function test_1 () {
+
+		// given, when, then
+	}
+
+	public function test_2 () {
+
+		// this test will both data seeded for `test_1` along with any insertion it made
+	}
+}
+```
+
+- Modifications to database rows made before and during a connection-resetting actions like an HTTP request, will neither be reset nor removed in-between tests, but remain visible to the tester after a response is returned i.e. in spite of resets in-between multi-module routing.
+
+```php
+
+class MultiModuleRetainTest extends ModuleLevelTest {
+
+	use BaseDatabasePopulator;
+
+	protected function getModules ():array {
+
+		return [
+
+			new ModuleOneDescriptor(new Container),
+
+			new ModuleTwoDescriptor(new Container)
+		];
+	}
+
+	protected function getActiveEntity ():string {
+
+		return Employment::class;
+	}
+
+	public function test_can_update_seeded_data () {
+
+		// In spite of this connection, any seeded or factory-inserted data will be available for assertion after the operation completes and indeed, for the lifetime of the test
+		$this->post($somePath, $payload); // when
+
+		// then
+	}
+}
+```
+
 ### Overriding test setup
 
 This trait hooks into your test type's `setUp` process, thereby prohibiting its regular modification. If you have additional operations to run after `parent::setUp`, the trait's `setUp` must be aliased:
@@ -230,16 +384,6 @@ class EmploymentServiceTest extends ModuleLevelTest {
 	}
 }
 ```
-
-### Database state in-between resets
-
-Whenever a URL change occurs, the handling Container is ridded of all objects that were hydrated during the previous request, in preparation for the current one. As was [earlier mentioned](#Active-Record-pattern), Active-Record ORMs must be initiated on behalf of the entities intended to rely on it. However, doing so means that a new connection must be established. The implication of this is felt most strongly in some database-based tests:
-
-- Each test case attempts to run within a transaction. That transaction is disrupted if a fresh database connection is established (so that any module that eventually handles request is sure to see the same fixtures). What this means is that when your `ModuleLevelTest` carries more than one module, each test case will see data fixtures seeded or inserted during the preceding test case, if any.
-
-- Modifications to database rows made before and during a connection-resetting actions like an HTTP request, will neither be reset nor removed in-between tests, but remain visible to the tester after a response is returned i.e. in spite of resets in-between multi-module usage.
-
-This an unobstrusive caveat worth bearing in mind, depending on what your test is looking out for. If you have to compare row counts before and after a test without a constraint such as a `WHERE` clause, the number returned will include any amount inserted in the preceding test cases on the given class. In such situation, it may be better to use a standalone class for that test case.
 
 ### Asserting database state
 

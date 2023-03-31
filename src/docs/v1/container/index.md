@@ -522,7 +522,7 @@ In some cases beyond our control, services can wind up in the constructor of the
 
 class A {
 
-    public function __construct(protected readonly B $classB) {
+    public function __construct(private readonly B $classB) {
 
         //
     }
@@ -530,7 +530,7 @@ class A {
 
 class B {
 
-    public function __construct(protected readonly A $classA) {
+    public function __construct(private readonly A $classA) {
 
         //
     }
@@ -544,6 +544,8 @@ Aside from loggers, any environment with `strict_type=1` would halt on encounter
 The fact that concretes are decoupled from their interfaces makes the likelihood of one concrete unwittingly referring to an interface whose concrete, in turn, refers to it high. Bear in mind that proxying interfaces is different from concretes since it has methods that need implementations.
 
 When this is the case, the container won't proxy calls to the interface. Even though it's possible to extract and wrap their concrete on the fly, the overhead and sheer *sorcery* of such an implementation deviate too far away from the language's expected behaviour, for very little benefit. Doing so goes against one of Suphle's core principles. That said, when Container encounters such concretes, it will throw a `Suphle\Exception\Explosives\DevError\HydrationException`.
+
+Similar proxying rules to the [auto-error catching decorator](/docs/v1/service-coordinators#Readonly-modifier) is equally applicable to circular dependencies.
 
 Circular dependencies are commonly associated with class-class constructor similarity but can equally spring up in surprising areas of the project. For instance:
 
