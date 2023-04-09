@@ -375,7 +375,9 @@ class UnknownUserLandHydrator extends HydratorConsumer {
 
 ### PHP 8 new types
 
-This version of the language introduced union and intersection types. Unfortunately, they are unsupported by Suphle's Container type reader. The sort of ambiguity they come with encourages equivocal APIs which isn't in line with our objectives. PHP 8 equally introduced enums. As they're not instantiable, consumers ought to bind a default enum entry for each object where it's typed and expected to be hydrated by the Container.
+This version of the language introduced union and intersection types. Unfortunately, they are unsupported by Suphle's Container type reader. The sort of ambiguity they come with encourages equivocal APIs which isn't in line with our objectives.
+
+PHP 8 equally introduced enums. As they're not instantiable, they're not a construct that should be automated for you. You are in a better position to know what state is applicable per context. However, for the sake of completeness, enums caught in argument type-hints will have their first case injected for you. This is applicable for both pure and backed enums, but will obviously not work for the proposed tagged unions.
 
 ## Working with interfaces
 

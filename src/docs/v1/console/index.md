@@ -294,7 +294,7 @@ class FolderScannerCommadTest extends CommandLineTest {
 
 	protected function getRunnerPath ():string {
 
-		return $this->getVendorPath();
+		return $this->getVendorParent();
 	}
 
 	protected function getModules ():array {

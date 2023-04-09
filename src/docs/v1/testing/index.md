@@ -436,7 +436,7 @@ public function test_sut_does_foo_when_dependency_returns_certain_values () {
 
 	$dependency = $this->positiveDoubleMany(TargetEntity::class, [ // given
 
-		"awesomeMethod" => ["bar", "ujubaby"],
+		"awesomeMethod" => ["bar", "gfc"],
 
 		"someOtherMethod" => "nmeri"
 	]);

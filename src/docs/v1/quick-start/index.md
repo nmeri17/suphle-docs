@@ -4,16 +4,28 @@
 
 ## Installation
 
-Hurry to your CLI to install Suphle starter project through Composer.
+Launch your terminal into the system's web folder to install Suphle's starter bootstrapper:
 
 ```bash
 
-composer create-project nmeri17/suphle-starter
+cd "C:\wamp64\www"
+
+composer create-project nmeri/suphle-starter AwesomeProject
+
+cd AwesomeProject
 ```
 
-Replace the contents of `AllModules\PublishedModules` in your project with this class:
+To make things happen, we create our first Module. It can be named anything but for illustrative purposes, let's create a `Products` module:
 
-```php
+```bash
+
+php suphle modules:create Products --module_descriptor="\AllModules\Products\Meta\ProductsDescriptor"
+```
+
+You can explore what files were generated for you at the end of this tutorial, but in the meantime, let's connect the fresh module to the rest of the application, for it to begin intercepting requests. Make the following adjustments to the `AllModules\PublishedModules.php` class in your project:
+
+```diff
+<?php
 
 namespace AllModules;
 
@@ -21,36 +33,38 @@ use Suphle\Modules\ModuleHandlerIdentifier;
 
 use Suphle\Hydration\Container;
 
-use AllModules\Products\Meta\ProductsModuleDescriptor;
++ use AllModules\Products\Meta\ProductsDescriptor;
 
 class PublishedModules extends ModuleHandlerIdentifier {
 	
 	public function getModules ():array {
 
-		return [new ProductsModuleDescriptor(new Container)];
++		return [new ProductsDescriptor(new Container)];
 	}
 }
+
+?>
 ```
 
-Next, we have to fire up the project but must have an active internet connection before running the necessary command:
-
-```bash
-
-php suphle project:create_new Products --module_descriptor="\AllModules\Products\Meta\ProductsModuleDescriptor"
-```
-
-If the command runs successfully, we would have installed the starter project, created our first Suphle module, connected it to the rest of the application, and initiated a long-runner server to accept requests to it. Now, we're going to confirm our ability to visit a URL on the new module.
+All is set! Now, we're going to confirm our ability to visit a URL on the new module.
 
 ## Verifying project initialization
 
-There's one URL predefined in the default module installed. We'll make a [quick trip](http://localhost:8080/products/hello) to it as most of us are already used to. Doing so is expected to show us a response with the following contents:
+There's one URL predefined in the default module template. To access it, return to the terminal and spin up the application server using this command.
+
+```bash
+
+php suphle server:start AllModules "/path/to/AwesomeProject/dev-rr.yaml"
+```
+
+We'll make a quick trip to [the default URL](http://localhost:8080/products/hello) as most of us are already used to, and expect to find the following contents waiting for us:
 
 ```json
 
 {"message":"Hello World!"}
 ```
 
-Congratulations? Well, not really. We were wrong to have verified a successful request through our browser. Now, let's do this again; this time, properly. Turn off the running server (Ctrl + C on windows) and run one of the tests accompanying your new installation.
+Congratulations? Well, not really. We were wrong to have verified a successful request through our browser. Now, let's do this again; this time, properly. Turn off the server running on the terminal (Ctrl + C on windows) and execute one of the tests accompanying your new installation.
 
 ```bash
 
@@ -62,12 +76,12 @@ phpunit "project/path/AllModules/Products/Tests/ConfirmInstall.php"
 If we get back the following output,
 
 ```
-PHPUnit 8.5.31 by Sebastian Bergmann and contributors.
+PHPUnit 9.6.6 by Sebastian Bergmann and contributors.
 
-.                                                                   1 / 1 (100%)
+.                                                              1 / 1 (100%)
 
 
-Time: 714 ms, Memory: 18.00 MB
+Time: 00:01.077, Memory: 16.00 MB
 
 OK (1 test, 2 assertions)
 

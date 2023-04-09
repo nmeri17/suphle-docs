@@ -133,20 +133,20 @@ class FirstCustomTest extends IsolatedComponentTest {
 }
 ```
 
-That's it, your delicious test is ready to serve! Open up a terminal or CLI to execute it for yourself. After doing so, run the commands listed below. Assuming your project resides at `/home/immanuel/myprojects/learn_suphle`, and `FirstCustomTest` is stored in the `tests` directory, the commands will look like so:
+That's it, your delicious test is ready to serve! Open up a terminal or CLI to execute it for yourself. After doing so, run the commands listed below. Assuming your project resides at `/home/obuoba/myprojects/learn_suphle`, and `FirstCustomTest` is stored in the `tests` directory, the commands will look like so:
 
 ```bash
 
-cd /home/immanuel/myprojects/learn_suphle/vendor/bin
+cd /home/obuoba/myprojects/learn_suphle/vendor/bin
 
-phpunit "/home/immanuel/myprojects/learn_suphle/tests/FirstCustomTest.php"
+phpunit "/home/obuoba/myprojects/learn_suphle/tests/FirstCustomTest.php"
 ```
 
 Above, a specific file path was given, but it can equally scan and execute tests if given a folder path. The `phpunit` binary has a lot of modifiers for customizing its use, but the most relevant to you will be its `filter` option, for trimming down executed tests to only those matching the given expression. If `FirstCustomTest` contains more tests and we only want to run one, we can modify the command like so:
 
 ```bash
 
-phpunit --filter test_num_add_operation "/home/immanuel/myprojects/learn_suphle/tests/FirstCustomTest.php"
+phpunit --filter test_num_add_operation "/home/kayode/myprojects/learn_suphle/tests/FirstCustomTest.php"
 ```
 
 Sometimes, the object where an event is being induced from will be different from the one the effect has to be observed on. Other times, they may be the same (as we saw in the `FirstCustomTest::test_num_add_operation` example). Identifying both will inform the tester of all participants in the test.

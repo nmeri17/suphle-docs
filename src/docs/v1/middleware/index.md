@@ -159,6 +159,8 @@ Before deciding to implement target functionality as a middleware, it is strongl
 - It depends on details read from incoming payload.
 - It doesn't precede routing decision e.g. coordinator/renderer choices. Routing work doesn't belong in middleware.
 
+For instance, an implementation common among many web software is enforcing access-level-control through middleware. At worst, user status is evaluated and further execution terminated. Aside the risk of forgetting to bind this middleware to a relevant route pattern, it doesn't interact with the request or response objects in any way. It entirely is an [authorization](/docs/v1/authorization#Model-based-authorization) responsibility that should be handled in a more robust manner at the over-arching model or service level.
+
 After confirming middleware is the way to go for given functionality, we can go about creating one by implementing the `Suphle\Contracts\Routing\Middleware` interface. A most basic middleware will look like this:
 
 ```php

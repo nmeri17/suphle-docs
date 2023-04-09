@@ -116,6 +116,33 @@ protected function componentEntry ():string {
 }
 ```
 
+Usually, you'll want to reduce components being tested to just this one, so as to isolate resultant behavior from interference of other components. In this case, do bind the given Entry in the tests module list. That would look similar to the following:
+
+```php
+
+use Suphle\Contracts\Config\ComponentTemplates;
+
+// ...
+
+protected function getModules ():array {
+
+	return [
+		$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+
+			$config = ComponentTemplates::class;
+
+			$container->replaceWithMock($config, $config, [
+
+				"getTemplateEntries" => [
+
+					$this->componentEntry()
+				]
+			]);
+		})
+	];
+}
+```
+
 ### Verify install success
 
 We use the `assertInstalledComponent()` method for this. It accepts a `$commandOptions` argument that is an array of options to pass to the console runner for the command under test. The method also takes an optional 2nd argument that should be set to true when the component may have been replaced with a mock that would prevent actual ejection.

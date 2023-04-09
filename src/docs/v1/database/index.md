@@ -49,11 +49,78 @@ Whichever direction is most suitable for your application, it is recommended tha
 
 ## Models location
 
-Since Modules are expected to be opaque to their consumers, a module interface that returns a value typed to an internal model will warrant its consumers reach into the module for the model's type, which is unacceptable. Thus, models and indeed any type whose usage transcends one module, ought to be situated in a visible, global scope.
+Since Modules are expected to be opaque to their consumers, a module interface that returns a value typed to an internal model will warrant its consumers reach into the module for the model's type, which is unacceptable. Thus, models and indeed, any type whose usage transcends one module, ought to be situated in a visible, global scope.
 
-Since domains are unique to each application, it's impossible for Suphle to provide any default models. However, it is recommended that whichever ones you create are stored in a directory beside `AllModules` and `ModuleInteractions` or any other location convenient for all modules to access. In the [Starter project](https://github.com/nmeri17/suphle-starter), an `AppModels` directory is created and namespaced for you. If another name will be more intuitive, rename this folder and update its namespace in your `composer.json`.
+To this end, the default database [component template](/docs/v1/component-templates) behaves differently from regular templates. Instead of emptying its contents into each module where it's installed, it launches them into a database folder on the project root. From this vantage point, each model is visible to consuming modules. The folder name and its associated namespace are derived from some of the methods on the `Suphle\Contracts\Config\Database` interface.
 
-This same location should house the model's migrations, for better proximity when pointing models to [their related migrations](#Configuring-table-structure).
+For the sake of convenience, you won't have to override these methods, but the `Database::relativeFolderName` property, which defaults to `AppModels`.
+
+```php
+
+use Suphle\Contracts\{Config\Database, IO\EnvAccessor};
+
+class PDOMysqlKeys implements Database {
+
+	protected string $relativeFolderName = "AppModels";
+}
+```
+
+As is, that folder will be created at the project's root after your first module creation or a module's components installation. In addition, that namespace has been designated in your Composer's list of autoloads. If you would prefer a more intuitive name, remember to update this value in the `composer.json`. To replace installation location altogether, override the `componentInstallPath` and `componentInstallNamespace` methods. The default implementation is as follows:
+
+```php
+
+use Suphle\Contracts\{Config\Database, IO\EnvAccessor};
+
+class PDOMysqlKeys implements Database {
+
+	/**
+	 * {@inheritdoc}
+	*/
+	public function componentInstallPath ():string {
+
+		return $this->fileConfig->getRootPath().
+
+		$this->relativeFolderName . DIRECTORY_SEPARATOR;
+	}
+
+	public function componentInstallNamespace ():string {
+
+		return $this->relativeFolderName;
+	}
+}
+```
+
+As you will imagine, this same location houses the model's migrations, for better proximity when pointing models to [their related migrations](#Configuring-table-structure).
+
+### Connecting the user model
+
+This is a unique model ubiquituous across not only a wide variety of domains but application components -- most notably, authorization and authentication. As was discussed in the [model authorization](/docs/v1/authorization#Evaluating-user-model) chapter, model authorities are eagerly evaluated during the [module boot phase](#Active-Record-pattern). Its implication is that the ORM is unusable without the presence of a `Suphle\Contracts\Auth\UserContract` binding.
+
+For this reason, the `Suphle\Contracts\Hydration\InterfaceCollection` implementation in each module contains the following binding:
+
+```php
+
+use Suphle\Contracts\{Config\Router, Auth\UserContract};
+
+use AppModels\User as EloquentUser;
+
+use ModuleInteractions\Products;
+
+class CustomInterfaceCollection extends BaseInterfaceCollection {
+
+	public function simpleBinds ():array {
+
+		return array_merge(parent::simpleBinds(), [
+
+			Products::class => ModuleApi::class,
+
+			UserContract::class => EloquentUser::class
+		]);
+	}
+}
+```
+
+Because, component templates and module installation are run by different processes, it's not possible to elegantly or implicitly replace the database folder on this class while running the processes. Thus, the namespace is hard-coded to `AppModels`. If you're using a different value for that namespace, update this namespace on your [module template](/docs/v1/modules#Creating-a-module).
 
 ## ORM adapters
 
@@ -78,20 +145,13 @@ These benefits work under the premise that your codebase is automatedly tested. 
 
 #### Configuring the database
 
-Before any operation can be run against the database, it must be created and its server details surrendered to Suphle. The config interface used for this is `Suphle\Contracts\Config\Database`, through its `getCredentials` method. The array returned is expected to fit whatever shape is required by the underlying ORM. The default config class looks like this:
+Before any operation can be run against the database, it must be created and its server details surrendered to Suphle. The config interface used for this is `Suphle\Contracts\Config\Database`, through its `getCredentials` method. The array returned is expected to fit whatever shape is required by the underlying ORM. The default credentials look like this:
 
 ```php
 
 use Suphle\Contracts\{Config\Database, IO\EnvAccessor};
 
 class PDOMysqlKeys implements Database {
-
-	protected ?string $parallelToken;
-
-	public function __construct(protected readonly EnvAccessor $envAccessor) {
-
-		$this->parallelToken = $envAccessor->getField("TEST_TOKEN");
-	}
 
 	public function getCredentials ():array {
 
@@ -114,13 +174,6 @@ class PDOMysqlKeys implements Database {
 				"engine" => "InnoDB"
 			]
 		];
-	}
-
-	public function addParallelSuffix (string $databaseName):string {
-
-		return is_null($this->parallelToken) ? $databaseName:
-
-		$databaseName. "_". $this->parallelToken;
 	}
 }
 ```
@@ -260,9 +313,9 @@ phpunit "/project/path/tests" -c="/path/to/phpunit.xml"
 
 The potential retention of database state across implies adherence to a testing style that although uncomplicated, compliance to it will favour the robustness of your tests in general.
 
-- This mode dictates that database-based tests shouldn't assume the database is either empty or the size of seeded data. The number of rows each test works with cannot be static, but must be determined by [reading its current value](#Count-test-data), usually before commencing the operation expected to modify number of elements on affected models.
+1. This mode dictates that database-based tests shouldn't assume the database is either empty or the size of seeded data. The number of rows each test works with cannot be static, but must be determined by [reading its current value](#Count-test-data), usually before commencing the operation expected to modify number of elements on affected models.
 
-- Database transactions don't reset auto-incremented primary keys. For tests to be independent of preceding conditions, they are prohibited from relying on the presence of static IDs at the beginning of the test.
+1. Database transactions don't reset auto-incremented primary keys. For tests to be independent of preceding conditions, they are prohibited from relying on the presence of static IDs at the beginning of the test.
 
 If we have a feature whose implementation exercises a hard-coded value, we could make our test dynamic for both retained and recycled database runs like so:
 
@@ -288,6 +341,8 @@ protected function safeFetchUser5 ():UserContract {
 ```
 
 This style is a more convenient course of action than wiping and manually re-seeding the models.
+
+1. Potentially left-over data may clash with one of the incoming data generated by the seeding library, resulting in unpredictable test failures that pass when re-tried.
 
 ### Database connection in-between resets
 

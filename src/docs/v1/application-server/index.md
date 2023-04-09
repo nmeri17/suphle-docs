@@ -4,7 +4,7 @@ This chapter covers exercises at the outskirts of our application. It's one of t
 
 ## Exposing your software
 
-After exposure, any number of users can surf our application by entering URLs leading to the patterns defined in our route collections in their browsers. In the [very first chapter](/docs/v1/quick-start), we ignited a long-running Roadrunner server using the `project:create_new` command. Although this exposure type is recommended, it's not always preferrable. Below, we'll look at the available mediums for exposing a Suphle web program.
+After exposure, any number of users can surf our application by entering URLs leading to the patterns defined in our route collections in their browsers. Below, we'll look at the available mediums for exposing a Suphle web program.
 
 ### Using traditional servers
 
@@ -16,25 +16,22 @@ You may benchmark all methods for whichever is faster for you. You may also not 
 
 Among the array of options available in PHP currently for this purpose, only a Roadrunner adapter is implemented both because it doesn't require the extension barrier of entry and because of the vast amount of features its components provide.
 
-The `project:create_new` is for kick-starting new projects and shouldn't be used for launching a server. Instead, the `server:start` command is more suitable for this purpose while deploying the software. Its mandatory signature is simple:
+We use the `server:start` command with the following signature:
 
 ```bash
 
-php suphle server:start
-```
-
-It relies on the presence of a default `rr.yaml` accompanying your Roadrunner installation in the vendor/bin folder. Unfortunately, this config doesn't point to your [published modules](/docs/v1/modules). To rectify this shortcoming, you can either configure it to do so, or point the binary to your published modules. To do this, we'll make a minor adjustment to our start command as follows:
-
-```bash
-
-php suphle server:start --rr_config_path="/absolute/path/to/dev-rr.yaml"
+php suphle server:start AllModules "/absolute/path/to/dev-rr.yaml"
 ```
 
 Our `dev-rr.yaml` contains some sensible defaults to get you started. It's worth mentioning that this command is advisable for use from production environments and rarely in development mode. Developers should always debug their back-ends from an automated test on the terminal. There are more than enough facilities in Suphle to assist in programmatically verifying any form of expectation.
 
 #### Startup operations
 
-Before the server builds, it performs a series of checks against the codebase behind the published modules. Should violations be spotted, this *compilation* phase, unfortunately, will fail. These checks are dependency based filtrations. The following filters are currently in place:
+Before the server builds, it performs a series of checks against the codebase behind the published modules. Should violations be spotted, this *compilation* phase, unfortunately, will fail.
+
+##### Dependency checks
+
+These checks are dependency-based filtrations. The following filters are currently in place:
 
 - [Service-coordinator](/docs/v1/service-coordinators#Permitted-dependencies) restrictions. The reasoning behind each limitation is commented in the relevant filter.
 
@@ -48,7 +45,7 @@ Even though PHP has a type-system, its interpreted nature means that code whose 
 
 Fortunately, a handful tools devoted toward evaluating your code without executing it (inadvertently triggering the business logic they implement), have sprung up over the years. Intermediate and senior developers often integrate these tooling into their project's build pipeline or rely on their IDE to detect and report potential type errors. Since these solutions are either team or tool dependent, they are easy to escape the Junior developer's radar, who will usually be most concerned with running his code as is.
 
-For this reason, Suphle bundles static type-checking into its server setup phase. It uses [Psalm](https://psalm.dev) for this since it allows us automate violation correction. If an error is caught during this scan, server build will be terminated and the details of the error flushed to the terminal. An error is any body of that that executing will disrupt or crash the request or program.
+For this reason, Suphle bundles static type-checking into its server setup phase. It uses [Psalm](https://psalm.dev) for this since it allows us automate violation correction. If an error is caught during this scan, server build will be terminated and the details of the error flushed to the terminal. An error is any body of code that executing will disrupt or crash the request or program.
 
 ```php
 
@@ -69,35 +66,12 @@ After all errors are corrected, Psalm will incrementally suggest stricter valida
 
 ```bash
 
-php suphle server:start --rr_config_path="/absolute/path/to/dev-rr.yaml" --no_static_refactor
+php suphle server:start AllModules "/absolute/path/to/dev-rr.yaml" --no_static_refactor
 ```
 
-In that case, you are expected to correct them by other means such as manually.
+Passing this flag will merely scan the code and report its findings. The project's maintainer is expected to correct any errors by other means, for example, manually.
 
-For it to function properly, Psalm anticipates the presence of a `psalm.xml` configuration schema. Among [other settings](https://psalm.dev/docs/running_psalm/configuration/), this file determines what severity level will be used in judging type-correctness. The file will be created for you automatically, and you're free to update its fields to customize its behavior i.e. it won't be overwritten in-between runs. For instance, to exclude blade templates from being scanned and incorrectly reported as errors, we'd add a tag for it as follows:
-
-```diff
-<?xml version="1.0"?>
-<psalm
-    errorLevel="7"
-    allowNamedArgumentCalls="false"
-    resolveFromConfigFile="true"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns="https://getpsalm.org/schema/config"
-    xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
->
-    <projectFiles>
-        <directory name="src" />
-        <ignoreFiles>
-            <directory name="vendor" />
-        </ignoreFiles>
-+        <ignoreFiles>
-+            <directory name="compiled-views" />
-+        </ignoreFiles>
-    </projectFiles>
-</psalm>
-
-```
+For it to function properly, Psalm anticipates the presence of a `psalm.xml` configuration schema. Among [other settings](https://psalm.dev/docs/running_psalm/configuration/), this file determines what severity level will be used in judging type-correctness. Your installation contains a default configuration that you are free to update its fields to customize its behavior i.e. it won't be overwritten in-between runs.
 
 ##### Custom startup operations
 
@@ -105,7 +79,7 @@ Additional operations unique to your use-case can be prepended to this phase. Su
 
 ```bash
 
-php suphle server:start --operations_class="\AllModules\ModuleOne\Meta\BootOperations" --custom_operations_options="\AllModules\ModuleOne\Services\SkipFilter"
+php suphle server:start AllModules "/absolute/path/to/dev-rr.yaml" --operations_class="\AllModules\ModuleOne\Meta\BootOperations" --custom_operations_options="\AllModules\ModuleOne\Services\SkipFilter"
 ```
 
 ```php
@@ -185,7 +159,7 @@ class BootOperations implements OnStartup {
 }
 ```
 
-The rule above will cause every class found to reach the handler, with the exception of `SkipFilter`. This condition is not necessary for all handlers. You are more likely to use the `Suphle\Hydration\Structures\ObjectDetails` class to reduce the list of classes to those extending a target entity.
+The rule above will cause every class found in the scanned path (your `AllModules`) to reach the handler, with the exception of `SkipFilter`. This condition is not necessary for all handlers. You are more likely to use the `Suphle\Hydration\Structures\ObjectDetails` class to reduce the list of classes to those extending a target entity.
 
 The `OnlyLoadedByHandler` handler uses the first argument to specify what entity this rule is for and restrict classes capable of depending on it to entities given in the 2nd argument. In this case, `MailBuilder`s cannot be loaded/injected by any other classes except a `Task`.
 
@@ -193,7 +167,7 @@ The `OnlyLoadedByHandler` handler uses the first argument to specify what entity
 
 ```bash
 
-php suphle server:start -o="\AllModules\ModuleOne\Meta\BootOperations" -c="\AllModules\ModuleOne\Services\SkipFilter" -c="\AllModules\ModuleOne\Services\AnotherSkip"
+php suphle server:start AllModules -o="\AllModules\ModuleOne\Meta\BootOperations" -c="\AllModules\ModuleOne\Services\SkipFilter" -c="\AllModules\ModuleOne\Services\AnotherSkip"
 ```
 
 When the list of operations exceeds one and the number of values passed to the class become difficult to deserialize for each individual command, they may have to be extracted into independent commands eventually wrapping the base `server:start` command.
@@ -222,7 +196,18 @@ public function test_server_builds_successfully () {
 
 `PingHttpServer::assertServerBuilds` takes optional arguments for:
 
-1. Passing additional options to the server command. This accepts all valid flags usually passed to the `suphle` binary from the CLI, with the exception of the `rr_config_path` option.
+1. Passing additional options to the server command. This accepts flags that are passed to the `suphle` binary from the CLI, with the exception of the server config YAML. The default flags used are the generic ones recommended above for starting the server. They can be overridden by passing an array keyed by flag name and value. As with all strings, it's more reliable to access them through constants than literals. For server starting, the flags are represented by constants on the `Suphle\Server\Commands\HttpServerCommand` command. Do override/mute some of the flags with caution, or at least, ensure they match what the server is actually started with, as their disparity defeats the whole purpose of confirming server builds successfully.
+
+```php
+
+public function test_server_builds_successfully () {
+
+	$this->assertServerBuilds([
+
+		HttpServerCommand::MODULES_FOLDER_ARGUMENT => "Modules"
+	]);
+}
+```
 
 1. This argument should be used for directing the asserter to find the `suphle` binary at an alternate path; helpful for projects following a non-conventional structure where the titular module's root path doesn't correspond to binary location.
 

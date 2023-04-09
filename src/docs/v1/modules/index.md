@@ -28,7 +28,7 @@ A Suphle module is a folder with some essential classes that are eventually conn
 
 ```bash
 
-php suphle modules:create Products --module_descriptor="\AllModules\Products\Meta\ProductsModuleDescriptor"
+php suphle modules:create Products --module_descriptor="\AllModules\Products\Meta\ProductsDescriptor"
 ```
 
 When run, the command above will transfer contents of the template folder, *ModuleTemplate*, to a new `Products` module, replacing namespaces, class names and their contents, generally mirroring source structure to appropriately match the newly birthed module. When present, the `module_descriptor` option causes [component templates](/docs/v1/component-templates) to be automatically installed after module creation.
@@ -37,21 +37,21 @@ Usually, ModuleTemplate will be customized to taste. If, however, your architect
 
 ```bash
 
-php suphle modules:create Products --module_descriptor="\AllModules\Products\Meta\ProductsModuleDescriptor" --template_source=some/path
+php suphle modules:create Products --module_descriptor="\AllModules\Products\Meta\ProductsDescriptor" --template_source=some/path
 ```
 
 `template_source` expects an absolute path by default. When it's more convenient to supply a path relative to executable location, include the `is_relative_source` (or, the shorthand `i`) option to your recipe:
 
 ```bash
 
-php suphle modules:create Products --module_descriptor="\AllModules\Products\Meta\ProductsModuleDescriptor" --template_source=some/path --is_relative_source
+php suphle modules:create Products --module_descriptor="\AllModules\Products\Meta\ProductsDescriptor" --template_source=some/path --is_relative_source
 ```
 
 In a similar vein, directory modules is created in can be changed from the executable's path to one passed in the `destination_path` option.
 
 ```bash
 
-php suphle modules:create Products --module_descriptor="\AllModules\Products\Meta\ProductsModuleDescriptor" --destination_path=some/path
+php suphle modules:create Products --module_descriptor="\AllModules\Products\Meta\ProductsDescriptor" --destination_path=some/path
 ```
 
 Contents of ModuleTemplate are flexible and should match whatever dominant structure your modules start out with. For instance, its default contents contains a connected route collection, along with routing bits. This doesn't reflect a mandatory requirement for a valid module. The only reason for this is to facilitate bootstrapping new Suphle projects. A module that itself doesn't handle requests can afford to miss all the routing-related classes. But more importantly, such module should not be connected to the application as a standalone module.
