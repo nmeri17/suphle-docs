@@ -149,6 +149,6 @@ This problem has been solved by the recent PSR-20 that introduced the Clock inte
 
 #### Peeling off RCAs
 
-RCAs are Request-Context-Aware objects and refers to the general class of objects the Framework provides for reading user input. In Suphle, they not only include the obvious culprits like `RequestDetails`, payload readers (both the internal `StdInputReader`, external ones and the likes) and CLI readers, but also middleware and user-land classes that rely on any of these objects.
+RCAs are Request-Context-Aware objects and refers to the general class of objects the Framework provides for reading user input. In Suphle, they not only include the obvious culprits like `RequestDetails`, payload readers (both the internal and external ones, and the likes) and CLI readers, but also middleware and user-land classes that rely on any of these objects.
 
 What this isolation suggests is for such classes to be decoupled from the domain layer where you test. Instead of using them there directly, the value should be read at some preliminary layer before its value/raw input is injected into our domain objects. This enables their arguments easily creatable in the test. The reason behind the difficulty in reproducing RCAs is that their lifetime are managed, and contents populated by external forces beyond our control, that didn't intend for them to be reproduced in user-land. Thus, they should be stripped away for our own good.

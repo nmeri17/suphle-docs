@@ -205,7 +205,7 @@ class SecureBrowserCollection extends BaseCollection {
 
 	public function SEGMENT() {
 
-		$this->_get(new Json("plainSegment"));
+		$this->_httpGet(new Json("plainSegment"));
 	}
 
 	public function _preMiddleware (PreMiddlewareRegistry $registry):void {
@@ -275,12 +275,12 @@ class UnchainParentSecurity extends BaseCollection {
 	
 	public function UNLINK () {
 		
-		$this->_get(new Json("handleUnlinked"));
+		$this->_httpGet(new Json("handleUnlinked"));
 	}
 	
 	public function RETAIN__AUTHh () {
 		
-		$this->_get(new Json("handleRetained"));
+		$this->_httpGet(new Json("handleRetained"));
 	}
 }
 ```
@@ -308,7 +308,7 @@ class SecureBrowserCollection extends BaseCollection {
 
 	public function SEGMENT() {
 
-		$this->_get(new Json("plainSegment"));
+		$this->_httpGet(new Json("plainSegment"));
 	}
 
 	public function _preMiddleware (PreMiddlewareRegistry $registry):void {

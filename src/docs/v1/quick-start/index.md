@@ -54,7 +54,7 @@ There's one URL predefined in the default module template. To access it, return 
 
 ```bash
 
-php suphle server:start AllModules "/path/to/AwesomeProject/dev-rr.yaml"
+php suphle server:start AllModules
 ```
 
 We'll make a quick trip to [the default URL](http://localhost:8080/products/hello) as most of us are already used to, and expect to find the following contents waiting for us:

@@ -288,7 +288,7 @@ public function test_app_pulls_some_stunt_when_stub_is_x () {
 
 ### Reading from active Container
 
-3 ways SUTs can be hydrated within the testing scope are by:
+3 ways Systems Under Test (SUT) can be hydrated within the testing scope are by:
 
 1. Creating them by hand.
 1. Retrieving them from the Container.

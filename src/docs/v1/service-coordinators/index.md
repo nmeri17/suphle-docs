@@ -25,7 +25,7 @@ class BrowserNoPrefix extends BaseCollection {
 
 	public function SEGMENT() {
 
-		$this->_get(new Json("plainSegment"));
+		$this->_httpGet(new Json("plainSegment"));
 	}
 }
 ```

@@ -37,7 +37,7 @@ class CatalogCollection extends BaseCollection {
 			->collectionNode("data")->pipeTo()
 		);
 
-		$this->_get($renderer->setFlow($flow));
+		$this->_httpGet($renderer->setFlow($flow));
 	}
 }
 ```
@@ -116,7 +116,7 @@ public function id () {
 		->altersQuery()
 	);
 
-	$this->_get($renderer->setFlow($flow));
+	$this->_httpGet($renderer->setFlow($flow));
 };
 ```
 
@@ -237,7 +237,7 @@ public function id () {
 		->inRange()
 	);
 
-	$this->_get($renderer->setFlow($flow));
+	$this->_httpGet($renderer->setFlow($flow));
 }
 ```
 
@@ -424,7 +424,7 @@ public function id () {
 		->collectionNode("data")->pipeTo()
 	);
 
-	$this->_get($renderer->setFlow($flow));
+	$this->_httpGet($renderer->setFlow($flow));
 }
 ```
 

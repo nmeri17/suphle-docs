@@ -31,7 +31,7 @@ class CarRoutes extends BaseCollection {
 	
 	public function SALES() {
 		
-		$this->_get(new Markup("salesHandler", "show-sales"));
+		$this->_httpGet(new Markup("salesHandler", "show-sales"));
 	}
 }
 ```
@@ -187,12 +187,12 @@ class FormHandlingCollection extends BaseCollection {
 
 	public function INIT__POSTh () {
 
-		$this->_get(new Markup("loadForm", "secure-some/edit-form"));
+		$this->_httpGet(new Markup("loadForm", "secure-some/edit-form"));
 	}
 
 	public function HANDLE__FORMh () {
 
-		$this->_post(new RedirectHotwireStream("executeForm", fn () => "/"));
+		$this->_httpPost(new RedirectHotwireStream("executeForm", fn () => "/"));
 	}
 }
 ```
@@ -212,7 +212,7 @@ class FormHandlingCollection extends BaseCollection {
 
 	public function INIT__POSTh () {
 
-		$this->_get(new Markup("loadForm", "secure-some/edit-form"));
+		$this->_httpGet(new Markup("loadForm", "secure-some/edit-form"));
 	}
 
 	public function HANDLE__FORMh () {
@@ -230,7 +230,7 @@ class FormHandlingCollection extends BaseCollection {
 			"hotwire/new-content-fragment"
 		);
 
-		$this->_post($renderer);
+		$this->_httpPost($renderer);
 	}
 
 	public function getStreamActionTarget (string $formTarget = "#replace-form"):callable {
@@ -265,7 +265,7 @@ public function DELETE__SINGLEh () {
 		"hotwireDelete", $this->getStreamActionTarget()
 	);
 
-	$this->_delete($renderer);
+	$this->_httpDelete($renderer);
 }
 ```
 
@@ -341,7 +341,7 @@ class FormHandlingCollection extends BaseCollection {
 			"hotwire/new-content-fragment"
 		);
 
-		$this->_post($renderer);
+		$this->_httpPost($renderer);
 	}
 }
 ```
@@ -405,7 +405,7 @@ public function HOTWIRE__RELOADh () {
 		"hotwire/update-fragment"
 	);
 
-	$this->_put($renderer);
+	$this->_httpPut($renderer);
 }
 ```
 

@@ -45,7 +45,7 @@ class CarRoutes extends BaseCollection {
 	
 	public function SALES() {
 		
-		$this->_get(new Markup("salesHandler", "show-sales"));
+		$this->_httpGet(new Markup("salesHandler", "show-sales"));
 	}
 }
 ```
@@ -67,12 +67,12 @@ class EmployeeRoutes extends BaseCollection {
 	
 	public function FIELD__AGENTSh () {
 		
-		$this->_get(new Markup("agentsHandler", "show-agents"));
+		$this->_httpGet(new Markup("agentsHandler", "show-agents"));
 	}
 	
 	public function OTHER__STAFFu () {
 		
-		$this->_get(new Markup("staffHandler", "show-staff"));
+		$this->_httpGet(new Markup("staffHandler", "show-staff"));
 	}
 }
 ```
@@ -92,7 +92,7 @@ class MusicRoutes extends BaseCollection {
 	
 	public function id () {
 		
-		$this->_get(new Markup("artistesHandler", "show-artistes"));
+		$this->_httpGet(new Markup("artistesHandler", "show-artistes"));
 	}
 }
 ```
@@ -110,7 +110,7 @@ class MusicRoutes extends BaseCollection {
 	
 	public function _index () {
 		
-		$this->_get(new Markup("musicHome", "show-homepage"));
+		$this->_httpGet(new Markup("musicHome", "show-homepage"));
 	}
 }
 ```
@@ -220,7 +220,7 @@ class ProductsCollection extends BaseCollection {
 	
 	public function productid () {
 			
-		$this->_get(new Markup("showOne", "show-product"));
+		$this->_httpGet(new Markup("showOne", "show-product"));
 	}
 }
 ```
@@ -239,7 +239,7 @@ class StoreCollection extends BaseCollection {
 	
 	public function STORE_id () {
 			
-		$this->_get(new Markup("showOne", "show-store"));
+		$this->_httpGet(new Markup("showOne", "show-store"));
 	}
 }
 ```
@@ -256,7 +256,7 @@ class StoreCollection extends BaseCollection {
 	
 	public function STORE_id_id () {
 			
-		$this->_get(new Markup("showProduct", "show-product"));
+		$this->_httpGet(new Markup("showProduct", "show-product"));
 	}
 }
 ```
@@ -280,7 +280,7 @@ class ProductsCollection extends BaseCollection {
 	
 	public function PRODUCTS_id () {
 			
-		$this->_get(new Markup("showOne", "show-product"));
+		$this->_httpGet(new Markup("showOne", "show-product"));
 	}
 }
 ```
@@ -304,7 +304,7 @@ class ProductsCollection extends BaseCollection {
 	
 	public function productid () {
 			
-		$this->_get(new Markup("showOne", "show-product"));
+		$this->_httpGet(new Markup("showOne", "show-product"));
 	}
 }
 ```
@@ -405,17 +405,17 @@ class LowerMirror extends BaseApiCollection {
 	
 	public function API__SEGMENTh () {
 		
-		$this->_get(new Json("segmentHandler"));
+		$this->_httpGet(new Json("segmentHandler"));
 	}
 
 	public function SEGMENT_id() {
 
-		$this->_get(new Json("simplePairOverride"));
+		$this->_httpGet(new Json("simplePairOverride"));
 	}
 
 	public function CASCADE () {
 
-		$this->_get(new Json("originalCascade"));
+		$this->_httpGet(new Json("originalCascade"));
 	}
 }
 ```
@@ -433,12 +433,12 @@ class ApiUpdate2Entry extends BaseApiCollection {
 
 	public function CASCADE () {
 
-		$this->_get(new Json("secondCascade"));
+		$this->_httpGet(new Json("secondCascade"));
 	}
 
 	public function SEGMENT__IN__SECONDh () {
 
-		$this->_get(new Json("segmentInSecond"));
+		$this->_httpGet(new Json("segmentInSecond"));
 	}
 }
 ```
@@ -456,7 +456,7 @@ class ApiUpdate3Entry extends BaseApiCollection {
 
 	public function CASCADE () {
 
-		$this->_get(new Json("thirdCascade"));
+		$this->_httpGet(new Json("thirdCascade"));
 	}
 }
 ```
@@ -476,7 +476,7 @@ class LowerMirror extends BaseApiCollection {
 
 	public function CASCADE () {
 
-		$this->_get(new Json("originalCascade"));
+		$this->_httpGet(new Json("originalCascade"));
 	}
 
 	public function _preMiddleware (PreMiddlewareRegistry $registry):void {
@@ -498,7 +498,7 @@ class ApiUpdate2Entry extends LowerMirror {
 
 	public function CASCADE () {
 
-		$this->_get(new Json("secondCascade"));
+		$this->_httpGet(new Json("secondCascade"));
 	}
 }
 ```
@@ -525,7 +525,7 @@ class BasicRoutes extends BaseCollection {
 }
 ```
 
-This builder is initialized with the string "envelope", denoting the directory to dig for presentation templates. The eventual path of a markup-based renderer will compute to `/module/view-path/envelope/renderer-template`. Renderer template names are indicated in the [browser binding chart](#Browser-CRUD-binding-chart).
+This builder is initialized with the string "envelope", denoting the directory to dig for presentation templates. The eventual path of a markup-based renderer will compute to `/module/view-path/envelope/renderer-template.php`. Renderer template names are indicated in the [browser binding chart](#Browser-CRUD-binding-chart).
 
 ### CRUD binding chart
 
@@ -568,6 +568,21 @@ In the renderer bound to the `CREATE` pattern, the new ID is derived from an act
 
 return ["resource" => $newModel]; // where `newModel` has an `id` property
 ```
+
+Going by the definition,
+
+```php
+
+class BasicRoutes extends BaseCollection {
+	
+	public function SAVE__ALLh () {
+		
+		$this->_crud("envelope")->registerCruds();
+	}
+}
+```
+
+The `CREATE` pattern will match `GET` requests to `/save-all/create`.
 
 #### API CRUD binding chart
 
@@ -638,6 +653,59 @@ public function OVERRIDE () {
 
 `replaceRenderer` only allows for replacing the renderer. If you need to change the route's pattern or its HTTP method, you'll be better off disabling that pattern and redefining it.
 
+### Generating CRUD defaults
+
+Above, we have covered what renderers are associated with a CRUD route's dynamic patterns. However, in the real world, it can be daunting to write all entities relevant to management by hand. For this reason, Suphle's routing component provides a command for automating the procedure. Suppose we wish to manage CRUD for a `Posts` resource, the following command should be used to generate its relevant classes:
+
+```bash
+
+php suphle route:crud Posts
+```
+
+When executed, this command creates the following:
+
+- Populated markup templates bound to the renderers discussed above.
+- The model, Post. Its contents are dictated by your underlying ORM, and stored in the conected database folder.
+- Coordinators for both an API bound collection and a regular one.
+- Route collections composed of the route patterns, a base payload reader and their validators.
+- A base test class expected to house test cases for this resource's CRUD endpoints.
+- Migration linked to the generated model.
+- A base payload reader.
+
+All generated files are populated and properly namespaced. However, most of the Coordinator methods deliberately have no content. The reason for this is that filling them with default behavior tends to encourage coding into the Coordinators, which is strongly discouraged. Since, it's impossible to know what [Service](/docs/v1/service-coordinators#Mutative-database-decorators) this resource should be tailored to, Suphle refrains from generating them. But it is believed that the plethora of files created are enough to get the developer up to speed implementing the business logic itself.
+
+What is left to do after generating the files is to perform the actions that cannot be automated. These include:
+
+- Adding relevant fields and modifiers to your migration. The default columns are `id` and `title`. Depending on your preference, you may manually run the migration, or let the Framework do that for you when the tests attached to the model are executed.
+
+- Connect the collections through the relevant config method.
+
+- Create a [model authorizer](/docs/v1/authorization#Model-based-authorization). Due to the nature of Suphle's project structure, these cannot be generated since they are ORM-specific but ought not to reside within the database layer.
+
+#### Fine-tuning CRUD generation
+
+##### Extracting CRUD to a module
+
+The default behavior is to output generated files into the first or titular module. Of course, nobody is expected to manage all the application's resources on one module. Doing so is antithetical to the concept of modular monoliths. In order to output the files into a different module, we are to specify the module's interface using the `hydrating_module` option.
+
+```bash
+
+php suphle route:crud Posts --hydrating_module=\\ModuleInteractions\\Posts
+```
+
+The command will filter through attached modules in search of one that implements this interface, and launch the extractor into it.
+
+##### Restricting CRUD views
+
+When the project is primarily API-based, resource views may prove surplus to requirements. In this case, we want to pass the `is_api` option.
+
+```bash
+
+php suphle route:crud Posts --is_api
+```
+
+Doing so effectively blocks the view files from being outputted.
+
 ## HTTP request methods
 
 The `BaseCollection` class offers the following methods for assigning request methods to our patterns:
@@ -673,7 +741,7 @@ public function SALES() {
 
 	$renderer->setHeaders(201, []);
 	
-	$this->_get($renderer);
+	$this->_httpGet($renderer);
 }
 ```
 
@@ -703,7 +771,7 @@ class LowerMirror extends BaseApiCollection {
 
 	public function CASCADE () {
 
-		$this->_get(new Json("originalCascade"));
+		$this->_httpGet(new Json("originalCascade"));
 	}
 }
 ```
@@ -719,7 +787,7 @@ class CarRoutes extends BaseCollection {
 	
 	public function SALES() {
 		
-		$this->_get(new Markup("salesHandler", "show-sales"));
+		$this->_httpGet(new Markup("salesHandler", "show-sales"));
 	}
 }
 ```
@@ -736,12 +804,12 @@ Similar to the `Json` renderer, it only accepts the handler as argument, but wil
 	
 public function SHOW__FORMh () {
 	
-	$this->_get(new Markup("showCreateForm", "show-form"));
+	$this->_httpGet(new Markup("showCreateForm", "show-form"));
 }
 
 public function PROCESS__FORMh () {
 	
-	$this->_get(new Reload("getProcessingResult"));
+	$this->_httpGet(new Reload("getProcessingResult"));
 }
 ```
 
@@ -759,7 +827,7 @@ When the destination is foreknown, it can simply be returned by the callback giv
 	
 public function PAYMENT__GATEWAYh () {
 	
-	$this->_post(new Redirect("saveCartPayment", function () {
+	$this->_httpPost(new Redirect("saveCartPayment", function () {
 
 		return "/hello";
 	}));
@@ -787,7 +855,7 @@ Assuming `updateModels` returns what amount to charge or some other information 
 	
 public function PAYMENT__GATEWAYh () {
 	
-	$this->_post(new Redirect("paymentGatewayHook", function () {
+	$this->_httpPost(new Redirect("paymentGatewayHook", function () {
 
 		return PaymentProcessor::generateUrl($this->rawResponse["message"]);
 	}));
@@ -802,7 +870,7 @@ In the example above, the static method of a collaborator, `PaymentProcessor`, w
 	
 public function PAYMENT__GATEWAYh () {
 	
-	$this->_post(new Redirect("paymentGatewayHook", fn () => function (PaymentProcessor $processor) {
+	$this->_httpPost(new Redirect("paymentGatewayHook", fn () => function (PaymentProcessor $processor) {
 
 		return $processor->generateUrl($this->rawResponse["resource"]->id);
 	}));
@@ -819,7 +887,7 @@ Its signature accepts a handler name, a download path generator, and an optional
 	
 public function GENERATE__PDFh () {
 	
-	$this->_post(new LocalFileDownload("getDailyReport", function (ModuleFiles $fileConfig) {
+	$this->_httpPost(new LocalFileDownload("getDailyReport", function (ModuleFiles $fileConfig) {
 
 		return $fileConfig->getModulePath() . "Files/Reports/" .
 
@@ -834,7 +902,7 @@ Being that path generation callback is expected to return dynamic paths, there's
 	
 public function GENERATE__PDFh () {
 	
-	$this->_post(new LocalFileDownload("getDailyReport", function (ModuleFiles $fileConfig) {
+	$this->_httpPost(new LocalFileDownload("getDailyReport", function (ModuleFiles $fileConfig) {
 
 		return $fileConfig->getModulePath() . "Files/Reports/" .
 
@@ -902,7 +970,7 @@ class CollectionForUser5 extends BaseCollection {
 
 	public function SAME__URLh () {
 
-		$this->_get(new Json("user5Handler"));
+		$this->_httpGet(new Json("user5Handler"));
 	}
 }
 ```

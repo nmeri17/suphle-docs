@@ -30,13 +30,13 @@ interface Session {
 
 	public function reset ():void;
 
-	public function startNew ():void;
+	public function prolongSession ():void;
 
 	public function setFlashValue (string $key, $value):void;
 }
 ```
 
-Default implementation of `Session` connected uses a file-based handler. Thus, if you'll prefer to replace this handler, available options are to either override the `Session::startNew` method with an implementation that adequately calls the native `session_set_save_handler` function, or write an adapter for a 3rd-party library dedicated to this purpose.
+Default implementation of `Session` connected uses a file-based handler. Thus, if you'll prefer to replace this handler, available options are to either override the `Session::prolongSession` method with an implementation that adequately calls the native `session_set_save_handler` function, or write an adapter for a 3rd-party library dedicated to this purpose.
 
 This object is booted and managed automatically by `Suphle\Auth\Repositories\BrowserAuthRepo` at the authentication layer. The implication of this is that:
 
@@ -46,7 +46,7 @@ This object is booted and managed automatically by `Suphle\Auth\Repositories\Bro
 
 ### Starting a new session
 
-The `startNew` method equally happens to be the location where session lifespan is read and set. In the `.env` file accompanying module installations, the `SESSION_DURATION` entry is set to the number of seconds in a day, and incrementally applies to all sessions initiated by a successful browser-based login. If this timeframe doesn't suit you, set it to one more preferable in the `.env`.
+The `prolongSession` method equally happens to be the location where session lifespan is read and set. In the `.env` file accompanying module installations, the `SESSION_DURATION` entry is set to the number of seconds in a day, and incrementally applies to all sessions initiated by a successful browser-based login. If this timeframe doesn't suit you, set it to one more preferable in the `.env`.
 
 The only time tampering with session lifetimes from a `Session` implementation is warranted is for software when it interacts with other objects. For instance, if we want different user roles to have different durations, we'll have to provide a method that sends a custom cookie with a timeframe that corresponds to that user category.
 

@@ -20,10 +20,17 @@ We use the `server:start` command with the following signature:
 
 ```bash
 
-php suphle server:start AllModules "/absolute/path/to/dev-rr.yaml"
+php suphle server:start AllModules
 ```
 
-Our `dev-rr.yaml` contains some sensible defaults to get you started. It's worth mentioning that this command is advisable for use from production environments and rarely in development mode. Developers should always debug their back-ends from an automated test on the terminal. There are more than enough facilities in Suphle to assist in programmatically verifying any form of expectation.
+A server configuration is created for you containing some sensible defaults. This file is called `dev-rr.yaml` and stored on the project's root. If you would rather name it something else or have a different project structure, the path to your new config should be passed using the `rr_config_path` option.
+
+```bash
+
+php suphle server:start AllModules --rr_config_path="/absolute/path/to/dev-rr.yaml"
+```
+
+It's worth mentioning that the `server:start` command is advisable for use from production environments and rarely in development mode. Developers should always debug their back-ends from an automated test on the terminal. There are more than enough facilities in Suphle to assist in programmatically verifying any form of expectation.
 
 #### Startup operations
 
@@ -66,7 +73,7 @@ After all errors are corrected, Psalm will incrementally suggest stricter valida
 
 ```bash
 
-php suphle server:start AllModules "/absolute/path/to/dev-rr.yaml" --no_static_refactor
+php suphle server:start AllModules --no_static_refactor
 ```
 
 Passing this flag will merely scan the code and report its findings. The project's maintainer is expected to correct any errors by other means, for example, manually.
@@ -79,7 +86,7 @@ Additional operations unique to your use-case can be prepended to this phase. Su
 
 ```bash
 
-php suphle server:start AllModules "/absolute/path/to/dev-rr.yaml" --operations_class="\AllModules\ModuleOne\Meta\BootOperations" --custom_operations_options="\AllModules\ModuleOne\Services\SkipFilter"
+php suphle server:start AllModules --operations_class="\AllModules\ModuleOne\Meta\BootOperations" --custom_operations_options="\AllModules\ModuleOne\Services\SkipFilter"
 ```
 
 ```php
@@ -196,7 +203,7 @@ public function test_server_builds_successfully () {
 
 `PingHttpServer::assertServerBuilds` takes optional arguments for:
 
-1. Passing additional options to the server command. This accepts flags that are passed to the `suphle` binary from the CLI, with the exception of the server config YAML. The default flags used are the generic ones recommended above for starting the server. They can be overridden by passing an array keyed by flag name and value. As with all strings, it's more reliable to access them through constants than literals. For server starting, the flags are represented by constants on the `Suphle\Server\Commands\HttpServerCommand` command. Do override/mute some of the flags with caution, or at least, ensure they match what the server is actually started with, as their disparity defeats the whole purpose of confirming server builds successfully.
+1. Passing additional options to the server command. This accepts flags that are passed to the `suphle` binary from the CLI. The default flags used are the generic ones recommended above for starting the server. They can be overridden by passing an array keyed by flag name and value. As with all strings, it's more reliable to access them through constants than literals. For server starting, the flags are represented by constants on the `Suphle\Server\Commands\HttpServerCommand` command. Do override/mute some of the flags with caution, or at least, ensure they match what the server is actually started with, as their disparity defeats the whole purpose of confirming server builds successfully.
 
 ```php
 
@@ -210,5 +217,3 @@ public function test_server_builds_successfully () {
 ```
 
 1. This argument should be used for directing the asserter to find the `suphle` binary at an alternate path; helpful for projects following a non-conventional structure where the titular module's root path doesn't correspond to binary location.
-
-1. Absolute path to a server config YAML either not residing at the project's root, or not bearing the name `dev-rr.yaml`.

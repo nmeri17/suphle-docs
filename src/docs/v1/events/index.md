@@ -86,7 +86,7 @@ class CheckoutCart extends UpdatefulService implements SystemModelEdit {
 
 	public function updateModels () {
 
-		$this->cartBuilder->products()->update(["sold" => true]);
+		$this->cartBuilder->products()->decrement("quantity");
 
 		$this->emitHelper(self::EMPTIED_CART, $this->cartBuilder);
 

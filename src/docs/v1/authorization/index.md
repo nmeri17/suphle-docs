@@ -187,7 +187,7 @@ class AuthorizeRoutes extends BaseCollection {
 
 	public function ADMIN__ENTRYh () {
 
-		$this->_get(new Json("plainSegment"));
+		$this->_httpGet(new Json("plainSegment"));
 	}
 
 	public function ADMIN () {
@@ -232,17 +232,17 @@ class UnlocksAuthorization1 extends BaseCollection {
 
 	public function SECEDE () {
 
-		$this->_get(new Json("simpleResult"));
+		$this->_httpGet(new Json("simpleResult"));
 	}
 
 	public function GMULTI__EDITh_id () {
 
-		$this->_get(new Json("getEmploymentDetails"));
+		$this->_httpGet(new Json("getEmploymentDetails"));
 	}
 
 	public function GMULTI__EDIT__UNAUTHh () {
 
-		$this->_get(new Json("getEmploymentDetails"));
+		$this->_httpGet(new Json("getEmploymentDetails"));
 	}
 
 	public function _preMiddleware (PreMiddlewareRegistry $registry):void {

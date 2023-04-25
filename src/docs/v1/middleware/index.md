@@ -64,7 +64,7 @@ class MultiTagSamePattern extends BaseCollection {
 
 	public function NEGOTIATE () {
 
-		$this->_get(new Markup("plainSegment", "generic.content"));
+		$this->_httpGet(new Markup("plainSegment", "generic.content"));
 	}
 
 	public function _assignMiddleware (MiddlewareRegistry $registry):void {
@@ -128,12 +128,12 @@ class UntagsMiddleware extends BaseCollection {
 
 	public function FIRST__UNTAGh () {
 
-		$this->_get(new Markup("plainSegment", "generic.content"));
+		$this->_httpGet(new Markup("plainSegment", "generic.content"));
 	}
 
 	public function RETAIN () {
 
-		$this->_get(new Json("plainSegment"));
+		$this->_httpGet(new Json("plainSegment"));
 	}
 
 	public function _assignMiddleware (MiddlewareRegistry $registry):void {
@@ -237,7 +237,7 @@ class MultiTagSamePattern extends BaseCollection {
 
 	public function NEGOTIATE () {
 
-		$this->_get(new Markup("plainSegment", "generic.content"));
+		$this->_httpGet(new Markup("plainSegment", "generic.content"));
 	}
 
 	public function _assignMiddleware (MiddlewareRegistry $registry):void {
