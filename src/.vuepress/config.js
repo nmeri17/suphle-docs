@@ -32,9 +32,9 @@ module.exports = {
     enableDarkMode: true,
     repo: "https://github.com/nmeri17/suphle",
     docsRepo: "https://github.com/nmeri17/suphle-docs",
-    editLinks: false,
+    editLinks: true,
     docsDir: "",
-    editLinkText: "",
+    editLinkText: "Help us improve this page",
     //lastUpdated: true,
 
     logo: "/logo.svg",
