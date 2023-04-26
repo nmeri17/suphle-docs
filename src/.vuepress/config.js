@@ -33,7 +33,7 @@ module.exports = {
     repo: "https://github.com/nmeri17/suphle",
     docsRepo: "https://github.com/nmeri17/suphle-docs",
     editLinks: true,
-    docsDir: "",
+    docsDir: "src",
     editLinkText: "Help us improve this page",
     //lastUpdated: true,
 
