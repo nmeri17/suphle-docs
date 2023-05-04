@@ -55,18 +55,7 @@ You may be thinking:
 
 > I'm in too much of a hurry to sift through the entire docs in search of what captivating goodies Suphle has to offer, in concrete terms.
 
-Let me spare you the hassle by listing topics I personally find compelling:
-
-1. The routing system, guaranteed to be the most unconventional you've seen till date
-1. Module descriptors and their wiring
-1. Flows
-1. Testing framework to mock and verify behavior exposed by every observable functionality
-1. The default decorators available
-1. 3rd party framework bridge
-1. Exception handling, testing, broadcasting
-1. Service-coordinators
-
-You can randomly check out any of them. But the APIs for everything else in Suphle is carefully designed to look marvelous; from events to middleware, component-templates, outgoing and incoming HTTP requests. There's model-based authorization, authentication customization. Pair strategic design with functionality, and you have the doozy that your SAAS application will be.
+An overview of Suphle's most compelling features has been summarized in this [post](https://nmeri.hashnode.dev/a-synopsis-of-the-suphle-framework).
 
 ::: tip
 The love you have for what you build naturally reflects in the artsy attention paid to it. What if every thing could be built that way without the costly expense of tedium?
@@ -74,6 +63,6 @@ The love you have for what you build naturally reflects in the artsy attention p
 
 ## How reliable it is
 
-The iteration of Suphle released for public use has been in the making for at least 3 years, with 2 of out of that demanding full-time devotion. It's not farfetched to assume that that is enough time for it to have been rigorously tested and refined to withstand most realistic conditions. Should any need or bug have escaped internal usage, you can label the StackOverflow tag, `suphle`, on [your question](https://stackoverflow.com/questions/ask). If it's unexpected behavior, or that which deviates from specification on this documentation, kindly attempt to reproduce it on the [Github repopository](https://github.com/nmeri17/suphle/issues/new/choose).
+The iteration of Suphle released for public use has been in the making for at least 3 years, with 2 out of that demanding full-time devotion. It's not farfetched to assume that that is enough time for it to have been rigorously tested and refined to withstand most realistic conditions. Should any need or bug have escaped internal usage, you can ask on the [reddit sub](https://reddit.com/r/suphle). If it's unexpected behavior, or that which deviates from specification on this documentation, kindly attempt to reproduce it on the [Github repository](https://github.com/nmeri17/suphle/issues/new/choose).
 
 [Ready to get started?](/docs/v1/quick-start)
