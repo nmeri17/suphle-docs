@@ -40,11 +40,17 @@ Is equivalent to using the `view` function you're accustomed to in Blade.
 
 ### Binding blade component classes
 
-The Blade parser makes use of the `Suphle\Adapters\Presentation\Blade\DefaultBladeAdapter` adapter, which makes provision for binding markup tags, as well as component namespaces using its `bindComponentTags` method.
+While working with Blade's component classes, we will want to bind markup tags to our view files, or bind component namespaces to our layout classes. These bindings are expected to take place in a properly connected `DefaultBladeAdapter::bindComponentTags` method.
+
+A descendant of this class is already connected for you in the starter project. It can be modified to accomodate your desired bindings as follows:
 
 ```php
 
+namespace AllModules\CompanySymbol\Config;
+
 use Suphle\Adapters\Presentation\Blade\DefaultBladeAdapter;
+
+use AllModules\CompanySymbol\Markup\Components\AppLayouts;
 
 class CustomBladeAdapter extends DefaultBladeAdapter {
 	
@@ -60,7 +66,7 @@ class CustomBladeAdapter extends DefaultBladeAdapter {
 }
 ```
 
-These bindings are then used in the templates as follows, respectively:
+These bindings are then used in the view templates:
 
 ```html
 
@@ -68,8 +74,6 @@ These bindings are then used in the templates as follows, respectively:
 
 <x-project-name::tag-name /> <!-- Reads the tag names automatically on your behalf -->
 ```
-
-`CustomBladeAdapter` must then be bound to the `HtmlParser` interface [replacing](/docs/v1/container#Binding-regular-interfaces) `DefaultBladeAdapter`.
 
 ## Configuring a presentation adapter
 
@@ -111,7 +115,7 @@ class ModuleApi implements ModuleOne {
 }
 ```
 
-Bear in mind that the `parseRaw` is adapter-specific since it's impossible for all templating engines to require the same argument list. In the case of Blade, the template name and an iterable payload suffices.
+Bear in mind that the `parseRaw` method above, is adapter-specific (in this case, to the Blade adapter), since it's impossible for all templating engines to require the same argument list. In the case of Blade, the template name and an iterable payload suffices.
 
 ## Optimising fidelity to web app status
 

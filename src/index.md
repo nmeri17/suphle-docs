@@ -55,7 +55,7 @@ You may be thinking:
 
 > I'm in too much of a hurry to sift through the entire docs in search of what captivating goodies Suphle has to offer, in concrete terms.
 
-An overview of Suphle's most compelling features has been summarized in this [post](https://nmeri.hashnode.dev/a-synopsis-of-the-suphle-framework).
+An overview of Suphle's most compelling features has been summarized in this [post](https://nmeri.hashnode.dev/a-synopsis-of-the-suphle-framework). The reason it was built and original problems it set out to solve were discussed [here](https://dev.to/mmayboy_/introducing-suphle-the-tale-of-a-modern-php-framework-54i9).
 
 ::: tip
 The love you have for what you build naturally reflects in the artsy attention paid to it. What if every thing could be built that way without the costly expense of tedium?

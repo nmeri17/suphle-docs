@@ -483,7 +483,7 @@ class LowerMirror extends BaseApiCollection {
 
 		$registry->tagPatterns(
 
-			new AuthenticateMetaFunnel(["CASCADE"], $this->authStorage)
+			new AuthenticateMetaFunnel(["CASCADE"], $this->hydrateAuthStorage())
 		);
 	}
 }

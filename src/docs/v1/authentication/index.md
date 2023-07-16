@@ -212,7 +212,7 @@ class SecureBrowserCollection extends BaseCollection {
 
 		$registry->tagPatterns(
 
-			new AuthenticateMetaFunnel(["SEGMENT"], $this->authStorage)
+			new AuthenticateMetaFunnel(["SEGMENT"], $this->hydrateAuthStorage())
 		);
 	}
 }
@@ -241,7 +241,7 @@ class UpperCollection extends BaseCollection {
 
 		$registry->tagPatterns(
 
-			new AuthenticateMetaFunnel(["PREFIX"], $this->authStorage)
+			new AuthenticateMetaFunnel(["PREFIX"], $this->hydrateAuthStorage())
 		);
 	}
 	
@@ -317,7 +317,7 @@ class SecureBrowserCollection extends BaseCollection {
 
 		$registry->tagPatterns(
 
-			new AuthenticateMetaFunnel($patterns, $this->authStorage)
+			new AuthenticateMetaFunnel($patterns, $this->hydrateAuthStorage())
 		)
 		->tagPatterns(new AccountVerifiedFunnel($patterns) );
 	}

@@ -272,6 +272,10 @@ In order to keep our Coordinators lean, cohesive and disciplined, they have a na
 
 - `Suphle\Services\UpdatefulService` and `Suphle\Services\UpdatelessService`
 
+- `Suphle\Contracts\IO\Session`,
+
+- `Suphle\Security\CSRF\CsrfGenerator`
+
 Attempting to inject a dependency outside this list will throw a `Suphle\Exception\Explosives\DevError\UnacceptableDependency` exception and prevent app server from being built. Details about each class is treated in its appropriate section.
 
 Action methods can only type-hint arguments extending `Suphle\Services\Structures\ModelfulPayload` and `Suphle\Services\Structures\ModellessPayload`. This is because any other service we want to inject will likely be applicable to other endpoints on this coordinator and should be injected through the constructor. Violating this rule will throw an `InvalidArgumentsException` while equally preventing app server from being built.
@@ -305,7 +309,7 @@ Conceptually, there is a difference between services that update the database an
 
 #### Pure services
 
-This can refer to anything from business logic to database fetch queries. In Suphle, this semantic is represented by the class `Suphle\Services\UpdatelessService`. Whether or not a distinction over database vs non-database `UpdatelessService` services will be made depends on how independently they change. This is because, when this demarcation occurs, either class is prohibited from depending on the other.
+This can refer to anything from business logic to database fetch queries. In Suphle, this semantic is represented by the class `Suphle\Services\UpdatelessService`.
 
 #### Database mutating services
 

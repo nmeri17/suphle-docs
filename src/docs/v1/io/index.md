@@ -28,17 +28,17 @@ interface Session {
 
 	public function hasKey (string $key):bool;
 
-	public function reset ():void;
+	public function getAsCookieString ():string;
 
-	public function prolongSession ():void;
+	public function reset ():void;
 
 	public function setFlashValue (string $key, $value):void;
 }
 ```
 
-Default implementation of `Session` connected uses a file-based handler. Thus, if you'll prefer to replace this handler, available options are to either override the `Session::prolongSession` method with an implementation that adequately calls the native `session_set_save_handler` function, or write an adapter for a 3rd-party library dedicated to this purpose.
+Suphle's default implementation of the `Session` interface is powered by the cache storage being connected. In addition to the fact that the use of superglobals are prohibited in long-running servers such as Roadrunner's, PHP's native session functionality is file-based. This makes it impossible to scale such an application horizontally. Even if the underlying session storage were to be replaced with some other mechanism such as the database, its invocation sequence is inscrutable; as are the `session_` calls all over the place.
 
-This object is booted and managed automatically by `Suphle\Auth\Repositories\BrowserAuthRepo` at the authentication layer. The implication of this is that:
+The interface's concrete is booted and managed automatically by `Suphle\Auth\Repositories\BrowserAuthRepo`, at the authentication layer. Its implication is that:
 
 1. Its contents will be empty at routes bound to the `TokenStorage` [authentication mechanism](/docs/v1/routing#authentication). This is expected behavior as only browsers send cookies and as such, are capable of session retention.
 
@@ -46,70 +46,11 @@ This object is booted and managed automatically by `Suphle\Auth\Repositories\Bro
 
 ### Starting a new session
 
-The `prolongSession` method equally happens to be the location where session lifespan is read and set. In the `.env` file accompanying module installations, the `SESSION_DURATION` entry is set to the number of seconds in a day, and incrementally applies to all sessions initiated by a successful browser-based login. If this timeframe doesn't suit you, set it to one more preferable in the `.env`.
+Internally, Suphle leverages the `SessionStorage::startSession` method to perfom low-level actions involved in initiating a new session. This session will remain active for as long as its cookies exist on the user's browser, or until its duration elapses without further activity from the user. This value is read from the `.env` file accompanying module installations; specifically, the `SESSION_DURATION` entry, which defaults to the number of seconds in a day.
 
-The only time tampering with session lifetimes from a `Session` implementation is warranted is for software when it interacts with other objects. For instance, if we want different user roles to have different durations, we'll have to provide a method that sends a custom cookie with a timeframe that corresponds to that user category.
+Finer-grained control over session initialization or behavior is dictated by the characteristic we intend to modify. Cookie duration and low-level methods reside at the `SessionStorage` implementation. However, if you seek to disrupt something like its initialization sequence, you'd have to override the `BrowserAuthRepo::startSessionForCompared` method, where those invocations were made.
 
-```php
-
-use Suphle\Adapters\Session\NativeSession;
-
-use Suphle\Contracts\Auth\UserContract;
-
-class CustomSessionAccessor extends NativeSession {
-
-	const ROLES_TO_DURATION = [
-
-		UserContract::FRONT_DESK => "FRONT_DESK_SESSION",
-
-		UserContract::EXECUTIVE => "EXECUTIVE_SESSION",
-
-		UserContract::REGULAR => "DEFAULT_SESSION"
-	];
-
-	public function setCategoryTimeframe (UserContract $user) {
-
-		$this->setCookieElapse(
-			$this->envAccessor->getField(
-
-				self::ROLES_TO_DURATION[$user->getRole()]
-			)
-		);
-	}
-}
-```
-
-Because session resumption supercedes user hydration, this method can only be invoked after the authentication process is successful i.e. as soon as an authenticated user is available.
-
-```php
-
-use Suphle\Auth\{Repositories\BrowserAuthRepo, Storage\SessionStorage};
-
-use Suphle\Contracts\{Auth\ColumnPayloadComparer, IO\Session};
-
-class CustomBrowserAuthRepo extends BrowserAuthRepo {
-
-	public function __construct (
-		protected readonly ColumnPayloadComparer $comparer,
-
-		protected readonly SessionStorage $authStorage,
-
-		protected readonly Session $sessionContract
-	) { 
-		
-		//
-	}
-
-	public function successLogin () {
-
-		$user = $this->comparer->getUser();
-
-		$this->authStorage->startSession($user->getId());
-
-		$this->sessionContract->setCategoryTimeframe($user);
-	}
-}
-```
+Session resumption supercedes user hydration; thus, when dabbling within the realm of session initialization, don't expect to work with a user unless the authentication process has been successful.
 
 ## Caching
 
