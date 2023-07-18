@@ -178,32 +178,7 @@
 					</p>
 			</blockquote>
 			<p>
-					Let me spare you the hassle by listing topics I personally find
-					compelling:
-			</p>
-			<ol>
-					<li>
-							The routing system, guaranteed to be the most unconventional you've
-							seen till date
-					</li>
-					<li>Module descriptors and their wiring</li>
-					<li>Flows</li>
-					<li>
-							Testing framework to mock and verify behavior exposed by every
-							observable functionality
-					</li>
-					<li>The default decorators available</li>
-					<li>3rd party framework bridge</li>
-					<li>Exception handling, testing, broadcasting</li>
-					<li>Service-coordinators</li>
-			</ol>
-			<p>
-					You can randomly check out any of them. But the APIs for everything else
-					in Suphle is carefully designed to look marvelous; from events to
-					middleware, component-templates, outgoing and incoming HTTP requests.
-					There's model-based authorization, authentication customization. Pair
-					strategic design with functionality, and you have the doozy that your
-					SAAS application will be.
+				An overview of Suphle's most compelling features has been summarized in this <a href="https://nmeri.hashnode.dev/a-synopsis-of-the-suphle-framework">post</a>. The reason it was built and original problems it set out to solve were discussed <a href="https://dev.to/mmayboy_/introducing-suphle-the-tale-of-a-modern-php-framework-54i9">here</a>.
 			</p>
 			<blockquote>
 					The love you have for what you build naturally reflects in the
@@ -219,10 +194,7 @@
 					for at least 3 years, with 2 of out of that demanding full-time
 					devotion. It's not farfetched to assume that that is enough time for it
 					to have been rigorously tested and refined to withstand most realistic
-					conditions. Should any need or bug have escaped internal usage, you can
-					label the StackOverflow tag, <code>suphle</code>, on
-					<a href="https://stackoverflow.com/questions/ask">your question</a>. If
-					it's unexpected behavior, or that which deviates from specification on
+					conditions. Should any need or bug have escaped internal usage, unexpected behavior, or that which deviates from specification on
 					this documentation, kindly attempt to reproduce it on the
 					<a href="https://github.com/nmeri17/suphle/issues/new/choose"
 							>Github repository</a
