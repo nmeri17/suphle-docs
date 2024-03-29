@@ -2,7 +2,7 @@
 
 Documentation for https://github.com/nmeri17/suphle
 
-Hosted online at [Suphle.com](https://suphle.com).
+Hosted online at [netlify](https://angry-cray-9c191b.netlify.app).
 
 To contribute to this documentation, fork this repository and run locally by cloning the repository. Cd into it, and run the command
 
