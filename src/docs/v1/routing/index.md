@@ -686,7 +686,7 @@ What is left to do after generating the files is to perform the actions that can
 
 ##### Extracting CRUD to a module
 
-The default behavior is to output generated files into the first or titular module. Of course, nobody is expected to manage all the application's resources on one module. Doing so is antithetical to the concept of modular monoliths. In order to output the files into a different module, we are to specify the module's interface using the `hydrating_module` option.
+The default behavior is to output generated files into the first or titular module. As you are not expected to manage all the application's resources on one module, Doing so is antithetical to the concept of modular monoliths. In order to output the files into a different module, we are to specify the module's interface using the `hydrating_module` option.
 
 ```bash
 
@@ -840,11 +840,9 @@ However, in most cases, the destination relies on the result or data created whi
 	
 public function paymentGatewayHook (CartBuilder $cartBuilder):array {
 
-	$this->cartService->initializeUpdateModels($cartBuilder);
-
 	return [
 
-		"message" => $this->cartService->updateModels()
+		"message" => $this->cartService->updateModels($cartBuilder)
 	];
 }
 ```

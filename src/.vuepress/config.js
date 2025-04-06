@@ -75,7 +75,7 @@ module.exports = {
 
       ["/docs/v1/middleware/", "Middleware"], ["/docs/v1/exceptions/", "Exceptions"],
       ["/docs/v1/templating/", "Templating"],
-      ["/docs/v1/io/", "IO"],
+      ["/docs/v1/io/", "IO"], ["/docs/v1/http/", "Outbound Requests"],
 
       ["/docs/v1/flows/", "Flows"], ["/docs/v1/bridges/", "Framework Bridge"], ["/docs/v1/console/", "Console Commands"],
 

@@ -575,30 +575,23 @@ class CheckoutCart extends UpdatefulService implements SystemModelEdit {
 
 	public const EMPTIED_CART = "cart_empty";
 
-	private $cartBuilder;
-
 	public function __construct (private readonly Events $eventManager) {
 
 		//
 	}
 
-	public function updateModels () {
+	public function updateModels (object $cartBuilder) {
 
-		$this->cartBuilder->products()->update(["sold" => true]);
+		$cartBuilder->products()->update(["sold" => true]);
 
-		$this->emitHelper (self::EMPTIED_CART, $this->cartBuilder); // received by payment, order modules etc
+		$this->emitHelper (self::EMPTIED_CART, $cartBuilder); // received by payment, order modules etc
 
-		return $this->cartBuilder->delete();
+		return $cartBuilder->delete();
 	}
 
-	public function modelsToUpdate ():array {
+	public function modelsToUpdate (object $cartBuilder):array {
 
-		return $this->cartBuilder->products;
-	}
-
-	public function initializeUpdateModels ($cartBuilder):void {
-
-		$this->cartBuilder = $cartBuilder;
+		return $cartBuilder->products;
 	}
 }
 ```
@@ -616,21 +609,17 @@ class CheckoutCoordinator extends ServiceCoordinator {
 
 	public function previewCartProducts (CartBuilder $cartBuilder):array {
 
-		$this->cartService->initializeUpdateModels($cartBuilder);
-
 		return [
 
-			"data" => $this->cartService->modelsToUpdate()
+			"data" => $this->cartService->modelsToUpdate($cartBuilder)
 		];
 	}
 
 	public function paymentGatewayHook (CartBuilder $cartBuilder):array {
 
-		$this->cartService->initializeUpdateModels($cartBuilder);
-
 		return [
 
-			"message" => $this->cartService->updateModels()
+			"message" => $this->cartService->updateModels($cartBuilder)
 		];
 	}
 }
@@ -712,7 +701,10 @@ class EmploymentCoordinator extends ServiceCoordinator {
 
 		return [
 
-			"message" => $this->employmentService->updateResource()
+			"message" => $this->employmentService->updateResource(
+
+				$this->payloadStorage->only(["salary"])
+			)
 		];
 	}
 }

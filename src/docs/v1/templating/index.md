@@ -285,7 +285,7 @@ class FormHandlingCoordinator extends ServiceCoordinator {
 
 		return [
 
-			"data" => $this->productsService->updateResource($builtProduct)
+			"data" => $this->productsService->updateResource($builtProduct, $toUpdate)
 		];
 	}
 }
