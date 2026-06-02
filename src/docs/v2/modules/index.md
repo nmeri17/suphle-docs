@@ -2,7 +2,7 @@
 
 ### Modularization candidates
 
-One of the great dividends of building upon opinionated structures is that it decides on a solution to the architectural problem for the developer. With that out of the way, they are left to figure out higher-level problems. For web applications, those higher-level problems are usually [services](/docs/v1/service-coordinators).
+One of the great dividends of building upon opinionated structures is that it decides on a solution to the architectural problem for the developer. With that out of the way, they are left to figure out higher-level problems. For web applications, those higher-level problems are usually [services](/docs/v2/service-coordinators).
 
 This doesn't mean every application should be structured in the same manner. The idea is that the number of ways to poorly structure an application far outnumber proven ways to build applications that are easier to maintain. It takes a level of thought that can be expensive for some. For these set of developers, it helps to condense proven designs into reusable frameworks, in order to take that responsibility away from them. In our case, modules should not be shoe-horned into every project simply because they exist or are considered a cool fad. They are better suited for:
 
@@ -10,7 +10,7 @@ This doesn't mean every application should be structured in the same manner. The
 
 - AGILE settings where features/domains will likely be short-lived, activated and deactivated.
 
-The detachable characteristic of modules means they can be developed and tested independently, benefit from having their own `.env` file, etc. More importantly, they can be integrated without risk of crumbling the existing project. To be clear, modules don't necessarily offer protection against breaking existing features after updating unrelated parts of the codebase. To solve that problem, you'd like to look at the appendix chapter for [integrating new changes](/docs/v1/appendix/confidently-integrating-upgrades).
+The detachable characteristic of modules means they can be developed and tested independently, benefit from having their own `.env` file, etc. More importantly, they can be integrated without risk of crumbling the existing project. To be clear, modules don't necessarily offer protection against breaking existing features after updating unrelated parts of the codebase. To solve that problem, you'd like to look at the appendix chapter for [integrating new changes](/docs/v2/appendix/confidently-integrating-upgrades).
 
 ### Contents of a module
 
@@ -31,7 +31,7 @@ A Suphle module is a folder with some essential classes that are eventually conn
 php suphle modules:create Products --module_descriptor="\AllModules\Products\Meta\ProductsDescriptor"
 ```
 
-When run, the command above will transfer contents of the template folder, *ModuleTemplate*, to a new `Products` module, replacing namespaces, class names and their contents, generally mirroring source structure to appropriately match the newly birthed module. When present, the `module_descriptor` option causes [component templates](/docs/v1/component-templates) to be automatically installed after module creation.
+When run, the command above will transfer contents of the template folder, *ModuleTemplate*, to a new `Products` module, replacing namespaces, class names and their contents, generally mirroring source structure to appropriately match the newly birthed module. When present, the `module_descriptor` option causes [component templates](/docs/v2/component-templates) to be automatically installed after module creation.
 
 Usually, ModuleTemplate will be customized to taste. If, however, your architecture of choice deviates from the default, your module template may reside away from the Suphle executable. In this case, its new destination should be communicated to the executable through its `template_source` option:
 
@@ -87,7 +87,7 @@ class PublishedModules extends ModuleHandlerIdentifier {
 
 By excluding any of the descriptors, perhaps while its module is still under development, the app is blissfully oblivious of all that module's contents -- events, routes, commands, etc.
 
-The app composition above is enough for simplistic scenarios where there is no direct communication between any of the descriptors. It's also how all your modules will start out until you define their capabilities later on. As has already [been established](/docs/v1/service-coordinators#Database-mutating-services) in [several chapters](/docs/v1/events#Listening-to-foreign-events) across this documentation, direct calls should only be made to dependencies when they return a value. This allows new additions to evolve and be tested without tampering with/breaking the scope triggering their execution. It also doesn't pollute this scope with references not meaningful to it. This same rule of thumb applies to inter-dependent modules.
+The app composition above is enough for simplistic scenarios where there is no direct communication between any of the descriptors. It's also how all your modules will start out until you define their capabilities later on. As has already [been established](/docs/v2/service-coordinators#Database-mutating-services) in [several chapters](/docs/v2/events#Listening-to-foreign-events) across this documentation, direct calls should only be made to dependencies when they return a value. This allows new additions to evolve and be tested without tampering with/breaking the scope triggering their execution. It also doesn't pollute this scope with references not meaningful to it. This same rule of thumb applies to inter-dependent modules.
 
 ## Module inter-dependency
 
@@ -99,7 +99,7 @@ This becomes imperative when sharing data or functionality between modules withi
 
 - Modules can be tested by stubbing out the interfaces of modules they are dependent on.
 
-Suphle doesn't enforce boundaries between modules. For that, you'll need to write a [startup filter](/docs/v1/application-server#Custom-startup-operations) that revolts when a dependency within the root `AllModules` namespace doesn't conform to that of the penultimate parent namespace of the evaluated class.
+Suphle doesn't enforce boundaries between modules. For that, you'll need to write a [startup filter](/docs/v2/application-server#Custom-startup-operations) that revolts when a dependency within the root `AllModules` namespace doesn't conform to that of the penultimate parent namespace of the evaluated class.
 
 ### Defining producer modules
 
@@ -123,15 +123,15 @@ interface ModuleTwo {
 
 By the namespace used and its location, you may observe that module interfaces reside outside the implementation created for them. The implementations can be removed or replaced at will. But consumers will always rely on the contract on the interface.
 
-`ModuleTwo`, above, is a simplistic interface in that it only deals with primitive types. Note that this is not always the case [in the real world](/docs/v1/database#Models-location).
+`ModuleTwo`, above, is a simplistic interface in that it only deals with primitive types. Note that this is not always the case [in the real world](/docs/v2/database#Models-location).
 
-Usually, you'd want your module to be consumed directly from a coordinator in the dependent module instead of proxying calls to it using additional services. In this case, it'll be wise for the module's interface to extend `Suphle\Contracts\Modules\ControllerModule`. Suphle uses this measure to dissuade direct consumption of the implementation classes. Should you attempt to inject a random module interface into a coordinator, as with [any other *unknown* class](/docs/v1/service-coordinators#Permitted-dependencies), it will throw a `Suphle\Exception\Explosives\DevError\UnacceptableDependency` exception. 
+Usually, you'd want your module to be consumed directly from a coordinator in the dependent module instead of proxying calls to it using additional services. In this case, it'll be wise for the module's interface to extend `Suphle\Contracts\Modules\ControllerModule`. Suphle uses this measure to dissuade direct consumption of the implementation classes. Should you attempt to inject a random module interface into a coordinator, as with [any other *unknown* class](/docs/v2/service-coordinators#Permitted-dependencies), it will throw a `Suphle\Exception\Explosives\DevError\UnacceptableDependency` exception. 
 
 #### Integrating module interfaces
 
 These are steps to be taken to ensure both the producer itself and its possible consumers are aware of the interface created above. 
 
-Internally, its interface should be bound like [other simple ones](/docs/v1/container#Binding-regular-interfaces):
+Internally, its interface should be bound like [other simple ones](/docs/v2/container#Binding-regular-interfaces):
 
 ```php
 
@@ -251,7 +251,7 @@ class PublishedModules extends ModuleHandlerIdentifier {
 		return [
 			$moduleOne,
 
-			new ModuleTwoDescriptor(new Container)->sendExpatriates([
+			(new ModuleTwoDescriptor(new Container))->sendExpatriates([
 
 				ModuleOne::class => $moduleOne
 			])
@@ -295,7 +295,7 @@ class ModuleApi implements ModuleTwo {
 
 The above is a contrived example used to illustrate that dependencies are ready for use as early as possible. Modules shouldn't act as proxies to other modules, except when absolutely unavoidable.
 
-Suphle app composition API is designed in a way to prohibit cyclical referencing. This sort of scenario may crop up in real life and is a legitimate one where proxy modules are inevitable. Solutions have been discussed in the [circular dependencies section](/docs/v1/container#Circular-dependencies-caveat).
+Suphle app composition API is designed in a way to prohibit cyclical referencing. This sort of scenario may crop up in real life and is a legitimate one where proxy modules are inevitable. Solutions have been discussed in the [circular dependencies section](/docs/v2/container#Circular-dependencies-caveat).
 
 ## Module booting
 
@@ -305,12 +305,12 @@ Suphle app composition API is designed in a way to prohibit cyclical referencing
 
 ### Data sharing format
 
-The purpose of the data being shared should determine what format it is being served in. Data intended for use in the computation of a consumer can be served in its raw format, while data needed for to be plugged into a view template may benefit more from [micro front-ends](/docs/v1/templating#micro-front-ends) to achieve a higher degree of modularity.
+The purpose of the data being shared should determine what format it is being served in. Data intended for use in the computation of a consumer can be served in its raw format, while data needed for to be plugged into a view template may benefit more from [micro front-ends](/docs/v2/templating#micro-front-ends) to achieve a higher degree of modularity.
 
 
 ### Sharing tangible artifacts
 
-Modules are structures intended for reuse in exposing data or functionality for manipulating data; otherwise called non-tangible artifacts. If you find yourself needing to share or extend tangible resources (classes such as route-collections, middleware, etc), it's an indication to convert them into [component-templates](/docs/v1/component-templates). The author of the template will still have majority of the say over the abilities accessible to the consumer.
+Modules are structures intended for reuse in exposing data or functionality for manipulating data; otherwise called non-tangible artifacts. If you find yourself needing to share or extend tangible resources (classes such as route-collections, middleware, etc), it's an indication to convert them into [component-templates](/docs/v2/component-templates). The author of the template will still have majority of the say over the abilities accessible to the consumer.
 
 ## Testing modules
 
@@ -399,7 +399,7 @@ class SomeDomainTest extends ModuleLevelTest {
 
 ```
 
-The call to `replaceWithMock` will create a `positiveDouble` for `RouterMock` and bind it to the Container given to `ModuleOneDescriptor`, and finally return an instance of the given descriptor. The double can equally be mocked by [passing mock arguments](/docs/v1/testing#making-test-doubles) as the 4th argument:
+The call to `replaceWithMock` will create a `positiveDouble` for `RouterMock` and bind it to the Container given to `ModuleOneDescriptor`, and finally return an instance of the given descriptor. The double can equally be mocked by [passing mock arguments](/docs/v2/testing#making-test-doubles) as the 4th argument:
 
 ```php
 
@@ -466,7 +466,7 @@ public function test_some_operation_expected_to_pass () {
 }
 ```
 
-This mock is verified at the end of the test, as long as the ensuing action does not throw any exceptions. If it does, the test will error out. If the exception is deliberate and you wish to verify both the mock and the exception, the mock must be attached to the Container before execution commences, usually, the [`massProvide`](/docs/v1/testing#Binding-objects-within-a-test) method for binding.
+This mock is verified at the end of the test, as long as the ensuing action does not throw any exceptions. If it does, the test will error out. If the exception is deliberate and you wish to verify both the mock and the exception, the mock must be attached to the Container before execution commences, usually, the [`massProvide`](/docs/v2/testing#Binding-objects-within-a-test) method for binding.
 
 ```php
 

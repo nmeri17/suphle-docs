@@ -871,7 +871,7 @@ While middleware-based negotiation changes the response based on headers, Suphle
 
 1. **URL Clarity:** APIs have their own versioned paths (e.g., `/api/v1/...`).
 2. **Security Decoupling:** You can swap a session-based browser authenticator for a token-based API authenticator automatically.
-3. **Automatic Discovery:** The **RouteAnalysisService (RAS)** detects mirrored routes and includes them in API documentation and route lists without extra code.
+3. **Automatic Discovery:** We detect mirrored routes and includes them in API documentation and route lists without extra code.
 
 ---
 

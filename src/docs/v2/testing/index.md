@@ -65,11 +65,11 @@ These are low-level test types which most of your tests are expected to extend i
 
 |Test-type|Environment|
 |---------|-----------|
-|`Suphle\Testing\TestType\CommandLineTest`|[The command console](/docs/v2/console#Testing-commands)|
-|`Suphle\Testing\TestType\InstallComponentTest`|[Component templates installation](/docs/v2/component-templates#Testing-component-installation)|
-|`Suphle\Testing\TestType\InvestigateSystemCrash`|[System involuntary shutdown](/docs/v2/exceptions#Specific-exception-testing)|
-|`Suphle\Testing\TestType\IsolatedComponentTest`|[Only one Container required](#Hydrating-single-SUTs)|
-|`Suphle\Testing\TestType\ModuleLevelTest`|[Natural modular habitat](/docs/v2/modules#Testing-modules)|
+|`Suphle\Testing\TestTypes\CommandLineTest`|[The command console](/docs/v2/console#Testing-commands)|
+|`Suphle\Testing\TestTypes\InstallComponentTest`|[Component templates installation](/docs/v2/component-templates#Testing-component-installation)|
+|`Suphle\Testing\TestTypes\InvestigateSystemCrash`|[System involuntary shutdown](/docs/v2/exceptions#Specific-exception-testing)|
+|`Suphle\Testing\TestTypes\IsolatedComponentTest`|[Only one Container required](#Hydrating-single-SUTs)|
+|`Suphle\Testing\TestTypes\ModuleLevelTest`|[Natural modular habitat](/docs/v2/modules#Testing-modules)|
 
 Although it's extremely unlikely, if functionality you wish to test doesn't fall into any of those categories, it's unnecessary to extend them. Instead, configure the `PHPUnit\Framework\TestCase` class itself match your target constraints.
 

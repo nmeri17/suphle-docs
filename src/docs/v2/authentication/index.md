@@ -161,7 +161,7 @@ In Suphle, the `Suphle\Contracts\Auth\AuthStorage` interface represents the stor
 namespace App\Coordinators;
 
 use Suphle\Routing\Attributes\{RoutePrefix, Route, HttpMethod, PreMiddleware};
-use Suphle\Auth\RequestScrutinizers\AuthenticateHandler;
+use Suphle\Auth\Middleware\AuthenticateHandler;
 use Suphle\Auth\Storage\SessionStorage;
 use Suphle\Response\Format\Json;
 use Suphle\Services\BaseCoordinator;
@@ -191,7 +191,7 @@ In this architecture, attributes can be applied at the class level to secure eve
 namespace App\Coordinators;
 
 use Suphle\Routing\Attributes\{RoutePrefix, Route, HttpMethod, PreMiddleware, ClearMiddleware};
-use Suphle\Auth\RequestScrutinizers\AuthenticateHandler;
+use Suphle\Auth\Middleware\AuthenticateHandler;
 use Suphle\Response\Format\Json;
 use Suphle\Services\BaseCoordinator;
 
@@ -292,7 +292,7 @@ For whatever mechanism is active, there are one or two distinct features you'll 
 This requires the presence of certain env variables. They are already defined in the .env file that comes with a fresh Suphle installation. Multi-user login is achieved by calling `Suphle\Contracts\Auth\AuthStorage::imitate(string $newIdentifier)`, rather than successive calls to logout and log back in. This mechanism will return a token for the given identifier. It is expected that the client will store the parent identifier and be responsible for reverting to it.
 
 - `Suphle\Auth\Storage\SessionStorage`
-This mechanism uses the same signature as above for impersonation purposes. However, the state of both active users are stored on the server. You would typically hide the route that triggers this functionality under an administrative [authorization](/docs/v1/authorization#Route-based-authorization).
+This mechanism uses the same signature as above for impersonation purposes. However, the state of both active users are stored on the server. You would typically hide the route that triggers this functionality under an administrative [authorization](/docs/v2/authorization#Route-based-authorization).
 
 Suppose you're building a multi-tenant system where the admin wants to view a vendor's dashboard without their login credentials, we would conditionally display a button on the dashboard,
 
@@ -334,7 +334,7 @@ They are expected to interact with the actual mechanism and facilitate other use
 ## Testing authentication
 
 Within test environment, we'll want to simulate the authentication states to examine our software's behavior in those states. For this purpose, Suphle provides the trait
-`Suphle\Testing\Proxies\SecureUserAssertions`, applicable on all the [test types](/docs/v1/testing), although you're more likely to use them on module-level tests only since they interact with the database. The trait contains utilities for a streamlined experience working with the authentication mechanisms:
+`Suphle\Testing\Proxies\SecureUserAssertions`, applicable on all the [test types](/docs/v2/testing), although you're more likely to use them on module-level tests only since they interact with the database. The trait contains utilities for a streamlined experience working with the authentication mechanisms:
 
 ```php
 

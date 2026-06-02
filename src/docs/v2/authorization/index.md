@@ -83,7 +83,7 @@ public function updating ($model):bool {
 }
 ```
 
-The generic authorization exception is `Suphle\Exception\Explosives\UnauthorizedServiceAccess`, although it can be replaced with a domain specific exception if that better appeals to your use case. As with [other exceptions](/docs/v1/exceptions), its handler is stored on `Suphle\Contracts\Config\ExceptionInterceptor`, and can be used to override what renderers determine eventual response. The general idea is that while returning `false` will prevent intended operation on the model, user will blissly continue surfing that endpoint.
+The generic authorization exception is `Suphle\Exception\Explosives\UnauthorizedServiceAccess`, although it can be replaced with a domain specific exception if that better appeals to your use case. As with [other exceptions](/docs/v2/exceptions), its handler is stored on `Suphle\Contracts\Config\ExceptionInterceptor`, and can be used to override what renderers determine eventual response. The general idea is that while returning `false` will prevent intended operation on the model, user will blissly continue surfing that endpoint.
 
 These methods represent important milestones in the lifetime of a model. Each of them will almost always be populated with domain barriers dictated by the product owner. When a barrier is not immediately apparent, the developer and PO should prevent unforeseen accidents by listing invariants of each entity. This task can be made easier by examining model columns and the contents of a relationship model that would translate into an invalid system state.
 
@@ -164,7 +164,7 @@ You may have noted that our `retrieved` method in the model-based authorizer sim
 
 ### Tagging Route Authorization
 
-Route authorization is achieved by applying the `#[PreMiddleware]` attribute with the `AuthorizeMetaFunnel` to Coordinator methods or classes. Unlike authentication, which simply identifies a user, authorization evaluates specific **Route Rules** to determine if the identified user is permitted to access a resource.
+Route authorization is achieved by applying the `#[PreMiddleware]` attribute with the `PathAuthorization` to Coordinator methods or classes. Unlike authentication, which simply identifies a user, authorization evaluates specific **Route Rules** to determine if the identified user is permitted to access a resource.
 
 ## Route Rule Classes
 
@@ -191,16 +191,16 @@ Suppose we want to restrict access to an admin dashboard. We apply the funnel di
 ```php
 namespace App\Coordinators;
 
-use Suphle\Routing\Attributes\{RoutePrefix, HttpGet, PreMiddleware};
-use Suphle\Auth\RequestScrutinizers\AuthorizeMetaFunnel;
+use Suphle\Routing\Attributes\{RoutePrefix, Route, PreMiddleware};
+use Suphle\Auth\Middleware\PathAuthorization;
 use App\Authorization\Rules\AdminRule;
 use Suphle\Response\Format\Json;
 
 #[RoutePrefix(prefix: "admin")]
-#[PreMiddleware(AuthorizeMetaFunnel::class, ["ruleClass" => AdminRule::class])]
+#[PreMiddleware(PathAuthorization::class, [AdminRule::class])]
 class AdminCoordinator {
 
-    #[HttpGet("entry")]
+    #[Route("/entry")]
     public function getEntry(): Json {
 
         return new Json([
@@ -216,11 +216,11 @@ In an attribute-driven architecture, class-level middleware is inherited by all 
 
 ```php
 #[RoutePrefix(prefix: "employment")]
-#[PreMiddleware(AuthorizeMetaFunnel::class, ["ruleClass" => AdminRule::class])]
+#[PreMiddleware(PathAuthorization::class, [AdminRule::class])]
 class EmploymentCoordinator {
 
-    #[HttpGet("public-list")]
-    #[ClearMiddleware(AuthorizeMetaFunnel::class)]
+    #[Route("/public-list")]
+    #[ClearMiddleware(PathAuthorization::class)]
     public function getPublicList(): Json {
 
         return new Json([
@@ -228,7 +228,7 @@ class EmploymentCoordinator {
         ]);
     }
 
-    #[HttpGet("edit/{id}")]
+    #[Route("/edit/{id}")]
     public function editEmployment(int $id): Json {
 
         return new Json([
@@ -242,7 +242,7 @@ In the example above, `getPublicList` is accessible to everyone, while `editEmpl
 
 ## Combining Authorization Rules
 
-Authorization rules are additive. When multiple `AuthorizeMetaFunnel` attributes are present (either through inheritance or by stacking them on a single method), Suphle executes them in sequence. A localized rule will only run if the inherited class-level rules have already passed.
+Authorization rules are additive. When multiple `PathAuthorization` attributes are present (either through inheritance or by stacking them on a single method), Suphle executes them in sequence. A localized rule will only run if the inherited class-level rules have already passed.
 
 Model-based authorization often requires checking the owner of a specific resource. Because `RouteInfo` are populated before the rules run, you can easily retrieve URL parameters like `{id}` within the rule.
 
@@ -281,7 +281,7 @@ class EmploymentEditRule extends RouteRule {
 By stacking this on the coordinator method, you can combine logic seamlessly:
 
 ```php
-#[PreMiddleware(AuthorizeMetaFunnel::class, ["ruleClass" => EmploymentEditRule::class])]
+#[PreMiddleware(PathAuthorization::class, [EmploymentEditRule::class])]
 public function updateEmployment(int $id): Json {
 
     return new Json(["message" => "Update successful"]);

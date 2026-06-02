@@ -252,7 +252,7 @@ The `Range` mode has a specialized cousin for date comparison of fields.
 
 ## Activating flows
 
-Flows are not implemented as [middleware](/docs/v1/middleware) so we can short-circuit routing altogether (during the subsequent request), which middleware depends on. Suphle determines whether requests should be evaluated for Flow eligibility using the `Suphle\Contracts\Config\Flows` config interface. Since no Flow definitions are present on module installation, this feature is turned off. To enable it, the `isEnabled` method of this [config's implementation](/docs/v1/container#Config-interfaces) is expected to return true.
+Flows are not implemented as [middleware](/docs/v2/middleware) so we can short-circuit routing altogether (during the subsequent request), which middleware depends on. Suphle determines whether requests should be evaluated for Flow eligibility using the `Suphle\Contracts\Config\Flows` config interface. Since no Flow definitions are present on module installation, this feature is turned off. To enable it, the `isEnabled` method of this [config's implementation](/docs/v2/container#Config-interfaces) is expected to return true.
 
 ```php
 
@@ -316,7 +316,7 @@ Only GET routes are eligible for Flow handling. Aside the fact that we'll be mak
 
 Side effects are actions that leave external platforms they interact with in a different state after their execution. An external platform could be a database or filesystem. Without Flows, it's safe to leave in the side effects in your route handlers. Otherwise, those actions will be executed each time the Flow was decribed to.
 
-When a user actually sends a request for a URL stored by the Flows component, Suphle [will emit](/docs/v1/events) the route handler as an event on behalf of the route's coordinator. Side effects should be extracted into this event's handler.
+When a user actually sends a request for a URL stored by the Flows component, Suphle [will emit](/docs/v2/events) the route handler as an event on behalf of the route's coordinator. Side effects should be extracted into this event's handler.
 
 ```php
 

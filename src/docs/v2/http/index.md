@@ -69,9 +69,9 @@ class HttpCoordinator extends BaseCoordinator {
 }
 ```
 
-If the presence of `convertToDomainObject` and `getDomainObject` ring a bell, that is because [the same over-arching theme](/docs/v1/service-coordinators#Normalizing-incoming-data) is shared by `ModellessPayload`. Where underlying client throws an exception due to response code 500, or where DSL creation throws an exception, or where response fails to contain expected content, the program doesn't terminate. Application will elegantly recover from any internal conflict in outgoing request handling.
+If the presence of `convertToDomainObject` and `getDomainObject` ring a bell, that is because [the same over-arching theme](/docs/v2/service-coordinators#Normalizing-incoming-data) is shared by `ModellessPayload`. Where underlying client throws an exception due to response code 500, or where DSL creation throws an exception, or where response fails to contain expected content, the program doesn't terminate. Application will elegantly recover from any internal conflict in outgoing request handling.
 
-The default implementation of `BaseHttpRequest::translationFailure` is such that when any of the above situations occur, the exception is forwarded to [exception broadcaster](/docs/v1/exceptions#Broadcasting-exception-details), along with response received after sending the request. `getDomainObject` will return null, as discretion on what to do next would be unique from caller to caller, thus flow control should be returned to them.
+The default implementation of `BaseHttpRequest::translationFailure` is such that when any of the above situations occur, the exception is forwarded to [exception broadcaster](/docs/v2/exceptions#Broadcasting-exception-details), along with response received after sending the request. `getDomainObject` will return null, as discretion on what to do next would be unique from caller to caller, thus flow control should be returned to them.
 
 ## Testing outgoing HTTP requests
 

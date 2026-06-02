@@ -166,7 +166,7 @@ Before intercepting values from our users, it's important to shield the precious
 
 ### Linking validators to request handler
 
-For HTTP methods where validators are compulsory, if no validator aggregate or matching method is found, a `Suphle\Exception\Explosives\DevError\NoCompatibleValidator` exception is thrown, which in turn, is a sub-class of the famous [Suphle\\Contracts\\Exception\\BroadcastableException](/docs/v1/exception/#programmer-level-exceptions).
+For HTTP methods where validators are compulsory, if no validator aggregate or matching method is found, a `Suphle\Exception\Explosives\DevError\NoCompatibleValidator` exception is thrown, which in turn, is a sub-class of the famous [Suphle\\Contracts\\Exception\\BroadcastableException](/docs/v2/exception/#programmer-level-exceptions).
 
 Our validations thus need to meet the following objectives:
 
@@ -198,7 +198,7 @@ Validation rules are bound to the action handlers rather than the builders or da
 
 ### Validator adapters
 
-Suphle employs an agnostic approach to underlying validator. This means the rules are merely expected to conform to whatever active, compatible validation library is connected under the hood. The default library in use is that of Illuminate. This makes all rules defined on [that doc](https://laravel.com/docs/8.x/validation#available-validation-rules) equally applicable in Suphle. To gain access to a rule collection you're more conversant with, you want to replace this default with another library by implementing the `Suphle\Contracts\Requests\RequestValidator` interface and connecting it as an [interface loader](/docs/v1/container#interface-loaders).
+Suphle employs an agnostic approach to underlying validator. This means the rules are merely expected to conform to whatever active, compatible validation library is connected under the hood. The default library in use is that of Illuminate. This makes all rules defined on [that doc](https://laravel.com/docs/8.x/validation#available-validation-rules) equally applicable in Suphle. To gain access to a rule collection you're more conversant with, you want to replace this default with another library by implementing the `Suphle\Contracts\Requests\RequestValidator` interface and connecting it as an [interface loader](/docs/v2/container#interface-loaders).
 
 ```php
 namespace Suphle\Contracts\Requests;
@@ -213,7 +213,7 @@ interface RequestValidator {
 
 ### Validation failure
 
-As expected, when incoming request is unable to satisfy rules bound to a handler, the handler is not executed. As with all exceptions, the output of a validation failure is [determined by](/docs/v1/exceptions#Exception-diffusers) its diffuser. Requests matching the API configuration will parse any renderer connected to the incoming route, usually expected to be the `JSON` renderer. Other situations are anticipated to originate from the browser, however, the behavior will vary depending on the validation evaluator configured.
+As expected, when incoming request is unable to satisfy rules bound to a handler, the handler is not executed. As with all exceptions, the output of a validation failure is [determined by](/docs/v2/exceptions#Exception-diffusers) its diffuser. Requests matching the API configuration will parse any renderer connected to the incoming route, usually expected to be the `JSON` renderer. Other situations are anticipated to originate from the browser, however, the behavior will vary depending on the validation evaluator configured.
 
 The default evaluator will perform the equivalent of using the `Reload` renderer, but in addition, it will include two keys in your payload serialized by the preceding request being handled. This combination is then received by your presentation layer. If you want to adulterate it with extra content, the `ValidationFailureDiffuser::prepareRendererData` method is what is used as the action handler for all failed requests. You can override and bind a descendant with choice objects.
 
@@ -368,7 +368,7 @@ In practise, you'll likely require mapping to more fields than one, and would re
 
 Aside handling requests that don't map to models/entities, `ModellessPayload` is useful for things like callback endpoints where a user is waiting for feedback on our end, but obviously not on the automated, calling service's end. In such cases, mere validation errors won't cut it. We need to respond to the waiting services with something to complete user flow. For this reason, it requires safe and [user friendly data conversion](#normalizing-incoming-data).
 
-Do be aware that this input reader type doesn't cover image upload. For that sort of payload, please see [its designated chapter](/docs/v1/image-upload). 
+Do be aware that this input reader type doesn't cover image upload. For that sort of payload, please see [its designated chapter](/docs/v2/image-upload). 
 
 ## Permitted dependencies
 
@@ -392,7 +392,7 @@ Action methods can only type-hint arguments extending `Suphle\Services\Structure
 
 ## Securing POST requests
 
-You may already be aware of the famous CSRF [middleware](/docs/v1/middlewares) customary for non-GET requests. In Suphle, this alone is not enough -- it's mandatory for such endpoints to use services that [facilitate such operations](#mutative-database-decorators), by injecting at least one service decorated with either `Suphle\Contracts\Services\Decorators\SystemModelEdit` or `Suphle\Contracts\Services\Decorators\MultiUserModelEdit`. Failure to adhere to this will throw a `Suphle\Exception\Explosives\DevError\MissingPostDecorator` runtime exception.
+You may already be aware of the famous CSRF [middleware](/docs/v2/middlewares) customary for non-GET requests. In Suphle, this alone is not enough -- it's mandatory for such endpoints to use services that [facilitate such operations](#mutative-database-decorators), by injecting at least one service decorated with either `Suphle\Contracts\Services\Decorators\SystemModelEdit` or `Suphle\Contracts\Services\Decorators\MultiUserModelEdit`. Failure to adhere to this will throw a `Suphle\Exception\Explosives\DevError\MissingPostDecorator` runtime exception.
 
 ## Coordinator services
 
@@ -406,7 +406,7 @@ However, there are other concerns that make it imperative for logic to be abstra
 Your logic may be used by other endpoints, services, modules. You want them to exist in a fluid, atomic state, free of unwanted dependencies. You want to reliably test the individual nodes your response payloads aggregate. Bear in mind that prioritising the service layer is not an invitation to delegate your entire calls to them. That way, we will still end up with fat services, essentially repeating the same structure we claim to run away from by converting what should be value pipes into bloated controllers. The ideology here is to recognize and extract recurring patterns or behaviour into atomic methods. This makes them flexible for reuse and testing. The onus of achieving this recognition ultimately lies in developer's hands.
 
 1. **Replaceablility:**
-Arguably the most important. Applications evolve. And when they do, you don't want to stand the [risk of breaking things](/docs/v1/testing/confidently-integrating-upgrades.md). You want to develop and test the next step of the evolution before it's connected through the Coordinator.
+Arguably the most important. Applications evolve. And when they do, you don't want to stand the [risk of breaking things](/docs/v2/testing/confidently-integrating-upgrades.md). You want to develop and test the next step of the evolution before it's connected through the Coordinator.
 
 1. **Controllers are god classes:**
 They're not the kind of object you want to be moving around everywhere. They contain diverse functionality that isn't relevant to all requests.
@@ -554,7 +554,7 @@ class BaseCoordinator extends BaseCoordinator {
 
 ## Service decorators
 
-Service [decorators](/docs/v1/container#object-decoration) are utilities applied either to Coordinators or available for the developer to apply to their own services. Their purpose is to promote diverse practises, from cross-cutting object design to intuitive UX with lowered developer friction.
+Service [decorators](/docs/v2/container#object-decoration) are utilities applied either to Coordinators or available for the developer to apply to their own services. Their purpose is to promote diverse practises, from cross-cutting object design to intuitive UX with lowered developer friction.
 
 ### Auto service error handling
 
@@ -577,7 +577,7 @@ All failable actions within your action handlers, mutative ones especially, shou
 
 #### Substituting call result
 
-When decorator handler encounters an error during execution of decorated service, instead of terminating request or responding to caller with empty hands, it first [forwards the exception](/docs/v1/exceptions#Broadcasting-exception-details), before deriving a value to resolve the original call with.
+When decorator handler encounters an error during execution of decorated service, instead of terminating request or responding to caller with empty hands, it first [forwards the exception](/docs/v2/exceptions#Broadcasting-exception-details), before deriving a value to resolve the original call with.
 
 Fallback values for each method can be defined on `ServiceErrorCatcher::failureState` like so,
 
@@ -639,7 +639,7 @@ return $response;
 
 #### Terminating exceptions by type
 
-Some operations throw a predictable class of exceptions, even though we may be unable to tell when exactly they'll occur -- quite similar to the classes piled in multiple catch blocks. For instance, we may have a ORM call such as `find` or `findOrFail` that may legitimately terminate service call. When these exceptions are encountered, it may be unreasonable to continue handling the request altogether. Thus, they should be translated into one of the exceptions defined under the [exceptions config](/docs/v1/exceptions#connecting-exceptions).
+Some operations throw a predictable class of exceptions, even though we may be unable to tell when exactly they'll occur -- quite similar to the classes piled in multiple catch blocks. For instance, we may have a ORM call such as `find` or `findOrFail` that may legitimately terminate service call. When these exceptions are encountered, it may be unreasonable to continue handling the request altogether. Thus, they should be translated into one of the exceptions defined under the [exceptions config](/docs/v2/exceptions#connecting-exceptions).
 
 ```php
 
@@ -855,7 +855,7 @@ They are constants that can be read for custom error display using the `EditInte
 
 - It records each update to a resource, provided the `IntegrityModel::enableAudit` method returns `true`. Default implementation on `EditIntegrity` returns true, and expects shema relevant for record-keeping to be present. For Eloquent, this is among migrations on its component template. For this feature to function properly:
 
-	- Intending models are urged to [include it](/docs/v1/database#eloquent-migrations) among their migration list.
+	- Intending models are urged to [include it](/docs/v2/database#eloquent-migrations) among their migration list.
 	- Within test environments and otherwise, one of the storage mechanisms should be populated as it will be used to indicate user responsible for incoming change. This behavior can be replaced by overriding `EditIntegrity::makeHistory` and modifying the migration as desired.
 
 This update is then ran within a transaction for you, with idempotent elements returned from `MultiUserModelEdit::getResource` hard-locked under the same safety net as `ServiceErrorCatcher::failureState`. It doesn't matter whether `updateResource` triggers an event laden with database calls to module-related tables -- they will all be tucked safely into the transaction.
