@@ -5,11 +5,11 @@ The term *Middleware* refers to common functionality we want to run before or af
 ---
 
 #### 1. Security Middleware (`#[PreMiddleware]`)
-These run first and are typically used for Authentication and Authorization. Instead of just a class name, they can accept an array of **Rules**.
+These run first and are typically used for Authentication and Authorization. Instead of just a class name, they can accept an array of arguments.
 
 ```php
 #[RoutePrefix("admin")]
-#[PreMiddleware(AuthenticateHandler::class, [AdminRule::class, IPCheckRule::class])]
+#[PreMiddleware(AuthenticateHandler::class, [TokenStorage::class])]
 class AdminCoordinator {
 
     #[Route("dashboard")]
