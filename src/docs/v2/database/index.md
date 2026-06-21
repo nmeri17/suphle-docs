@@ -1,6 +1,6 @@
 ## Introduction
 
-The database layer can be considered as the heart of your program. It's where we describe nouns or entities that drive the application. If you visualize your software, picture this layer residing on the outskirts of the application, independent of the [modules](/docs/v1/modules), and are all accessible to each other.
+The database layer can be considered as the heart of your program. It's where we describe nouns or entities that drive the application. If you visualize your software, picture this layer residing on the outskirts of the application, independent of the [modules](/docs/v2/modules), and are all accessible to each other.
 
 ## Choosing an ORM
 
@@ -51,7 +51,7 @@ Whichever direction is most suitable for your application, it is recommended tha
 
 Since Modules are expected to be opaque to their consumers, a module interface that returns a value typed to an internal model will warrant its consumers reach into the module for the model's type, which is unacceptable. Thus, models and indeed, any type whose usage transcends one module, ought to be situated in a visible, global scope.
 
-To this end, the default database [component template](/docs/v1/component-templates) behaves differently from regular templates. Instead of emptying its contents into each module where it's installed, it launches them into a database folder on the project root. From this vantage point, each model is visible to consuming modules. The folder name and its associated namespace are derived from some of the methods on the `Suphle\Contracts\Config\Database` interface.
+To this end, the default database [component template](/docs/v2/component-templates) behaves differently from regular templates. Instead of emptying its contents into each module where it's installed, it launches them into a database folder on the project root. From this vantage point, each model is visible to consuming modules. The folder name and its associated namespace are derived from some of the methods on the `Suphle\Contracts\Config\Database` interface.
 
 For the sake of convenience, you won't have to override these methods, but the `Database::relativeFolderName` property, which defaults to `AppModels`.
 
@@ -94,7 +94,7 @@ As you will imagine, this same location houses the model's migrations, for bette
 
 ### Connecting the user model
 
-This is a unique model ubiquituous across not only a wide variety of domains but application components -- most notably, authorization and authentication. As was discussed in the [model authorization](/docs/v1/authorization#Evaluating-user-model) chapter, model authorities are eagerly evaluated during the [module boot phase](#Active-Record-pattern). Its implication is that the ORM is unusable without the presence of a `Suphle\Contracts\Auth\UserContract` binding.
+This is a unique model ubiquituous across not only a wide variety of domains but application components -- most notably, authorization and authentication. As was discussed in the [model authorization](/docs/v2/authorization#Evaluating-user-model) chapter, model authorities are eagerly evaluated during the [module boot phase](#Active-Record-pattern). Its implication is that the ORM is unusable without the presence of a `Suphle\Contracts\Auth\UserContract` binding.
 
 For this reason, the `Suphle\Contracts\Hydration\InterfaceCollection` implementation in each module contains the following binding:
 
@@ -120,7 +120,7 @@ class CustomInterfaceCollection extends BaseInterfaceCollection {
 }
 ```
 
-Because, component templates and module installation are run by different processes, it's not possible to elegantly or implicitly replace the database folder on this class while running the processes. Thus, the namespace is hard-coded to `AppModels`. If you're using a different value for that namespace, update this namespace on your [module template](/docs/v1/modules#Creating-a-module).
+Because, component templates and module installation are run by different processes, it's not possible to elegantly or implicitly replace the database folder on this class while running the processes. Thus, the namespace is hard-coded to `AppModels`. If you're using a different value for that namespace, update this namespace on your [module template](/docs/v2/modules#Creating-a-module).
 
 ## ORM adapters
 
@@ -215,7 +215,7 @@ The `path` argument is relative to Laravel's base folder, which in Suphle, confo
 
 Database testing is restricted to module-level test-types, in accordance with the Eloquent ORM. The next paragraph can be skipped if the reason for this is irrelevant to you.
 
-In order to synchronize URL requests coming into the Suphle application with the container (and [possible router](/docs/v1/bridges#Handling-Laravel-routes)) necessary for the ORM to function, a `RequestDetails` instance is required when accessing either database objects or the crutches that facilitate testing this layer. Soon after its creation, this instance emits an event, `RequestDetails::ON_REFRESH`, and [as you know](/docs/v1/events/#Setting-an-event-manager), events cannot exist without a module.
+In order to synchronize URL requests coming into the Suphle application with the container (and [possible router](/docs/v2/bridges#Handling-Laravel-routes)) necessary for the ORM to function, a `RequestDetails` instance is required when accessing either database objects or the crutches that facilitate testing this layer. Soon after its creation, this instance emits an event, `RequestDetails::ON_REFRESH`, and [as you know](/docs/v2/events/#Setting-an-event-manager), events cannot exist without a module.
 
 Any test whose needs cuts across any of these entities is advised to include a call to the `parent` class from your `Events` implementation.
 

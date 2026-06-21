@@ -8,7 +8,7 @@ Deployment methods may provide different shapes for describing parameters but al
 
 ### .env file
 
-This is a file saved as ".env" in the root of each [module](/docs/v1/modules).
+This is a file saved as ".env" in the root of each [module](/docs/v2/modules).
 
 ```env
 
@@ -105,7 +105,7 @@ This functionality is provided by the `Suphle\IO\Env\AbstractEnvLoader::validate
 
 ### Replacing default accessor
 
-The default implementation for `EnvAccessor` is `Suphle\IO\Env\DatabaseEnvReader`. Customizations should extend it and [override its entry](/docs/v1/container#Binding-regular-interfaces) on `InterfaceCollection::simpleBinds`.
+The default implementation for `EnvAccessor` is `Suphle\IO\Env\DatabaseEnvReader`. Customizations should extend it and [override its entry](/docs/v2/container#Binding-regular-interfaces) on `InterfaceCollection::simpleBinds`.
 
 ```php
 class LibraryEnvReader extends DatabaseEnvReader {

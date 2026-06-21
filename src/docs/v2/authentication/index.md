@@ -260,26 +260,6 @@ This middleware takes optional arguments that defaults to,
 ```
 `verification_url` argument specifies where the user should be sent to commence verification. If the request is an API call, the visitor receives a JSON response with the destination; browser users are redirected. If your verification logic transcends a simple column check, you can replace this middleware with a custom one.
 
-## Authentication in Mirrored Routes
-
-Suphle allows standard routes to be mirrored for API access. This presents a challenge: browser routes use sessions, but their API mirrors require tokens. Suphle resolves this using the **Implicit Swap**. By defining a `mirrorAuthenticator` in the `#[RoutePrefix]` attribute, the framework swaps the authentication mechanism when the mirror path is accessed.
-
-```php
-use Suphle\Routing\Attributes\RoutePrefix;
-use Suphle\Auth\Storage\TokenStorage;
-
-#[RoutePrefix(
-    prefix: "profile", 
-    mirrorPrefix: "api/v1/profile",
-    mirrorAuthenticator: TokenStorage::class
-)]
-class UserProfileCoordinator {
-    // ...
-}
-```
-
-The user visiting a mirrored route must have authenticated via the mechanism provided in the `mirrorAuthenticator`. For instance, if they logged in via `/api/v1/login` and received a token, they can access `/api/v1/profile/details` even if the method attribute originally pointed to `SessionStorage`.
-
 ## Retrieving user instance
 
 Wherever the container sees the type-hint `Suphle\Contracts\Auth\AuthStorage`, it'll either inject the default bound mechanism or the one used to authenticate a user if it's a secured route. The default binding is `Suphle\Auth\Storage\SessionStorage`, a session-based implementation that unless replaced, will be returned on routes without authentication. For obtaining users from the mechanism, `AuthStorage` defines the `getUser` method. It's only capable of returning `null` for unprotected routes where user presence is optional. Resources at such routes are intended for consumption by both authenticated and unauthenticated parties.

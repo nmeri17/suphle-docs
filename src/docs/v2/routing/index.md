@@ -138,41 +138,7 @@ This creates routes like:
 
 > [!IMPORTANT]
 > `#[RoutePrefix]` is **not** inherited from parent classes. The router only reads the `#[RoutePrefix]` declared directly on each concrete coordinator class. If your coordinator does not declare its own `#[RoutePrefix]`, it will be **silently skipped** and none of its routes will be registered.
-
-```php
-// ❌ INCORRECT — Coordinator without its own RoutePrefix is silently ignored
-#[RoutePrefix("api")]
-abstract class BaseApiCoordinator {}
-
-class UserCoordinator extends BaseApiCoordinator
-{
-    // Missing #[RoutePrefix] — this class and all its routes are completely ignored
-    #[Route("users", HttpMethod::GET)]
-    public function listUsers(): Json { ... }
-}
-```
-
-```php
-// ✅ CORRECT — Each coordinator declares its own complete prefix
-#[RoutePrefix("api/v1/users")]
-class UserCoordinator extends BaseApiCoordinator
-{
-    #[Route("/", HttpMethod::GET)]
-    public function listUsers(): Json
-    {
-        return new Json(['users' => []]);
-    }
-}
-```
-
-| Old Method Pattern | New Route Path | Notes |
-|---|---|---|
-| `USERS()` | `'/'` | Root path for collection |
-| `USERS_id()` | `'/{id}'` | Parameter with placeholder |
-| `USERS_id_POSTS()` | `'/{id}/posts'` | Nested resource |
-| `_index()` | `'/'` | Index method |
-
-
+---
 
 ## API Versioning via Coordinator Inheritance
 
@@ -227,111 +193,112 @@ use Suphle\Routing\HttpMethod;
 #[Route("users/{id}", HttpMethod::DELETE)] // DELETE request
 ```
 
-## Canary/Feature-Flag Routes
+## Canary Releases (Feature Flags)
 
-Suphle v2 introduces a modern, explicit, and testable feature-flag (canary) system using a class-level `#[CanaryState([...])]` attribute. This replaces the old `CanaryRoute`/fallback pattern with a clear, developer-controlled approach.
+Suphle provides a clean, decoupled mechanism for implementing feature flags, A/B testing, temporary features, and gradual rollouts. Instead of scattering conditional logic across your front and back end code, Suphle centralizes decision-making into reusable **Canary Evaluators**.
 
-**Key points:**
-- Attach `#[CanaryState([EvaluatorClass::class, ...])]` to your coordinator class.
-- Each canary evaluator implements `CanaryEvaluator` and must use dependency-injected `AuthStorage` (never superglobals).
-- In your controller method, call `$this->requestDetails->getCanaryState()` to get the current canary state (a string like `'beta'`, `'special'`, or `null`).
-- Use PHP `match` or `if` to branch logic explicitly. No fallback handler, no magic.
+### Defining Canary Evaluators
 
-**Never use `$_SESSION` or any superglobal in canaries! Always use dependency-injected `AuthStorage`.**
+A **Canary Evaluator** is a class responsible for determining whether a specific condition is met (for example: user ID ranges, request headers, roles, or IP segments). To create one, implement `Suphle\Contracts\Routing\CanaryEvaluator`. The core method:
 
-### Example: Coordinator with Feature Flag
-
-```php
-use Suphle\Services\BaseCoordinator;
-use Suphle\Routing\Attributes\{Route, RoutePrefix, CanaryState, HttpMethod};
-use Suphle\Response\Format\Json;
-use App\Canary\BetaUserCanary;
-use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\FlowService;
-use Suphle\Services\Structures\ModellessPayload;
-
-class BetaFeaturePayload extends ModellessPayload
-{
-    public function getDomainObject(): array
-    {
-        // Example: extract and return relevant input
-        return $this->payloadStorage->getKey('data') ?? [];
-    }
-}
-
-#[RoutePrefix('api/v1')]
-#[CanaryState([BetaUserCanary::class])]
-class UserCoordinator extends BaseCoordinator
-{
-    public function __construct(private readonly FlowService $service) {}
-
-    #[Route('beta-feature')]
-    public function betaFeature(BetaFeaturePayload $payload): Json
-    {
-        $canary = $this->requestDetails->getCanaryState();
-        $input = $payload->getDomainObject();
-        $result = match ($canary) {
-            'beta' => $this->service->customHandlePrevious($input),
-            default => $this->service->bar()
-        };
-        return new Json($result);
-    }
-}
-```
-
-### Example: Canary Evaluator
+- `willLoad(): ?string`  
+  - Return a **string slug** if the condition passes  
+  - Return **null** if it fails
 
 ```php
 use Suphle\Contracts\Routing\CanaryEvaluator;
 use Suphle\Contracts\Auth\AuthStorage;
 
-class BetaUserCanary implements CanaryEvaluator
-{
-    public function __construct(protected readonly AuthStorage $authStorage) {}
+class BetaUserCanary implements CanaryEvaluator {
 
-    public function willLoad(): ?string
-    {
+    public function __construct(
+        protected readonly AuthStorage $authStorage
+    ) {}
+
+    public function willLoad(): ?string {
         $userId = $this->authStorage->getId();
+        
+        // Users under ID 1000 are part of the beta rollout
         return ($userId && $userId < 1000) ? 'beta' : null;
     }
 }
 ```
+#### Canary Evaluator Characteristics
 
-- The canary evaluator returns a string (e.g., `'beta'`) if the user is in the canary group, or `null` otherwise.
-- The controller method branches logic based on the canary state.
-- No fallback handler is needed; all logic is explicit and visible.
+- **First-Match Wins**: Evaluation stops as soon as one evaluator returns a non-null value. Later evaluators are not executed.
 
-**Never use superglobals like `$_SESSION`! Always use dependency-injected `AuthStorage`.**
+- **Decoupled Logic**: Each evaluator is:
 
-## Route Parameters
+    - A standalone class  
+    - Fully testable in isolation  
+    - Reusable across multiple Coordinators
+    - Canary logic stays **explicit inside your Coordinator methods**
 
-Route parameters are automatically extracted and made available through the `RouteInfo` service:
+These keep behavior predictable and easy to debug. This model gives you precise control over feature exposure without compromising code clarity or performance.
+
+- Always inject dependencies like `AuthStorage` or request abstractions. Avoid direct access to globals like `$_SESSION`.
+
+---
+
+### Registering Canaries
+
+Attach evaluators to a **Coordinator class** using the `#[CanaryState]` attribute.
+
+Suphle will evaluate them **in order**, stopping at the first match.
 
 ```php
-#[Route("users/{id}/posts/{postId}", HttpMethod::GET)]
-public function showUserPost(): Json
-{
-    $userId = $this->routeInfo->getSegmentValue("id");
-    $postId = $this->routeInfo->getSegmentValue("postId");
-    
-    return new Json([
-        'post' => $this->postService->findByUserAndPost($userId, $postId)
-    ]);
+use Suphle\Routing\Attributes\CanaryState;
+
+#[RoutePrefix('api/v1')]
+#[CanaryState([
+    BetaUserCanary::class,
+    EarlyAdopterCanary::class
+])]
+class UserCoordinator extends BaseCoordinator {
+    public function __construct(protected readonly UserService $service) {}
 }
 ```
 
-### Parameter Validation
+---
 
-For numeric parameters, use `getKeyForPositiveInt`:
+### Consuming the Canary State
+
+Canary evaluation is **lazy**—it only runs when explicitly requested.
+
+#### In a Coordinator
+
+Use `RequestDetails::getCanaryState()` to retrieve the active state:
 
 ```php
-#[Route("users/{id}", HttpMethod::GET)]
-public function showUser(): Json
-{
-    $userId = $this->routeInfo->getKeyForPositiveInt("id");
-    
-    return new Json(['user' => $this->userService->find($userId)]);
+#[Route('/dashboard')]
+public function dashboard(): Markup {
+    $state = $this->requestDetails->getCanaryState();
+
+    $input = $payload->getDomainObject();
+
+    return match ($state) {
+        'beta' => new Markup("/dashboard/v2-experimental", $this->service->dashBeta($input)),
+
+        'early-adopter' => new Markup("/dashboard/v1-with-new-sidebar", $this->service->dashEarly($input)),
+
+        default => new Markup("/dashboard/main", $this->service->dashMain())
+    };
 }
 ```
+
+---
+
+#### In Templates (Views)
+
+You can either return views fully dedicated to the context or insert indicators in your existing templates by injecting the resolved state as a `canary_state` variable. It will allow for conditional rendering like so:
+
+```html
+@if ($canary_state == "beta")
+    <!-- Show experimental UI -->
+@endif
+```
+
+---
 
 ## Response Formats
 
@@ -431,85 +398,80 @@ The `getCoordinatorPath()` method specifies the relative path to coordinator cla
 
 The `getCoordinatorClassesToScan()` method allows filtering which coordinator classes should be scanned for routes. This is particularly useful for test isolation.
 
-#### Retrieving pattern segments
+**Here's a cleaner, more honest, and better-structured version** of that section:
 
-The essence of dynamic segments is placeholders planted to represent values unknown at compile-time. The values are subject to each incoming request and are collected [before even hitting](/docs/v2/service-coordinators#Builder-selects) the coordinator. At that layer, the `Suphle\Routing\Structures\RouteInfo::getSegmentValue` method is used to read the given dynamic segment.
+---
 
-Given our `MusicRoutes` collection above, the `id` segment of the request to `http://example.com/44` can be fetched like so:
+## Payload Handling
+
+Suphle strongly encourages handling request input through **Payload Builders** (`ModelfulPayload`) and **Payload Readers** (`ModellessPayload`). These abstractions provide structure, centralize validation/hydration logic, prevent transport concerns from leaking into coordinators, and enable rich automatic documentation. They keep Coordinators thin and focused
+
+They both wrap `PayloadStorage` which acts as the central source of truth for all request input and supports merging, querying, and transformation of payload data
+
+Both base classes cover the vast majority of use cases and are covered in greater detail in [its relevant chapter](/docs/v2/service-coordinators#Builder-selects).
+
+### Retrieving pattern segments
 
 ```php
+// ModelfulPayload - for model-backed operations
+class BaseProductBuilder extends ModelfulPayload
+{
+    protected function getBaseCriteria(): object
+    {
+        return $this->blankProduct->where([
+            'id' => $this->payloadStorage->getKeyForPositiveInt('id')
+        ]);
+    }
+}
 
-class BaseProductBuilder extends ModelfulPayload {
-
-	protected function getBaseCriteria ():object {
-
-		return $this->blankProduct->where([
-
-			"id" => $this->routeInfo->getSegmentValue("id")
-		]);
-	}
+// Usage in coordinator
+public function showProduct(BaseProductBuilder $builder): Json
+{
+    return new Json([
+        'product' => $this->productService->getResource($builder->getBuilder())
+    ]);
 }
 ```
 
-Note that a more complete implementation of this class is listed in [its relevant chapter](/docs/v2/service-coordinators#Builder-selects).
+This is the recommended pattern in almost all situations.
 
-`getSegmentValue` has a more liberal cousin called `getAllSegmentValues`, that returns all segments in one go.
+### Direct RouteInfo Access (Rare / Last Resort)
+
+Every coordinator automatically receives the `routeInfo` property (populated by the framework before your action method runs). Using it should be treated as a last resort. Prefer `ModelfulPayload` (Builders) and `ModellessPayload` (Readers) in almost all situations.
+
+**Acceptable use cases for direct `routeInfo` access:**
+
+- Very simple scalar operations that don’t justify creating a dedicated Payload class.
+- One-off operations where creating a Payload feels like over-engineering.
+
+#### Example: Simple scalar operation
 
 ```php
+#[Route("quick-check/{code}")]
+public function quickStatusCheck(): Json
+{
+    $code = $this->routeInfo->getSegmentValue('code');
 
-protected function getBaseCriteria ():object {
+    $status = $this->statusService->checkQuickCode($code);
 
-	return $this->blankProduct->where(
-
-		$this->routeInfo->getAllSegmentValues()
-	);
+    return new Json([
+        'valid' => $status->isValid,
+        'message' => $status->message
+    ]);
 }
 ```
 
-Its usage is mostly safe at this layer since validation has been processed and succeeded. Additional scrutiny is only necessary if input type makes room for content that needs escaping.
+### RouteInfo Caution
 
-##### Reading integer input
+If you find yourself needing `routeInfo` in many controllers (e.g. for logging, analytics, or tracking), consider using a [**middleware**](/docs/v2/middleware) instead. Global concerns like analytics, request logging, or metrics collection belong in middleware, not scattered across coordinators.
 
-When inserting things like item price into your database, or when integers, in general, are lifted from the outside world for placement into your persistence layer, it's safer to ensure they are of positive value. We do this in Suphle using the `getKeyForPositiveInt` method.
-
-```php
-
-protected function getBaseCriteria ():object {
-
-	return $this->blankProduct->where([
-
-		"id" => $this->payloadStorage->getKeyForPositiveInt("amount")
-	]);
-}
-```
-
-It's only necessary when positivity cannot be left to chance. When this is true for all fields on the payload (as this equally applies to the `Suphle\Request\PayloadReader` object), they can all be converted in one go, to their positive equivalents using the `allNumericToPositive` method.
-
-```php
-
-protected function getBaseCriteria ():object {
-
-	$this->routeInfo->allNumericToPositive();
-
-	return $this->blankProduct->where([
-
-		"id" => $this->routeInfo->getSegmentValue("id")
-	]);
-}
-```
 ---
 
 ## CRUD Resources
 
 Suphle provides a structured and opinionated approach to building standard CRUD (Create, Read, Update, Delete) resources. While the framework does not restrict you from defining routes manually, it encourages a consistent, reusable pattern that minimizes repetition and keeps your application logic organized.
 
-Instead of repeatedly wiring controllers, services, and views, Suphle offers a scaffolding system that generates a complete working setup for a resource.
-
----
-
-## The CRUD Command
-
-To quickly scaffold a new resource, Suphle exposes the `route:crud` command.
+Instead of repeatedly wiring controllers, services, and views, Suphle offers a scaffolding system that generates a complete working setup for a resource using the `route:crud` command.
 
 ```bash
 php suphle route:crud Post
@@ -527,7 +489,7 @@ Running this command generates all the foundational components required to manag
 
 ---
 
-## Scaffolding Output
+### Scaffolding Output
 
 The following components are created:
 
@@ -555,7 +517,7 @@ The following components are created:
 
 ---
 
-## The CRUD Coordinator
+### The CRUD Coordinator
 
 All generated logic is grouped inside a Coordinator using the `#[RoutePrefix]` attribute.
 
@@ -563,7 +525,7 @@ Each method corresponds to a resource action and must return a **Renderer**. Sup
 
 ---
 
-## Standard Route Mapping
+#### Standard Route Mapping
 
 | HTTP Method | Path | Action | Returns |
 | :--- | :--- | :--- | :--- |
@@ -578,42 +540,16 @@ Each method corresponds to a resource action and must return a **Renderer**. Sup
 
 ---
 
-## Key Architectural Concepts
-
-### Route Mirroring & Authentication
-
-By defining a `mirrorPrefix`, Suphle automatically exposes the same Coordinator logic under a separate API path.
-
-- **Browser Route:** `/posts`  
-  Typically uses session-based authentication
-
-- **API Route:** `/api/v1/posts`  
-  Automatically switches to token-based authentication (e.g., JWT)
-
-This allows you to maintain a single source of truth for logic while supporting multiple client types.
-
----
-
-### Payload Handling
-
-Suphle standardizes request data access through **Payload Builders**:
-
-- Provide a fluent, domain-specific interface
-- Keep Coordinators thin and focused
-
-It wraps `PayloadStorage` which acts as the central source of truth for all request input and supports merging, querying, and transformation of payload data
-
----
-
 Suphle’s CRUD system:
 
 1. Automates boilerplate generation
-2. Enforces consistent architectural patterns
-3. Centralizes request handling via **Payload Builders**
-4. Supports dual-mode (Browser + API) routing through mirroring
-5. Remains fully customizable through attributes
+1. Enforces consistent architectural patterns
+1. Centralizes request handling via **Payload Builders**
+1. Supports dual-mode (Browser + API) routing through mirroring
+1. Remains fully customizable through attributes
 
-It strikes a balance between **developer productivity** and **architectural clarity**.	
+It strikes a balance between **developer productivity** and **architectural clarity**.
+
 ## Native Renderers
 
 In Suphle, **Renderers** are responsible for transforming the output of a Coordinator method into a final HTTP response. Rather than returning raw arrays or primitives, every action must return a Renderer, ensuring consistency across both browser and API contexts.
@@ -843,9 +779,7 @@ Renderers are not just output formatters—they are a core part of Suphle’s re
 
 ## Route Mirroring
 
-**Route Mirroring** allows a Coordinator designed for the browser (HTML) to be automatically exposed as a JSON API. This ensures your application logic remains "Dry" while providing dedicated, versioned paths for API consumers.
-
-Unlike standard content negotiation, Suphle Mirroring creates **dual paths**. This allows you to use different authentication mechanisms and response formats for the same logic without them clashing.
+**Route Mirroring** allows a Coordinator designed for the browser (HTML) to be automatically exposed as a JSON API. This ensures your application logic remains "Dry" while providing dedicated, versioned paths for API consumers. This allows you to maintain a single source of truth for logic while supporting multiple client types.
 
 ### Activating Mirroring
 
@@ -860,46 +794,38 @@ use Suphle\Routing\Attributes\{Route, RoutePrefix};
 )]
 class PostCoordinator {
 
-    #[Route("")] // Browser: /posts | API: /api/v1/posts
+    #[Route("")] // Browser: /posts | API: /api/v1/posts. Returns Json
     public function index(): Markup { ... }
 }
 ```
 
-### Key Differences from Content Negotiation
+### Authentication in Mirrored Routes
 
-While middleware-based negotiation changes the response based on headers, Suphle Mirroring provides:
+By default, the framework will inject the authentication mechanism most suitable for that environment
 
-1. **URL Clarity:** APIs have their own versioned paths (e.g., `/api/v1/...`).
-2. **Security Decoupling:** You can swap a session-based browser authenticator for a token-based API authenticator automatically.
-3. **Automatic Discovery:** We detect mirrored routes and includes them in API documentation and route lists without extra code.
+- **Browser Route:** `/posts`  
+  Typically uses session-based authentication
 
----
+- **API Route:** `/api/v1/posts`  
+  Automatically switches to token-based authentication (e.g., JWT)
 
-## Mirroring and Inheritance
-
-Suphle's routing engine fully respects PHP class inheritance. This allows you to version your API by extending existing Coordinators and only overriding what has changed.
-
-### Versioning via Extension
-
-When a child Coordinator extends a parent, the RAS identifies all inherited methods and applies the child's `#[RoutePrefix]` logic to them.
+In order to customize this, we use the `mirrorAuthenticator` in the `#[RoutePrefix]` attribute:
 
 ```php
-// Version 1
-#[RoutePrefix(prefix: "posts", mirrorPrefix: "api/v1")]
-class PostV1 {
-    #[Route("list")]
-    public function list() { ... }
-}
+use Suphle\Routing\Attributes\RoutePrefix;
+use Suphle\Auth\Storage\TokenStorage;
 
-// Version 2
-#[RoutePrefix(prefix: "posts", mirrorPrefix: "api/v2")]
-class PostV2 extends PostV1 {
-    // Inherits "list" but exposes it under /api/v2/posts/list
-    
-    #[Route("list")] // Override only if logic changes
-    public function list() { ... } 
+#[RoutePrefix(
+    prefix: "profile", 
+    mirrorPrefix: "api/v1/profile",
+    mirrorAuthenticator: TokenStorage::class
+)]
+class UserProfileCoordinator {
+    // ...
 }
 ```
+
+The user visiting a mirrored route must have authenticated via the mechanism provided in the `mirrorAuthenticator`. For instance, if they logged in via `/api/v1/login` and received a token, they can access `/api/v1/profile/details` even if the method attribute originally pointed to `SessionStorage`.
 
 ### Excluding Methods from Mirrors
 
@@ -917,127 +843,16 @@ class AccountCoordinator {
     public function complexSignupFlow() { ... }
 }
 ```
-## Canary Releases (Feature Flags)
 
-Suphle provides a clean, decoupled mechanism for implementing feature flags, A/B testing, and gradual rollouts. Instead of scattering conditional logic (`if/else`) across your application, Suphle centralizes decision-making into reusable **Canary Evaluators**.
+### Key Differences from Content Negotiation
 
----
+Unlike standard content negotiation, Suphle Mirroring creates **dual paths**. This allows you to use different authentication mechanisms and response formats for the same logic without them clashing. While middleware-based negotiation changes the response based on headers, Suphle Mirroring provides:
 
-### 1. Defining Canary Evaluators
-
-A **Canary Evaluator** is a class responsible for determining whether a specific condition is met (for example: user ID ranges, request headers, roles, or IP segments).
-
-To create one, implement:
-
-`Suphle\Contracts\Routing\CanaryEvaluator`
-
-The core method:
-
-- `willLoad(): ?string`  
-  - Return a **string slug** if the condition passes  
-  - Return **null** if it fails
-
-```php
-use Suphle\Contracts\Routing\CanaryEvaluator;
-use Suphle\Contracts\Auth\AuthStorage;
-
-class BetaUserCanary implements CanaryEvaluator {
-
-    public function __construct(
-        protected readonly AuthStorage $authStorage
-    ) {}
-
-    public function willLoad(): ?string {
-        $userId = $this->authStorage->getId();
-        
-        // Users under ID 1000 are part of the beta rollout
-        return ($userId && $userId < 1000) ? 'beta' : null;
-    }
-}
-```
-
-> **Best Practice:**  
-> Always inject dependencies like `AuthStorage` or request abstractions. Avoid direct access to globals like `$_SESSION`.
+1. **URL Clarity:** APIs have their own versioned paths (e.g., `/api/v1/...`).
+2. **Security Decoupling:** You can swap a session-based browser authenticator for a token-based API authenticator automatically.
+3. **Automatic Discovery:** We detect mirrored routes and includes them in API documentation and route lists without extra code.
 
 ---
-
-### 2. Registering Canaries
-
-Attach evaluators to a **Coordinator class** using the `#[CanaryState]` attribute.
-
-Suphle will evaluate them **in order**, stopping at the first match.
-
-```php
-use Suphle\Routing\Attributes\CanaryState;
-
-#[CanaryState([
-    BetaUserCanary::class,
-    EarlyAdopterCanary::class
-])]
-class UserCoordinator extends BaseCoordinator {
-    // Coordinator logic...
-}
-```
-
----
-
-### 3. Consuming the Canary State
-
-Canary evaluation is **lazy**—it only runs when explicitly requested.
-
-#### In a Coordinator
-
-Use `RequestDetails::getCanaryState()` to retrieve the active state:
-
-```php
-#[Route('/dashboard')]
-public function dashboard(): Json {
-    $state = $this->requestDetails->getCanaryState();
-
-    return match ($state) {
-        'beta' => new Json(['layout' => 'v2-experimental']),
-        'early-adopter' => new Json(['layout' => 'v1-with-new-sidebar']),
-        default => new Json(['layout' => 'v1-stable']),
-    };
-}
-```
-
----
-
-#### In Templates (Views)
-
-When returning a `Markup` renderer:
-
-- The resolved state is automatically injected as:
-  
-  `canary_state`
-
-This allows conditional rendering directly in your templates:
-
-```html
-{{#if canary_state == "beta"}}
-    <!-- Show experimental UI -->
-{{/if}}
-```
-
----
-
-## Technical Characteristics
-
-### First-Match Wins
-Evaluation stops as soon as one evaluator returns a non-null value. Later evaluators are not executed.
-
----
-
-### Decoupled Logic
-Each evaluator is:
-
-- A standalone class  
-- Fully testable in isolation  
-- Reusable across multiple Coordinators
-- Canary logic stays **explicit inside your Coordinator methods**
-
-This keeps behavior predictable and easy to debug. This model gives you precise control over feature exposure without compromising code clarity or performance.
 
 ## Route Discovery and Listing
 
@@ -1139,6 +954,95 @@ This component provides automatic OpenAPI documentation generation for Suphle ap
 - **Validation Rule Integration**: Converts Laravel-style validation rules to OpenAPI schemas
 - **Authentication Documentation**: Automatically detects and documents auth barriers
 - **Component Template**: Plug-and-play installation without manual configuration
+---
+
+### Response Shape Inference
+
+One of the most powerful features of Suphle’s API Documentation component is its **advanced static response shape inference engine**. It analyzes your coordinator code and produces **precise, structured response schemas** — not vague `{"type": "object"}` placeholders.
+
+#### What It Handles Automatically
+
+The analyzer is designed around real Suphle development patterns:
+
+- Service calls that perform complex logic and ultimately return data:
+  ```php
+  return new Json([
+      "data" => $this->employmentService->getResource($employmentBuilder->getBuilder())
+  ]);
+
+  // Inside EmploymentService.php
+  public function getResource(Employment $query): IntegrityModel
+  {
+      // some advanced querying building here
+      return $query->with('user')->get();   // or ->first(), paginate(), etc.
+  }
+  ```
+
+- Direct builder usage in coordinators eg Associative arrays with mixed content
+  ```php
+  return new Json([
+      "data" => $builder->getBuilder()->first(),
+      "meta" => ["page" => 1]
+  ]);
+  ```
+- Variables holding query results
+  ```php
+  $data = $this->editService->getResource($employmentBuilder->getBuilder());
+
+  return new Json(["data" => $data]);
+  ```
+- Multiple return statements, match statements and basic ternaries
+  ```php
+  return new Json($condition ? $builder->getBuilder()->first() : []);
+  ```
+- Underlying model type underneath a generic collection of database objects
+
+**No docblocks. No annotations. No rigid DTOs required. No maintenance overhead**
+
+You can freely delegate heavy lifting to services while still getting rich, accurate response documentation.
+
+#### Why This Is Significant
+
+In dynamic languages like PHP, frontend teams often struggle because response shapes are unclear. Developers coming from strongly-typed backend ecosystems expect detailed response structures in their API docs.
+
+This component solves that long-standing pain point.
+
+You no longer need to maintain manual OpenAPI annotations or DTOs just for documentation. Even across dozens of routes, the system observes your real code and generates accurate schemas automatically.
+
+#### Service Methods Returning Plain Values or DTOs
+
+When a coordinator delegates through a plain service (not a ModelfulPayload
+or model chain), the analyzer reads the return type of that service.
+
+```php
+public function genericWebhook(ExtractPaymentFields $payloadReader):Json
+{
+    return new Json([
+        "data" => $this->transactionService->updateModels(
+            $payloadReader->getDomainObject()
+        )
+    ]);
+}
+// TransactionService
+public function updateModels(object $genericPaidDSL): Collection
+{
+    // ...
+}
+```
+
+If `updateModels` declares a return type, that type is used directly:
+- A builtin (`string`, `int`, `array`, `iterable`) maps to its scalar/array equivalent.
+- A concrete class is read for its public property shape (a flat DTO read — not full ORM resolution).
+
+#### Current Limitations
+
+While the analyzer is effective for standard Suphle patterns, it has the following limitations:
+
+- **Deeply nested custom DTOs** — Returns involving complex custom response objects or deeply nested DTOs will typically resolve to a generic `{"type": "object"}` without detailed properties.
+- **Complex service method returns** — If a service method returns data through highly indirect or dynamic logic that is difficult to trace statically, the shape may not be fully resolved.
+- **Very dynamic array construction** — Heavily dynamic array building (e.g. using loops with variable keys or runtime transformations) may not be fully captured.
+
+---
 
 ### Installation
 

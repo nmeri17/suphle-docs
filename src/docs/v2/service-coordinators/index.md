@@ -368,7 +368,62 @@ In practise, you'll likely require mapping to more fields than one, and would re
 
 Aside handling requests that don't map to models/entities, `ModellessPayload` is useful for things like callback endpoints where a user is waiting for feedback on our end, but obviously not on the automated, calling service's end. In such cases, mere validation errors won't cut it. We need to respond to the waiting services with something to complete user flow. For this reason, it requires safe and [user friendly data conversion](#normalizing-incoming-data).
 
-Do be aware that this input reader type doesn't cover image upload. For that sort of payload, please see [its designated chapter](/docs/v2/image-upload). 
+Do be aware that this input reader type doesn't cover image upload. For that sort of payload, please see [its designated chapter](/docs/v2/image-upload).
+
+### Payload reading utilities
+
+The `RouteInfo::getSegmentValue` method has a more liberal cousin called `getAllSegmentValues`, that returns all segments in one go.
+
+```php
+
+protected function getBaseCriteria ():object {
+
+	return $this->blankProduct->where(
+
+		$this->routeInfo->getAllSegmentValues()
+	);
+}
+```
+
+#### Reading integer input
+
+When inserting things like item price into your database, or when integers, in general, are lifted from the outside world for placement into your persistence layer, it's safer to ensure they are of positive value. We do this in Suphle using the `getKeyForPositiveInt` method.
+
+```php
+
+protected function getBaseCriteria ():object {
+
+	return $this->blankProduct->where([
+
+		"id" => $this->payloadStorage->getKeyForPositiveInt("amount")
+	]);
+}
+```
+
+It's only necessary when positivity cannot be left to chance. When this is true for all fields on the payload (as this equally applies to the `Suphle\Request\PayloadReader` object), they can all be converted in one go, to their positive equivalents using the `allNumericToPositive` method.
+
+```php
+
+protected function getBaseCriteria ():object {
+
+	$this->routeInfo->allNumericToPositive();
+
+	return $this->blankProduct->where([
+
+		"id" => $this->routeInfo->getSegmentValue("id")
+	]);
+}
+```
+
+These methods implicitly coerce values into their positive coefficients. If you prefer a more radical approach that fails the request on reception of such values, the following validation rule can be used on your coordinator, if using the default validation adapter:
+
+```php
+#[ValidationRules([
+    'price'  => 'required|numeric|positive',
+])]
+```
+
+---
 
 ## Permitted dependencies
 
