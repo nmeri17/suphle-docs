@@ -1,63 +1,68 @@
 ## Introduction
 
-Authentication in Suphle focuses on credential verification and session persistence. By utilizing the **Auth Repository**, you can handle both stateful (Browser) and stateless (API) logins with minimal boilerplate.
+Authentication in Suphle focuses on credential verification and session persistence. By utilizing the auth component template, you can handle both stateful (Browser) and stateless (API) logins with minimal boilerplate.
 
-### Using the Auth Repository
+## The SuphleIdentity Template
 
-The `BaseAuthRepo` provides the core logic for checking credentials via the `ColumnPayloadComparer` and persisting the result. In most cases, you do not need to extend this class unless you are adding custom domain events (like sending a "New Login" email).
+The `SuphleIdentity` component template provides a complete, editable authentication and registration suite. Unlike standalone modules, these files are deposited directly into your module, allowing you to customize the domain logic and UI layouts without architectural friction.
 
-Instead, you can inject it directly into your Coordinator and use its status methods to drive a `match` expression.
+### Ejected Components
 
-#### Coordinator Implementation
+Upon installation, the following structure is mirrored into your module:
+
+  * **`Coordinators\BrowserAuthCoordinator`**: Manages the web-based lifecycle (Login, Register, Logout, Verification) including CSRF and validation recovery.
+  * **`Coordinators\ApiAuthCoordinator`**: A stateless counterpart for JSON-based authentication.
+  * **`Services\RegisterService`**: A mutative service implementing `SystemModelEdit` to handle account creation and email verification.
+  * **`PayloadReaders\RegistrationReader`**: Normalizes incoming registration data into a domain-safe format.
+  * **`Views\auth\`**: Contains the Blade templates for login and registration forms.
+
+### Installation
+
+To eject these files into your module, run the installation command:
+
+```bash
+php suphle templates:install SuphleIdentity
+```
+The ideal workflow would look like this:
+
+```bash
+php suphle modules:create Identity && php suphle templates:install SuphleIdentity
+```
+
+Below is a fully functional excerpt for handling login requests:
 
 ```php
-class LoginCoordinator extends BaseCoordinator {
+#[Route("login", HttpMethod::POST)]
+#[ValidationRules([
+    "email" => "required|email",
+    "password" => "required|min:8"
+])]
+public function handleLogin(): BaseRenderer {
 
-    public function __construct(
-        protected readonly BaseAuthRepo $authService
-    ) {}
+    return match ($this->loginService->tryStartUserSession()) {
+        null => new Reload(["message" => "Failed to login"]),
 
-    #[Route("login", HttpMethod::POST)]
-    public function browserLogin(): BaseRenderer {
-
-        return match ($this->authService->tryStartUserSession()) {
-            null => new Reload(), // Failed: returns to form with previous data
-
-            default => new Redirect(
-                $this->authService->successRedirect("/dashboard")
-            )
-        };
-    }
-
-    #[Route("api/v1/login", HttpMethod::POST)]
-    public function apiLogin(): Json {
-        $token = $this->authService->tryGetJsonToken();
-
-        return match (is_null($token)) {
-            false => new Json(["token" => $token]),
-            
-            true => new Json(["error" => "Unauthorized"], 401)
-        };
-    }
+        default => new Redirect($this->loginService->successRedirect("/dashboard"))
+    };
 }
 ```
+
+### UI Recovery & State
+
+The ejected views leverage the `payload_storage` and `validation_errors` keys. If a registration fails, the `Reload` renderer ensures the user is returned to the form with their previous input intact and errors highlighted, as described in [Restoring request data](/docs/v2/service-coordinators#Restoring-request-data).
 
 -----
 
 ### Handling Login Failures & UI Recovery
 
-When a login attempt fails (returning `null`), using the `Reload` renderer triggers Suphle's internal redirection logic. This is handled by the framework's [Validation & Error Diffusers](/docs/v2/coordinators#Checking-for-validation-errors).
+When a login attempt fails:
 
   * **Error Detection**: On the frontend, you can check for the presence of `"validation_errors"` to show an alert.
   * **Data Persistence**: You don't need to manually pass the email back to the login form. The previous request data is automatically stored and can be retrieved via the `"payload_storage"` key. See [Restoring request data](/docs/v2/coordinators#Restoring-request-data) for details.
-
-### Success State & Identity
-
-Once `tryStartUserSession()` succeeds, the user's information is persisted in the session. There is no need to return user objects or email addresses in the login response; the frontend should simply redirect to the authenticated dashboard and fetch user details from the global session state or a dedicated `/me` endpoint.
-
+  
 -----
 
-### Advanced: Customizing Credential Matching
+### Customizing Credential Matching
 
 The logic that dictates *what* constitutes a valid login is encapsulated in the `Suphle\Contracts\Auth\ColumnPayloadComparer`. The default implementation is `Suphle\Auth\EmailPasswordComparer`, which matches the `email` payload key against your user table.
 
@@ -109,39 +114,6 @@ public function simpleBinds ():array {
 | `tryStartUserSession()` | `SessionStorage` | Secure, cookie-based sessions for web browsers. |
 | `tryGetJsonToken()` | `TokenStorage` | JWT/Bearer tokens for mobile apps or third-party integrators. |
 
-
------
-
-## The EloquentAuth Template
-
-The `EloquentAuth` component template provides a complete, editable authentication and registration suite. Unlike standalone modules, these files are deposited directly into your module, allowing you to customize the domain logic and UI layouts without architectural friction.
-
-### Ejected Components
-
-Upon installation, the following structure is mirrored into your module:
-
-  * **`Coordinators\BrowserAuthCoordinator`**: Manages the web-based lifecycle (Login, Register, Logout, Verification) including CSRF and validation recovery.
-  * **`Coordinators\ApiAuthCoordinator`**: A stateless counterpart for JSON-based authentication.
-  * **`Services\RegisterService`**: A mutative service implementing `SystemModelEdit` to handle account creation and email verification.
-  * **`PayloadReaders\RegistrationReader`**: Normalizes incoming registration data into a domain-safe format.
-  * **`Views\auth\`**: Contains the Blade templates for login and registration forms.
-
-### Installation
-
-To eject these files into your module, run the installation command:
-
-```bash
-php suphle templates:install SuphleIdentity
-```
-The ideal workflow would look like this:
-
-```bash
-php suphle modules:create Identity && php suphle templates:install SuphleIdentity
-```
-
-### UI Recovery & State
-
-The ejected views leverage the `payload_storage` and `validation_errors` keys. If a registration fails, the `Reload` renderer ensures the user is returned to the form with their previous input intact and errors highlighted, as described in [Restoring request data](/docs/v2/service-coordinators#Restoring-request-data).
 
 -----
 

@@ -81,10 +81,12 @@ class ProductCoordinator extends BaseCoordinator
     #[Route("/{id}/delete", HttpMethod::POST)]
     public function deleteProduct( BaseProductBuilder $builder): Reload
     {
+        $operationMessage = "failed";
+
         if ($builder->getBuilder()->delete()) // or pass to service if additional work needed
-            $this->sessionClient->setValue("message", "Product deleted successfully");
+            $operationMessage = "Product deleted successfully";
         
-        return new Reload();
+        return new Reload(["message" => $operationMessage]);
     }
 }
 ```
@@ -348,15 +350,11 @@ Instead of redirecting blindly, it:
 #[ValidationRules([])]
 public function handleFeedback(BaseProductBuilder $builder): Reload {
     
-    $this->service->updateModels($builder->getBuilder());
+    $result = $this->service->updateModels($builder->getBuilder());
 
-    return new Reload();
+    return new Reload(["message" => $result]);
 }
 ```
-
-This is the preferred pattern for handling form submissions in Suphle.
-
-The `Reload` renderer is primarily used by the framework's validation system. When validation fails, the `ValidationFailureDiffuser` automatically creates a `Reload` renderer with validation errors and old input data.
 
 ## LocalFileDownload
 

@@ -104,7 +104,7 @@ No fallback handler. All logic is explicit and developer-controlled.
 return new Reload($handler);
 
 // v2
-return new Reload();  // Framework auto-handles validation data
+return new Reload($data);  // Framework auto-handles validation data
 ```
 
 ---

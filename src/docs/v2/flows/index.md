@@ -252,7 +252,7 @@ The `Range` mode has a specialized cousin for date comparison of fields.
 
 ## Activating flows
 
-Flows are not implemented as [middleware](/docs/v2/middleware) so we can short-circuit routing altogether (during the subsequent request), which middleware depends on. Suphle determines whether requests should be evaluated for Flow eligibility using the `Suphle\Contracts\Config\Flows` config interface. Since no Flow definitions are present on module installation, this feature is turned off. To enable it, the `isEnabled` method of this [config's implementation](/docs/v2/container#Config-interfaces) is expected to return true.
+Flows are not implemented as [middleware](/docs/v2/middleware) so we can short-circuit routing altogether (during the subsequent request), which middleware depends on. Suphle determines whether requests should be evaluated for Flow eligibility using the `Suphle\Contracts\Config\Flows` config interface. Since no Flow definitions are present on module installation, this feature is turned off. To enable it, the `isEnabled` method of this [config's implementation](/docs/v2/container#Config-interfaces) is expected to return `true`.
 
 ```php
 

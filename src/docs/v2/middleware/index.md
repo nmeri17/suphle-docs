@@ -83,7 +83,7 @@ class AltersPayloadStorage extends BaseMiddleware
     public function process(PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler): BaseRenderer
     {
 
-        $payloadStorage->mergePayload($this->payloadUpdates());
+        $payloadStorage->setUpserts($this->payloadUpdates());
 
         return $requestHandler->handle($payloadStorage);
     }
@@ -126,6 +126,8 @@ class PublicCoordinator {
     public function landingPage() { ... } // Now public
 }
 ```
+
+This is for use when disengaging a middleware altogether. When a pre-middleware or middleware applied at the class level is also annotated on an individual method, the method-level configuration takes precedence rather than combining both. This pattern is useful when an endpoint requires unique arguments that are an exception to the class-level defaults, saving developers from having to detach and re-apply the entire middleware just to tweak its arguments.
 
 ---
 

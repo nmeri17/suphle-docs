@@ -249,9 +249,8 @@ Model-based authorization often requires checking the owner of a specific resour
 ```php
 namespace App\Authorization\Rules;
 
-use Suphle\Request\RouteRule;
+use Suphle\Request\{RouteRule, RequestDetails};
 use Suphle\Auth\Contracts\AuthStorage;
-use Suphle\Routing\Structures\RouteInfo;
 use App\Models\Employment;
 
 class EmploymentEditRule extends RouteRule {
@@ -259,7 +258,7 @@ class EmploymentEditRule extends RouteRule {
     public function __construct (
         AuthStorage $authStorage,
         protected readonly Employment $model,
-        protected readonly RouteInfo $routeInfo
+        protected readonly RequestDetails $requestDetails
     ) {
         parent::__construct($authStorage);
     }
@@ -272,7 +271,7 @@ class EmploymentEditRule extends RouteRule {
     protected function getCreatorId(): int {
 
         return $this->model->find(
-            $this->routeInfo->getSegmentValue("id")
+            $this->requestDetails->getComputedDetails()->getSegmentValue("id")
         )->employer->user_id;
     }
 }

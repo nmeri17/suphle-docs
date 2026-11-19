@@ -71,13 +71,21 @@ use Suphle\Response\Format\Reload;
 
 class UserCoordinator extends BaseCoordinator
 {
-    public function createUser(): Reload
+    public function __construct(
+        protected readonly UserAccessor $accessor
+    ) {}
+
+    #[Route("", HttpMethod::POST)]
+    #[PreMiddleware(AuthenticateHandler::class)]
+    #[ValidationRules([
+        "name" => "required|string|max:255",
+        "description" => "nullable|string"
+    ])]
+    public function store(UserSavePayload $payload): Reload
     {
-        // Process the user creation
-        $this->userService->create($this->payloadReader->getAll());
+        $result = $this->accessor->createSingle($payload->getDomainObject());
         
-        // Return Reload - framework handles validation data automatically
-        return new Reload();
+        return new Reload(["message" => $result]); // Return Reload - framework handles validation data automatically
     }
 }
 ```
@@ -116,7 +124,7 @@ class UserCoordinator extends BaseCoordinator
     #[Route("users/{id}", HttpMethod::GET)]
     public function showUser(): Json
     {
-        $userId = $this->routeInfo->getSegmentValue("id");
+        $userId = $this->requestDetails->getComputedDetails()->getSegmentValue("id");
         
         return new Json([
             'user' => $this->userService->find($userId)
@@ -271,7 +279,7 @@ class BaseProductBuilder extends ModelfulPayload {
 
 		return $this->blankProduct->where([
 
-			"id" => $this->routeInfo->getSegmentValue("id")
+			"id" => $this->requestDetails->getComputedDetails()->getSegmentValue("id")
 		]);
 	}
 }
@@ -317,7 +325,7 @@ class BaseProductBuilder extends ModelfulPayload {
 
 		return $this->blankProduct->where([
 
-			"id" => $this->routeInfo->getSegmentValue("id")
+			"id" => $this->requestDetails->getComputedDetails()->getSegmentValue("id")
 		]);
 	}
 
@@ -380,7 +388,7 @@ protected function getBaseCriteria ():object {
 
 	return $this->blankProduct->where(
 
-		$this->routeInfo->getAllSegmentValues()
+		$this->requestDetails->getComputedDetails()->getAllSegmentValues()
 	);
 }
 ```
@@ -400,17 +408,19 @@ protected function getBaseCriteria ():object {
 }
 ```
 
-It's only necessary when positivity cannot be left to chance. When this is true for all fields on the payload (as this equally applies to the `Suphle\Request\PayloadReader` object), they can all be converted in one go, to their positive equivalents using the `allNumericToPositive` method.
+It's only necessary when positivity cannot be left to chance. When this is true for all placeholders, they can all be converted in one go, to their positive equivalents using the `allNumericToPositive` method.
 
 ```php
 
 protected function getBaseCriteria ():object {
 
-	$this->routeInfo->allNumericToPositive();
+	$routeInfo = $this->requestDetails->getComputedDetails();
+
+	$routeInfo->allNumericToPositive();
 
 	return $this->blankProduct->where([
 
-		"id" => $this->routeInfo->getSegmentValue("id")
+		"id" => $routeInfo->getSegmentValue("id")
 	]);
 }
 ```
@@ -519,7 +529,7 @@ We do this by extending `Suphle\Services\ConditionalFactory` class. An example o
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\Interfaces\GreaterFields;
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\ConditionalHandlers\{FieldBGreater, FieldAGreater, BothFieldsEqual};
+use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\ConditionalHandlers\{FieldBGreater, FieldAGreater, BothFieldsEqual};
 
 class ConditionalFactoryMock extends ConditionalFactory {
 
@@ -749,24 +759,30 @@ namespace AllModules\Shop\Services;
 use Suphle\Services\Structures\BaseErrorCatcherService;
 use Suphle\Services\Decorators\{DomainService, InterceptsCalls, VariableDependencies};
 use Suphle\Contracts\Services\CallInterceptors\SystemModelEdit;
-use Suphle\Events\EmitProxy;
+use Suphle\Events\{EmitProxy, EventPropagator};
 
 #[DomainService(mutation: true)]
 #[InterceptsCalls(SystemModelEdit::class)]
-#[VariableDependencies(["setPayloadStorage", "setRouteInfo"])]
+#[VariableDependencies(["setPayloadStorage"])]
 class CheckoutCart implements SystemModelEdit {
 
     use BaseErrorCatcherService, EmitProxy;
 
-    public function __construct (protected readonly CartService $cartService) {}
+    public function __construct (
+    	protected readonly CartService $cartService,
+    	protected readonly EventPropagator $eventEmitter
+    ) {}
 
     /**
      * Triggered by the Coordinator. The Interceptor wraps this in a transaction.
      */
     public function updateModels (object $cartBuilder) {
+
         $products = $this->modelsToUpdate($cartBuilder);
 
-        $products->each->update(["sold" => true]);
+        $products->each->decrement("quantity");
+
+		$this->emitHelper(self::EMPTIED_CART, $cartBuilder);
 
         return $this->cartService->delete();
     }
@@ -775,8 +791,26 @@ class CheckoutCart implements SystemModelEdit {
      * Arguments passed to updateModels are mirrored here for row-locking.
      */
     public function modelsToUpdate (object $cartBuilder): iterable {
-        return $this->cartService->authProducts;
+        
+        return $this->cartService->authProducts($cartBuilder);
     }
+}
+```
+
+Suphle further abstracts away all the error-catcher decorators behind helper base classes. Thus, our class above can be simplified to:
+
+```php
+use Suphle\Services\Structures\BaseSystemModelEdit;
+
+class CheckoutCart extends BaseSystemModelEdit {
+
+    use EmitProxy;
+
+    public function __construct (
+    	protected readonly CartService $cartService,
+    	protected readonly EventPropagator $eventEmitter
+    ) {}
+    // class contents
 }
 ```
 
@@ -784,14 +818,13 @@ class CheckoutCart implements SystemModelEdit {
 The **Proxy Pattern** is fundamental here. You must call the intercepted method (`updateModels`) directly from the Coordinator. Calling it internally within the service will bypass the interceptor and run outside a transaction.
 
 ```php
-namespace AllModules\Shop\Coordinators;
+namespace AllModules\ShopModule\Coordinators;
 
 use Suphle\Services\BaseCoordinator;
-use Suphle\IO\Http\BaseHttpRequest;
 use Suphle\Response\Format\Json;
-use Suphle\Services\Decorators\{Route, RoutePrefix, ValidationRules};
-use AllModules\Shop\Services\CheckoutCart;
-use AllModules\Shop\Payloads\CartReader;
+use Suphle\Routing\Attributes\{Route, RoutePrefix};
+use Suphle\Services\Decorators\ValidationRules;
+use AllModules\ShopModule\{Payloads\CartReader, Services\CheckoutCart};
 
 #[RoutePrefix("api/v1/cart")]
 class CheckoutCoordinator extends BaseCoordinator {
@@ -827,30 +860,44 @@ When a resource is owned by multiple users or subject to frequent updates, there
 **Service Implementation:**
 
 ```php
-namespace AllModules\Staff\Services;
+namespace AllModules\StaffModule\Services;
 
-use Suphle\Contracts\Services\CallInterceptors\MultiUserModelEdit;
-use Suphle\Contracts\Services\Models\IntegrityModel;
+use Suphle\Contracts\Services\{CallInterceptors\MultiUserModelEdit, Models\IntegrityModel};
 use Suphle\Services\Decorators\{DomainService, InterceptsCalls, VariableDependencies};
 use Suphle\Services\Structures\BaseErrorCatcherService;
 
 #[DomainService(mutation: true)]
 #[InterceptsCalls(MultiUserModelEdit::class)]
-#[VariableDependencies(["setPayloadStorage", "setRouteInfo"])]
+#[VariableDependencies(["setPayloadStorage"])]
 class EmploymentService implements MultiUserModelEdit {
 
     use BaseErrorCatcherService;
 
-    public function getResource (): IntegrityModel {
-        return Employment::find($this->routeInfo->getSegmentValue("id"));
+    public function getResource (object $builder): IntegrityModel {
+        
+        return $builder->first();
     }
 
-    public function updateResource (object $data) {
+    public function updateResource (object $builder, array $toUpdate) {
         // Integrity check happens automatically before this runs
-        $this->getResource()->update(["salary" => $data->salary]);
+        $builder->update(["salary" => $toUpdate["salary"]]);
     }
 }
 ```
+
+As with `SystemModelEdit`, `MultiUserModelEdit` has a complementary base class, `BaseMultiUserModelEdit`, that should be extended instead.
+
+```php
+use Suphle\Contracts\Services\Models\IntegrityModel;
+
+use Suphle\Services\Structures\BaseMultiUserModelEdit;
+
+class EmploymentService extends BaseMultiUserModelEdit {
+
+    // class contents
+}
+```
+
 
 **Enforcements of `MultiUserModelEdit`:**
 

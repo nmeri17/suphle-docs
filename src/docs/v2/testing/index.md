@@ -205,6 +205,42 @@ Whether the entire project's modules are run on the application server, or a sel
 
 Where a mock with RCA dependencies should partake in a test, consider applying the [RCA-peeling](/docs/v2/appendix/Transition-from-visual-to-automated-testing#Peeling-off-RCAs) isolation strategy.
 
+#### URL generation in tests
+
+Http-enabled tests include a helper for directly referencing endpoints being targeted by the test. Not only does its API prevent hardcoding request paths, it avoids prefix repetition per method and provides an elegant, transparent avenue to click through the IDE to the underlying coordinator method.
+
+```php
+
+class CoordinatorTest extends ModuleLevelTest {
+
+	protected string $coordinatorName = FooCoordinator::class;
+
+	public function test_endpoint1 () {
+
+		$this->get($this->expandUrl("handlingMethod1")) // when
+
+		->assertSee("Expected content"); // then
+	}
+
+	public function test_endpoint2 () {
+
+		$this->get($this->expandUrl("handlingMethod2")) // when
+
+		->assertSee("Expected content"); // then
+	}
+}
+```
+
+The `expandUrl` method optionally accepts arguments for customising resulting URL further. Listed in order:
+
+- `parameters`: An associative array is required for parameterised paths requiring need string interpolation.
+
+- `coordinatorName`: Used for methods where coordinator name differs from that shared by all tests on parent class.
+
+- `getMirror`: Determines whether to return the mirror prefixed variant where enabled for matching method.
+
+---
+
 #### Debugging HTTP exceptions
 
 When we automate HTTP tests into our application, the test won't fail if it encounters an error; rather, the call will return a response object with a payload containing formatted error-handled message, along with status code 500.

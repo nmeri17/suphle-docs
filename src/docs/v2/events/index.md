@@ -57,24 +57,23 @@ Events can be emitted through `EventPropagator::emit`.
 ```php
 use Suphle\Events\EventPropagator;
 
-#[DomainService(mutation: true)]
-class CheckoutCart implements SystemModelEdit {
-
-	use BaseErrorCatcherService, EmitProxy;
+class CheckoutCart extends BaseSystemModelEdit {
 
 	public const EMPTIED_CART = "cart_empty";
 
 	public function __construct (protected readonly EventPropagator $eventEmitter) { }
 
-	public function updateModels () {
+	public function updateModels (object $cartBuilder) {
 
-		$this->cartBuilder->products()->update(["sold" => true]);
+        $products = $this->modelsToUpdate($cartBuilder);
+
+        $products->each->decrement("quantity");
 
 		$this->eventEmitter->emit(
 			self::class, self::EMPTIED_CART, $this->cartBuilder
 		);
 
-		return $this->cartBuilder->delete();
+        return $this->cartService->delete();
 	}
 }
 ```
@@ -82,28 +81,24 @@ class CheckoutCart implements SystemModelEdit {
 `emit` accepts the emitting class, event name and optional payload. In normal application code, however, the `EmitProxy` trait is **strongly** recommended:
 
 ```php
-#[InterceptsCalls(SystemModelEdit::class)]
-#[VariableDependencies([
+class CheckoutCart extends BaseSystemModelEdit {
 
-	"setPayloadStorage", "setRouteInfo"
-])]
-#[DomainService(mutation: true)]
-class CheckoutCart implements SystemModelEdit {
-
-	use BaseErrorCatcherService, EmitProxy;
+	use EmitProxy;
 
 	public const EMPTIED_CART = "cart_empty";
 
 	public function __construct (protected readonly EventPropagator $eventEmitter) { }
 
-	public function updateModels () {
+	public function updateModels (object $cartBuilder) {
 
-		$this->cartBuilder->products()->decrement("quantity");
+        $products = $this->modelsToUpdate($cartBuilder);
 
-		$this->emitHelper(self::EMPTIED_CART, $this->cartBuilder);
+        $products->each->decrement("quantity");
 
-		return $this->cartBuilder->delete();
-	}
+		$this->emitHelper(self::EMPTIED_CART, $cartBuilder);
+
+        return $this->cartService->delete();
+    }
 }
 ```
 

@@ -12,11 +12,11 @@ Examining online polls will reveal that PHP templating preference leverages the 
 
 - It doesn't deviate too far from PHP syntax itself, thus requiring a low barrier both for entry and while transitioning between code and template.
 
-- It has a [Components](https://laravel.com/docs/9.x/blade#components) feature that, on the surface, seems like converting template partials and includes into custom HTML tags. However, the introduction of classes makes a world of difference when considered as a layer strictly for presentation logic, conditionals and formatters.
+- It has a [Components](https://laravel.com/docs/9.x/blade#components) feature that, on the surface, seems like converting template partials and `includes` into custom HTML tags. However, its class-based components provide a useful layer for presentation-specific logic, conditionals and formatters where ordinary templates aren't sufficient.
 
 As with everything in Suphle, there is no vendor lock-in. That is to say, if you are more conversant with some other library replacing this adapter with another connected to your engine of choice is trivial.
 
-## Declaring markup renderers
+### Declaring markup renderers
 
 If you're not already familiar with its syntax, consider perusing [its documentation](https://laravel.com/docs/9.x/blade). Everything applicable there applies here, except method of usage. You will recall that [response renderers](/docs/v2/routing#Default-renderers) are returned directly from coordinator methods, rather than being attached to route patterns. Thus, the following declaration,
 
@@ -38,42 +38,90 @@ class CarCoordinator
 
 Is equivalent to using the `view` function you're accustomed to in Blade.
 
-### Binding blade component classes
+### Providing global view variables
 
-While working with Blade's component classes, we will want to bind markup tags to our view files, or bind component namespaces to our layout classes. These bindings are expected to take place in a properly connected `DefaultBladeAdapter::bindComponentTags` method.
-
-A descendant of this class is already connected for you in the starter project. It can be modified to accomodate your desired bindings as follows:
+The Blade adapter can make values available to every rendered view without requiring them to be included in the payload passed to individual `Markup` renderers. This is done by overriding `getTemplateGlobalVars`:
 
 ```php
-
-namespace AllModules\CompanySymbol\Config;
-
-use Suphle\Adapters\Presentation\Blade\DefaultBladeAdapter;
-
-use AllModules\CompanySymbol\Markup\Components\AppLayouts;
-
-class CustomBladeAdapter extends DefaultBladeAdapter {
-	
-	public function bindComponentTags ():void {
-		
-		$this->bladeCompiler->component("tag-name", SectionComponent::class); // or
-
-		$this->bladeCompiler->componentNamespace(
-
-			"AllModules\\ModuleOne\\BladeComponents", "project-name"
-		); // if it's more convenient to do at a go
-	}
+class CustomBladeAdapter extends DefaultBladeAdapter
+{
+    protected function getTemplateGlobalVars(): array
+    {
+        return [
+            "appName" => "My application",
+            "currentUser" => $this->currentUser // inject user in constructor
+        ];
+    }
 }
 ```
 
-These bindings are then used in the view templates:
+The returned associative array is shared with the view factory before templates are rendered. Its keys therefore become variables available to every view:
 
 ```html
+<title>{{ $appName }}</title>
 
-<x-tag-name/>
-
-<x-project-name::tag-name /> <!-- Reads the tag names automatically on your behalf -->
+@if ($currentUser)
+    <span>{{ $currentUser->name }}</span>
+@endif
 ```
+
+The default Blade adapter already supplies its own global variables. When overriding `getTemplateGlobalVars`, retain any defaults that should remain available:
+
+```php
+protected function getTemplateGlobalVars(): array
+{
+    return array_merge(
+        parent::getTemplateGlobalVars(), [
+            "appName" => "My application"
+        ]
+    );
+}
+```
+
+This facility is intended for values that are genuinely common to views across the application. Data specific to a particular renderer should continue to be supplied through the `Markup` payload.
+
+### Binding Blade component classes
+
+Blade component classes must be registered before they can be referenced through component tags. Bindings are expected to take place in a properly connected `HtmlParser::bindComponentTags` method. A default implementation, `DefaultBladeAdapter` is already bound. It can be modified to accommodate your desired bindings as follows:
+
+```php
+namespace AllModules\ModuleOne\Config;
+
+use Suphle\Adapters\Presentation\Blade\DefaultBladeAdapter;
+
+use AllModules\ModuleOne\Presentation\Components\SectionComponent;
+
+class CustomBladeAdapter extends DefaultBladeAdapter
+{
+    public function bindComponentTags(): void
+    {
+        $this->bladeCompiler->component("tag-name", SectionComponent::class);
+
+        // Or register an entire namespace when working with multiple components.
+        $this->bladeCompiler->componentNamespace(
+            "AllModules\\ModuleOne\\Presentation\\Components", "project-name"
+        );
+    }
+}
+```
+
+Individual component registration associates a component tag directly with its class:
+
+```html
+<x-tag-name />
+```
+
+When a namespace is registered, Blade resolves component classes within that namespace according to the supplied prefix:
+
+```html
+<x-project-name::tag-name />
+```
+
+Namespace registration is generally preferable when exposing several component classes, as it avoids maintaining an individual registration for every component.
+
+The namespace and prefix used here are entirely a matter of application design. Suphle does not impose a naming convention on them. When several modules expose Blade components, however, care should be taken to avoid component name or prefix collisions. Prefixing a component namespace with the name of its containing module is recommended where collisions are otherwise possible.
+
+Component registration is only concerned with Blade's class-based component mechanism. Ordinary `.blade.php` views do not require a component class or component registration.
 
 ## Configuring a presentation adapter
 
@@ -175,7 +223,7 @@ To maintain Suphle's strict code-separation principles and prevent controllers f
 
 ### Hotwire form submissions & Service Proxies
 
-Since the method of feedback deviates from the norm, Suphle demands to be informed beforehand about the new response types and how to deal with them. Some helpful tips can be found [here](https://turbo.hotwired.dev/handbook/drive#form-submissions) for application on the client-side. On the back-end, the `Suphle\Contracts\Response\RendererManager` interface must [be bound](/docs/v2/container#Binding-regular-interfaces) to `Suphle\Adapters\Presentation\Hotwire\HotwireRendererManager`. This manager completely abstracts away validation and execution complexities from your active pipeline—eliminating conditional branching inside individual action handlers.
+Since the method of feedback deviates from the norm, Suphle demands to be informed beforehand about the new response types and how to deal with them. Some helpful tips can be found [here](https://turbo.hotwired.dev/handbook/drive#form-submissions) for application on the client-side. On the back-end, the `Suphle\Contracts\Requests\ValidationEvaluator` interface must [be bound](/docs/v2/container#Binding-regular-interfaces) to `Suphle\Adapters\Presentation\Hotwire\HotwireValidatorHandler`. This handler completely abstracts away validation and execution complexities from your active pipeline—eliminating conditional branching inside individual action handlers.
 
 In addition, some new renderers are introduced to differentiate between regular intent and a static page update, namely:
 
@@ -388,7 +436,7 @@ public function hotwireReload(TaskBuilder $builder): ReloadHotwireStream
 
 ```
 
-Above, a `PUT` request is sent. If validation fails, all normal execution nodes on the `ReloadHotwireStream` object—including both the `addAfter` database log stream and the `addUpdate` form fragment stream layouts—are cleanly scrubbed from output rendering. The request is intercepted by the `HotwireRendererManager`, which constructs an error stream routing back only the universal `hotwire/form-fragment` markup block.
+Above, a `PUT` request is sent. If validation fails, all normal execution nodes on the `ReloadHotwireStream` object—including both the `addAfter` database log stream and the `addUpdate` form fragment stream layouts—are cleanly scrubbed from output rendering. The request is intercepted by the `HotwireValidatorHandler` connected earlier, which constructs an error stream routing back only the universal `hotwire/form-fragment` markup block.
 
 ## Connecting the broadcaster
 
@@ -496,9 +544,9 @@ class BasicTemplateTest extends ModuleLevelTest
 {
     public function test_failed_validation_always_reverts_errors_to_previous_on_browser()
     {
-        $this->get("/get-without"); // given
+        $this->get($this->expandUrl("handleGet")); // given
 
-        $response = $this->post("/post-with-html", $this->csrfField); // when
+        $response = $this->post($this->expandUrl("postWithValidatorRedirect"), $this->csrfField); // when
 
         // then
         $response->assertUnprocessable()
