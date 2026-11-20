@@ -733,7 +733,7 @@ class DatalessErrorThrower implements ServiceErrorCatcher {
 
 ##### Never return type
 
-Since PHP doesn't have generics yet, return value for `ServiceErrorCatcher::failureState` is untyped. But for consistency, it should correspond to whatever type the erring method would've returned on successful execution. This means such methods are prohibited from having `void` or PHP 8's `never` return type, as they will interfer with an alternate result being returned on its behalf.
+`ServiceErrorCatcher::failureState` is deliberately untyped so it can correspond to whatever type the erring method would've returned on successful execution. This means such methods are prohibited from having `void` or PHP 8's `never` return type, as they will interfer with an alternate result being returned on its behalf.
 
 -----
 
@@ -901,7 +901,7 @@ class EmploymentService extends BaseMultiUserModelEdit {
 
 **Enforcements of `MultiUserModelEdit`:**
 
-  * **Authorization Requirement**: The call to `getResource` will throw a `Suphle\Exception\Explosives\EditIntegrityException` if no [path authorization](/docs/authorization) is found.
+  * **Authorization Requirement**: The call to `getResource` will throw a `Suphle\Exception\Explosives\EditIntegrityException` if no [path authorization](/docs/v2/authorization) is found.
   * **Stale Check**: Update requests must include a field (timestamp or hash) indicating the resource matches its last edited state. If the database row has changed since the user loaded the form, a `StaleEditDiffuser` catches the resulting exception.
       * **Status code**: 400
       * **Default Behavior**: Re-renders the form/payload with error indicators.
@@ -924,7 +924,8 @@ class EmploymentService extends BaseMultiUserModelEdit {
 Decorated services gain automated error handling via the `BaseErrorCatcherService` trait. If an exception occurs:
 
 1.  The framework **rolls back** the transaction.
-2.  The exception is passed to an **Exception Diffuser**, keeping the Coordinator free of `try-catch` blocks.
+1.  The exception is passed to an **Exception Diffuser**, keeping the Coordinator free of `try-catch` blocks.
+1. Instead of writing to a log, the exception and request context and [published to the error broadcast service linked](/docs/v2/exceptions#Handling-unexpected-errors) to the application.
 
 ##### Update-protected models
 
@@ -955,7 +956,7 @@ What `IntegrityModel` does is:
 
 They are constants that can be read for custom error display using the `EditIntegrityException::getIntegrityType()` method.
 
-- It records each update to a resource, provided the `IntegrityModel::enableAudit` method returns `true`. Default implementation on `EditIntegrity` returns true, and expects shema relevant for record-keeping to be present. For Eloquent, this is among migrations on its component template. For this feature to function properly:
+- It records each update to a resource, provided the `IntegrityModel::enableAudit` method returns `true`. Default implementation on `EditIntegrity` returns true, and expects schema relevant for record-keeping to be present. For Eloquent, this is among migrations on its component template. For this feature to function properly:
 
 	- Intending models are urged to [include it](/docs/v2/database#eloquent-migrations) among their migration list.
 	- Within test environments and otherwise, one of the storage mechanisms should be populated as it will be used to indicate user responsible for incoming change. This behavior can be replaced by overriding `EditIntegrity::makeHistory` and modifying the migration as desired.
@@ -1021,17 +1022,19 @@ class SimpleSearchService extends SimpleSearch {
 	}	
 }
 
+#[RoutePrefix("/products")]
 class BaseCoordinator extends BaseCoordinator {
 
-	public function searchProducts (SearchProductBuilder $searchBuilder):iterable {
+	#[Route("/search")]
+	public function searchProducts (SearchProductBuilder $searchBuilder):Markup {
 
-		return [
+		return new Markup("products/search", [
 
 			"results" => $this->searchService->convertToQuery(
 
-				$searchBuilder, ["q"]
-			)->get();
-		];
+				$searchBuilder->getBuilder(), ["q"]
+			)->paginate();
+		]);
 	}
 }
 ```
@@ -1040,7 +1043,7 @@ class BaseCoordinator extends BaseCoordinator {
 
 The caller uses `convertToQuery` to either retrieve a loaded builder and apply its own queries, or fetch right away. The 2nd argument to this method is a list of parameters not falling into either columns or method categories. At the very least, you'll want to omit the query key itself since it's expected to be set on the builder in `SearchProductBuilder`.
 
-Now, we can send a search request with parameters `/search/?q=ogbogu&better_than=nmeri`.
+Now, we can send a search request with parameters `/products/search/?q=ogbogu&better_than=nmeri`.
 
 `SimpleSearch` contains the protected properties `payloadStorage`, `ormDialect`.
 
@@ -1064,13 +1067,12 @@ use Suphle\Contracts\Database\OrmDialect;
 
 use Suphle\Services\Decorators\VariableDependencies;
 
-#[VariableDependencies([
-
-	"setOrmDialect"
-])]
-class MidLevelBase implements VariableDependencies {
+#[VariableDependencies(["setOrmDialect" ])]
+class MidLevelBase {
 
 	protected $ormDialect;
+
+	public function __construct (/*expose user facing dependencies here*/) {}
 
 	public function setOrmDialect (OrmDialect $ormDialect):void {
 
